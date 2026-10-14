@@ -6,7 +6,7 @@
 
 ## 输入与用法
 
-每次限同一数据集、同一验证 fold、同一训练 seed；至少两个不同模型，每个模型只接受一个运行。必须指定参考运行。输入是各运行根目录的 `valid_predictions.csv`，工具只额外读取同目录的：
+每次限同一数据集、同一验证 fold、同一训练 seed；至少两个不同模型或不同合法 UKT 训练模式。普通模型每个模型只接受一个运行；UKT 每种合法 recipe 只接受一个运行。必须指定参考运行。输入是各运行根目录的 `valid_predictions.csv`，工具只额外读取同目录的：
 
 - `valid_predictions.csv.manifest.json`：预测字节哈希、开发集目标及历史摘要、独立评测结果。
 - `metadata.json`：完成状态、记录的训练更新数、批次/源码/检查点/验证身份及最佳 epoch。
@@ -20,7 +20,7 @@ python scripts/analyze_shared_predictions.py \
   --batch configs/batches/B003-shared-convergence-baselines.json \
   --predictions \
     runs/B003-akt-assist2009-f0-s42/valid_predictions.csv \
-    runs/B003-ktst_mean-assist2009-f0-s42/valid_predictions.csv \
+    runs/B003-simplekt-assist2009-f0-s42/valid_predictions.csv \
   --reference B003-akt-assist2009-f0-s42 \
   --bootstrap-replicates 500 --seed 42 \
   --output reports/B003-assist2009-saved-valid-analysis.json
@@ -28,7 +28,53 @@ python scripts/analyze_shared_predictions.py \
 
 `--seed` 固定的是 bootstrap 抽样随机数；训练 seed 来自已保存配置，另列在报告中。对另外两集分别调用；本工具不混合不同数据集、fold 或训练 seed，不平均不同模型的预测，也不执行最终多 seed/fold 确认分析。
 
+### 显式比较多个真实批次
+
+一次比较可以重复传入 `--batch`。Python API 原有 `analyze(paths, batch_path, reference, ...)` 保持兼容；第二个参数既可以是单个路径，也可以是非空路径 list/tuple。每个预测 run 必须在所给清单中唯一声明，再按自己的真实清单核验 `batch_id`、canonical batch SHA、实现源码 SHA、配置及数据清单收据。不会生成或接受工具自行拼接的 union manifest，也不会根据模型名猜测所属批次。
+
+例如，等相应运行全部完成后，比较 B003 已完成的 AKT 与 R1 恢复批次中的 MoC：
+
+```bash
+python scripts/analyze_shared_predictions.py \
+  --batch configs/batches/B003-shared-convergence-baselines.json \
+  --batch configs/batches/B003-R1-shared-convergence-baselines.json \
+  --predictions \
+    runs/B003-akt-assist2009-f0-s42/valid_predictions.csv \
+    runs/B003-R1-mockt-assist2009-f0-s42/valid_predictions.csv \
+  --reference B003-akt-assist2009-f0-s42 \
+  --bootstrap-replicates 500 --seed 42 \
+  --output reports/B003-R1-assist2009-saved-valid-analysis.json
+```
+
+重复路径、重复 `batch_id`、跨清单重复声明同一 `run_id`（即使该 run 不在本次预测输入中）、缺失或空配置都会拒绝。每份清单可以包含未选中的运行，工具不读取这些运行的工件；所有显式清单均记录字节收据并在结束时复查。没有列出某个输入 run 所属的真实清单时拒绝，不退回其它清单匹配。
+
+跨批次仍要求同一数据清单、数据集、完整验证 fold、训练 seed、原始开发数据 SHA、目标和可见历史摘要，并逐 `(uid,event_id)` 比较题目、标签、KC 数和两项摘要；原有完整性、epoch0、模型/UKT recipe 唯一性与数值容差不变。各自的实现源码 SHA 可以不同，但必须严格匹配各自的清单及运行收据。相同协议字符串和事件身份只说明这些记录与配对条件相容，**既不自动证明训练身份或方法等价，也不意味着源码不同就不能比较**。源码变化需要结合差异和兼容性证据作人工方法审查；工具不会替代这一步，也不会新增逐批批准流程。B003→R1 的 `no_grad` 兼容性修复应引用独立修复审查与人工验收记录，不能把原 B003 收据改写成 R1 来源。
+
+报告中的 `batches` 按显式输入顺序列出每份真实 `batch_id`、`canonical_batch_sha256`、`implementation_sha256`、清单字节收据及本次选中的 `selected_run_ids`；每个 run 也列出自己的 batch、canonical SHA 和 implementation SHA。`cross_batch_comparison` 区分“提供多清单”“实际选中多批次”和“所选实现源码不同”，并明确 `method_equivalence_verified=false`。所选源码不同时设置 `manual_method_review_required=true`，作为方法解释边界，而非拒绝计算。
+
+单清单调用的旧顶层 `batch_id`、`canonical_batch_sha256`、`batch_file` 保留原值。提供多清单时这三个单值字段为 `null`，调用方须读取 `batches` 和逐 run 字段；不会虚构一个合并批次身份。报告仍不输出输入路径或学生/事件记录。
+
+### UKT 训练模式的比较身份
+
+UKT 的 `config.model` 仍是 `ukt`。工具只接受已经进入实际配置哈希的明确 `ukt_training_recipe`，并核对 `model_config.use_CL`、`model_config.use_uncertainty_aug`，不从运行目录名或自填显示名推断变体：
+
+| `ukt_training_recipe` | `use_CL` | `use_uncertainty_aug` |
+|---|---|---|
+| `ukt-no-cl` | false | true 或 false；关闭 CL 时不启用增强 |
+| `ukt-cl-same-responses` | true | false |
+| `ukt-author-first-two-from-last-86ad9d8-v1` | true | true |
+
+两个开关都必须显式保存为 JSON boolean，或兼容官方脚本的整数0/1；拒绝缺失值、字符串、浮点数及其它整数。recipe 缺失、未知或与开关冲突时拒绝，即使其它收据哈希相互一致。非 UKT 模型不能携带非空的 UKT recipe。配置来自引擎解析后默认值也可以，但仍须通过既有 batch 子集匹配和实际配置哈希检查。
+
+输出中每个 run 保留 `model`，新增 `ukt_training_recipe`（普通模型为 `null`）及 `comparison_label`（普通模型等于模型名，UKT 为 `ukt / <完整recipe>`）。`comparison_identity(config)` 提供相同三字段给其它离线汇总工具；调用方须先完成收据校验，该 helper 本身不认证配置来源。`_read_run` 与 `Receipts` 的调用和返回接口保持不变。
+
+重复检查使用 `(model, recipe)`，不会使用可自填的 `comparison_label`。因此作者增强 CL 与无 CL 可以配对；同一 recipe 即使更换 run_id、显示名、模型宽度或其它超参仍视为重复。统计仍以原 run_id 为键，reference 也仍是明确的 run_id。不同 recipe 获准配对只表示身份可区分，不证明架构、批次、优化器或预算已经匹配；关于 CL 效果的消融结论仍须另核这些设置。原有 split、协议、seed、标签、目标/历史/来源及工件哈希校验全部保留。
+
 ## 在计算指标前核验什么
+
+完整批次的轮次、选点和资源汇总可用 `scripts/summarize_shared_batch.py --repo-root <训练工件所在仓库> --batch <公开批次清单> --output <新报告路径>`。它复用本工具的收据与保存预测校验，再读取 `initial_valid_metrics.json` 和 `history.jsonl` 重放严格最佳选点、早停及更新上限，核对终局元数据；要求清单内所有运行完成，否则不写完成报告。epoch0不累计stale，同分不替换最佳，完整最后一轮恰好达到更新上限可合法标为 `max_train_steps`。
+
+该汇总按数据集/协议/fold/seed保留分组，不做跨集指标平均；输出实际轮次、选中轮次、停止原因、更新、耗时和峰值显存，软时间上限超出仅如实标记。它不读取授权记录、源码树、权重、原始数据或test，也不把保存收据的一致性当作独立训练证明。首次人工文件验收为 **26项通过，0.52秒**；加入下面的预定导出容差后，**21项新增或受影响检查通过，17项未重复执行，0.49秒**。尚未对未完成的B003产生正式汇总。
 
 只接受 `ktlab-v2-shared-event-context-kc200-dev`、`split=valid`、KC 预算200。必须有 `selected_targets = expected_total = eligible_total`，且 `max_targets=null`、`selected_for_debug=false`、`selection_limited=false`。拒绝 train、test、旧 v1/KTST 参考轨、抽样、重复 ID、缺目标、非法概率/标签、调试配置及缺失的训练导出身份。
 
@@ -39,6 +85,10 @@ python scripts/analyze_shared_predictions.py \
 每条 CSV 用 `(uid,event_id)` 精确配对，要求题号、标签、KC 数、目标 SHA 和历史 SHA 全部一致。标签单独生成汇总 SHA；不误认为不含当前标签的 target/context SHA 已经校验了标签。至少一份输入必须保留原始导出顺序，以重新核算冻结的 target/context 序列摘要；其它输入可有不同顺序，其预测按 ID 重新对齐。任何输入的 CSV 实际字节哈希仍必须匹配自己的 sidecar。所有输入都打乱而失去冻结顺序时拒绝，不猜测原始学生行顺序。
 
 工具从 CSV 重算指标，并与 sidecar、最终 `valid_metrics.json` 及 metadata 的最佳验证 AUC 对照。结束时再次核对全部已读输入的字节哈希，防止分析过程中工件变化；校验失败不生成最终报告，已存在的输出不会被覆盖。
+
+历史选点和最终导出是两次独立前向，GPU 浮点计算不保证逐位一致。**在查看 B003 终局指标之前**，固定 `SELECTED_EXPORT_ABS_TOL=1e-6`：仅对“metadata 记录的选点 AUC 与最终 CSV 重算 AUC”要求有限且绝对差不超过此值，不使用相对容差或四舍五入。每个 run 明确输出 `selected_valid_auc_recorded`、`export_minus_selected_auc`，报告另列 `selected_export_auc_comparison` 说明阈值和适用范围；不把小差值改写成零。超过阈值即拒绝，不能据结果再调阈值。此规定是预定的数值边界，不表示已发现真实 B003 异常。
+
+公开 helper `selected_export_delta(selected, exported, metric="auc")` 核验有限数值及上述绝对容差，返回有符号的 `exported-selected`，供其它离线汇总工具比较分别前向的历史与导出指标。**同一 CSV 的指标重算仍使用原来的 `rel_tol=1e-10, abs_tol=1e-12`；收据中直接复制的数值仍要求一致**，身份、文件哈希和选择策略校验均不放宽。
 
 ### 收据核验的明确限度
 
@@ -72,4 +122,12 @@ python -m pytest -q tests/test_saved_prediction_analysis.py
 
 [测试](../tests/test_saved_prediction_analysis.py) 只生成小型人工 CSV/JSON，检查工件拒绝规则、按 ID 配对、epoch0 保留、相同模型零差值、单类 draw、概率端点、已知指标、与显式复制学生事件的 bootstrap 对照，以及不读取权重/源数据、不输出个人记录的边界。不会运行实际模型。
 
+2026-10-15 增补 UKT 人工工件：合法 recipe 配对及明确输出、同 recipe/普通模型重复拒绝、未知 recipe 与开关矛盾、缺失/非法开关、配置哈希篡改、epoch0 保留，以及 `_read_run` 原返回接口兼容性。
+
+该次纯文件验收结果：**76 项通过，pytest 计时 1.70 秒**；没有导入实际模型、读取真实数据或训练。
+
+随后加入预定的选点／导出差异检查，补测小漂移通过且报告原差值、超界拒绝、非有限值拒绝，以及同一 CSV／复制收据仍严格核验：**89 项通过，pytest 计时 1.85 秒**。仍只使用人工文件。
+
 2026-10-14 实际验收结果：**51 项通过，pytest 计时 1.67 秒**。另经独立静态复核确认两个现有训练引擎的导出 schema 与本工具匹配。真实 B003 工件尚未产生，因此这不是实际训练产物的端到端验收。
+
+2026-10-15 多真实清单扩展的纯文件验收：**118 项通过，pytest 计时 1.98 秒**。新增两/三清单与不同实现来源、逐 run 真实归属、单路径 API/CLI 兼容、重复 `--batch`、三种 UKT recipe、错误或歧义清单映射、跨批次逐事件身份/标签、数据清单/fold/seed 不一致及清单输入竞态检查。全部使用临时人工工件；本次没有读取真实运行预测、运行模型或执行梯度更新。

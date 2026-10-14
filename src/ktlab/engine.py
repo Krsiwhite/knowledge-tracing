@@ -141,7 +141,7 @@ def _shared_config(config: dict) -> dict:
     """Resolve only explicitly requested shared validation, never relabel v1."""
     if config.get("protocol") != SHARED_PROTOCOL:
         raise ValueError("Shared validation requires its explicit protocol")
-    if config.get("model") not in {"akt", "simplekt", "mockt", "ktst_mean", "ktst_mhsa"}:
+    if config.get("model") not in {"akt", "simplekt", "mockt", "ukt", "ktst_mean", "ktst_mhsa"}:
         raise ValueError("This model has no shared-context adapter")
     if config.get("max_validation_batches") is not None:
         raise ValueError("Shared validation forbids max_validation_batches; limit constructed targets explicitly")
@@ -306,6 +306,12 @@ def train(config: dict, run_dir: Path) -> dict:
         torch.cuda.reset_peak_memory_stats(device)
     _seed(int(config.get("seed", 42)))
     model = build_model(config["model"], manifest["data_config"], config.get("model_config"), device)
+    if config["model"] == "ukt":
+        from .ukt_training import training_recipe
+        recipe = training_recipe(model)
+        if config.get("ukt_training_recipe", recipe) != recipe:
+            raise ValueError("UKT training recipe conflicts with explicit model switches")
+        config["ukt_training_recipe"] = recipe
     training = dataset_for_split(manifest, int(config.get("fold", 0)), "train", model_name=config["model"])
     validation = (_shared_dataset(manifest, config) if shared else
                   dataset_for_split(manifest, int(config.get("fold", 0)), "valid", model_name=config["model"]))

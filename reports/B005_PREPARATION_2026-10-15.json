@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "prepared_at": "2026-10-14T18:12:24.282434+00:00",
+  "batch_id": "B005-ktst-author-configs-shared",
+  "canonical_batch_sha256": "01c3e0b042af462a0307727868a50997d6ff4ceca57f356f6700b2468d6d55bd",
+  "implementation_sha256": "7bbfc8ed9b60a6759fac2f1c2f0b5752e014cd89ed169dcb0bff57409dcd6b78",
+  "checks": [
+    {
+      "dataset": "assist2009",
+      "run_id": "B005-ktst_mean-author-assist2009-f0-s42",
+      "author_yaml_receipt_verified": true,
+      "model_settings_match_prior_constructor_audit": true,
+      "training_config_checker_passed": true,
+      "train_rows": 3016,
+      "zero_score_chunks_recorded": 0,
+      "batches_per_epoch": 24,
+      "optimizer_steps_upper_bound": 1200,
+      "current_dataset_manifest_matches_prior_training_and_shared_validation_audits": true
+    },
+    {
+      "dataset": "assist2015",
+      "run_id": "B005-ktst_mean-author-assist2015-f0-s42",
+      "author_yaml_receipt_verified": true,
+      "model_settings_match_prior_constructor_audit": true,
+      "training_config_checker_passed": true,
+      "train_rows": 12344,
+      "zero_score_chunks_recorded": 0,
+      "batches_per_epoch": 97,
+      "optimizer_steps_upper_bound": 4850,
+      "current_dataset_manifest_matches_prior_training_and_shared_validation_audits": true
+    },
+    {
+      "dataset": "nips_task34",
+      "run_id": "B005-ktst_mean-author-nips_task34-f0-s42",
+      "author_yaml_receipt_verified": true,
+      "model_settings_match_prior_constructor_audit": true,
+      "training_config_checker_passed": true,
+      "train_rows": 6043,
+      "zero_score_chunks_recorded": 0,
+      "batches_per_epoch": 48,
+      "optimizer_steps_upper_bound": 2400,
+      "current_dataset_manifest_matches_prior_training_and_shared_validation_audits": true
+    }
+  ],
+  "input_receipts": {
+    "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing-ktst/configs/batches/B003-shared-convergence-baselines.json": "c5efe0fa0c1c37634d2eb1cb85afa5df3a92b4729d34023850065d66e0d0ed96",
+    "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing-ktst/configs/batches/B003-R1-shared-convergence-baselines.json": "92e211976e8d33d89d75021e9489210d991f05260e6acfebc0a752509bab2310",
+    "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing-ktst/configs/batches/B004-ukt-shared-objectives.json": "59df23638a07a0f49760e7df48529daf8eb7dd7237137749fe0a6f1d4c4bc02d",
+    "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing-ktst/reports/KTST_STRONG_CONFIG_CAPACITY_2026-10-15.json": "0b099d6e9c1baa0f88c21dca4bdee1780336ac8211c0a62f145bd29fce3b5c5b",
+    "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing-ktst/reports/KTST_DATA_AUDIT_2026-10-14.json": "1bdba33288664c2a8c7f099aeeaf92f573ef084c67fb403166248ea9840d3e2f",
+    "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/.cache/research/ktst-e6331a6f/fetch_manifest.json": "448b036d947bfbadf022da87ca9defca08d7d880ec05ee918644ac76b1c1469d",
+    "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing-ktst/src/ktlab/ktst_model.py": "e3ea16b79dda72a97d0dffc5fa3103938596bf91351be4410cfe499b96724a85",
+    "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing-ktst/third_party/ktst.lock.json": "5b5dc24948a7d227003b5cd285227a20989811cc170809480c0ae80e611345b9",
+    "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/assist2009/manifest.json": "e2c939dfe4479327c223644bce6aee88c56bc362d1169164332ae9ca479fc703",
+    "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/.cache/research/ktst-e6331a6f/pkg/config/reproduce/ktst/benchmark/reproduce_65.yaml": "8cafb286f141b6f0f1bd14876d32e3b728382b576a87a9304f7b78356dd7870a",
+    "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/assist2015/manifest.json": "698be4553033f3891757eea79bed34c9394e77eb4a90475d2ca24cc9905b6441",
+    "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/.cache/research/ktst-e6331a6f/pkg/config/reproduce/ktst/benchmark/reproduce_15.yaml": "302d896c48cb400a9366268339eb28edc2c6cb7eda61ef966548ac9c3d622be9",
+    "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/nips_task34/manifest.json": "db0795bfe4b5f8e88e11b51c95626fe5d8dc4e6dc5529a9ac179128cf0eb8398",
+    "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/.cache/research/ktst-e6331a6f/pkg/config/reproduce/ktst/benchmark/reproduce_29.yaml": "0e8ea43e3eacbd1bd8d4d917fb874223d840cf504edf41601873e1a44bb8ec0a"
+  },
+  "script_sha256": "26c6d2ee35025a3f40301a6ebdc32d50f977daf2d2542f00966a69cce65391d1",
+  "model_constructions": 0,
+  "model_forward_calls": 0,
+  "backward_calls": 0,
+  "optimizer_steps": 0,
+  "weight_loads": 0,
+  "gpu_initialized": false,
+  "data_records_read": false,
+  "test_accessed": false,
+  "approval_created": false,
+  "launched": false,
+  "limitations": [
+    "Preparation and configuration checks only; no GPU trainability/runtime/quality result.",
+    "Dataset manifests match prior audits; data record integrity will be checked at launch.",
+    "Standing authorization permits later local execution; manifest dependencies remain pending."
+  ]
+}

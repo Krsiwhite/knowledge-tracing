@@ -20,7 +20,7 @@ from .ktst_model import forward_ktst
 PROTOCOL = "ktlab-v2-shared-event-context-kc200-dev"
 SEQUENCE_LENGTH = 200
 QUERY_RESPONSE = 0
-SUPPORTED_MODELS = {"akt", "simplekt", "mockt", "ktst_mean", "ktst_mhsa"}
+SUPPORTED_MODELS = {"akt", "simplekt", "mockt", "ukt", "ktst_mean", "ktst_mhsa"}
 
 
 def _concepts(value) -> list[int]:
@@ -275,7 +275,7 @@ def predict_shared(model: torch.nn.Module, contexts: Sequence[dict], device: str
                 selected = scores[torch.arange(len(batch["event_ids"]), device=device), batch["target_positions"]]
                 output.extend(selected.double().cpu().tolist())
         else:
-            if name in {"simplekt", "mockt"} and int(model.ktlab_model_config.get("seq_len", 200)) < SEQUENCE_LENGTH:
+            if name in {"simplekt", "mockt", "ukt"} and int(model.ktlab_model_config.get("seq_len", 200)) < SEQUENCE_LENGTH:
                 raise ValueError("Shared evaluation requires position capacity for fixed T=200")
             sums, counts = [0.0] * len(contexts), [0] * len(contexts)
             pending = []

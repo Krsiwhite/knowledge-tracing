@@ -40,9 +40,8 @@ python -m pytest -q
 5. 冻结候选、分析方案及检查点后，按持续授权开放最终测试并保存解封记录，无需再次批准；测试标签仍不得参与选模。
 
 ```bash
-python -m ktlab batch inspect configs/batches/B003-shared-convergence-baselines.json
-# 执行前保存落实最新限制的清单，以及绑定其哈希的持续授权记录：
-python -m ktlab train --batch configs/batches/B003-shared-convergence-baselines.json --approval approvals/B003-shared-convergence-baselines.json
+python -m ktlab batch inspect configs/batches/B003-R1-shared-convergence-baselines.json
+# B003-R1 已由后台作业启动；此处只检查状态，不重复启动。
 python -m ktlab report
 ```
 
@@ -64,6 +63,7 @@ B001、[B002](configs/batches/B002-one-epoch-calibration.json) 已在各自冻�
 - [B003 首个模型的误差分层](reports/B003_AKT_ASSIST2009_ERROR_STRATA_2026-10-15.md)：AKT/ASSIST2009 的固定历史、训练题频及可见支持分层；稀疏题值得后续核对，尚不据此确定原创模型。
 - [B003 首两组基线比较](reports/B003_FIRST_TWO_BASELINES_2026-10-15.md)：AKT与simpleKT相同验证事件的配对结果、学生抽样区间与固定误差分层。
 - [B003 首三组基线比较](reports/B003_FIRST_THREE_BASELINES_2026-10-15.md)：加入已完成的MoC-KT，逐运行绑定原批次或恢复清单，比较预测质量、收敛与资源开销；AKT仍是当前ASSIST2009参考。
+- [B005 KTST作者配置对照](reports/B005_KTST_AUTHOR_CONFIG_PLAN_2026-10-15.md)：三集fold0公开架构和优化设置已落实为具体清单，8,450次更新/24小时软上限，等待B003-R1与B004结束核验后接续；尚未启动。
 - [共享事件开发协议](docs/SHARED_EVENT_PROTOCOL.md)：不同模型使用同一目标事件和允许历史的验证规则。
 - [已保存验证预测的离线分析](docs/SAVED_PREDICTION_ANALYSIS.md)：收据核对、单/多KC分层、按学生配对重采样；仅探索性验证，不加载模型或解封test。
 - [KTST 接入审计](docs/KTST_INTEGRATION.md)：官方实现、题级集合表示和协议差异。

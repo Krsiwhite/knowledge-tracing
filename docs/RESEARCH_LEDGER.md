@@ -2,13 +2,13 @@
 
 核查日期：2026-10-15。第一轮结果目标日期：2026-10-29。
 
-本文件记录候选方法和比较条件，**不提供已经复现的排名**。目前已完成 B001 链路检查与 B002 单轮运行校准，尚无收敛比较或本项目测试集结果。文中的性能优势均为论文或作者报告；代码公开、成功导入和训练复现是三种不同状态。
+本文件记录候选方法和比较条件，**不提供已经复现的 SOTA 排名**。B001 链路检查与 B002 单轮运行校准已完成；B003 已完成 ASSIST2009 的 AKT、simpleKT 两项共享验证训练，剩余十项由修复后的 B003-R1 执行。已有两项开发集比较，尚无三数据集整批结论或本项目最终测试结果。下表中的性能优势均为论文或作者报告；代码公开、成功导入和训练复现是三种不同状态。
 
 2026-10-14 最新授权：启动 B003，每次最多50轮，连续3轮验证 AUC 无严格改善早停；后续本机项目内批次无需再次请求批准。仍须登记具体清单、哈希、预算及持续授权依据。最终测试先冻结候选、检查点和分析方案，再按持续授权执行；付费云资源不在默认授权内。此处记录授权，不表示训练已经启动或完成。
 
 本轮补充的[完整证据卡](evidence/README.md)覆盖 KTST 逐折官方配置、MoC 代码与全文缺口、UKT/KeenKT 主表及 KeenKT 合成因果审计、题目收缩近邻。KeenKT 指定公开前向存在当前/未来答案依赖，尚不能直接进入比较；简单频次收缩的宽泛原创性也不足。具体证据和限制见各卡。
 
-10-15执行进展：B003已在本机运行，尚未完成。UKT的[训练契约](evidence/UKT_TRAINING_CONTRACT_2026-10-15.md)已核实，[独立接入分支](https://github.com/Krsiwhite/knowledge-tracing/pull/1)通过27项人工CPU训练检查和45项相关CPU回归（另2项GPU专用检查跳过）；真实数据/GPU训练仍待执行。新的[残差更新近邻审计](evidence/CAUSAL_UPDATE_NOVELTY_2026-10-15.md)认为现有假设A不足以选为原创主线，避免将答案趋势重新命名为新信息。
+10-15执行进展：[首三项结果](../reports/B003_FIRST_THREE_BASELINES_2026-10-15.md)已完成保存预测比较；原批次 MoC 缓存错误经修复后，[独立 B003-R1](../reports/B003_FAILURE_AND_RECOVERY_2026-10-15.md)中的MoC已完成，KTST/ASSIST2009接续运行，原结果及来源保留。UKT的[训练契约](evidence/UKT_TRAINING_CONTRACT_2026-10-15.md)已核实，[独立接入分支](https://github.com/Krsiwhite/knowledge-tracing/pull/1)通过27项人工CPU训练检查和45项相关CPU回归（另2项GPU专用检查跳过），合并缓存修复后另有1项CPU无梯度前向回归通过；[B004六项清单](../reports/B004_UKT_PLAN_2026-10-15.md)已修订准备。[B005三项作者KTST配置](../reports/B005_KTST_AUTHOR_CONFIG_PLAN_2026-10-15.md)也已准备，B004/B005真实训练尚未启动。新的[残差更新近邻审计](evidence/CAUSAL_UPDATE_NOVELTY_2026-10-15.md)认为现有假设A不足以选为原创主线，避免将答案趋势重新命名为新信息。
 
 ## 1. 本阶段的问题与数据范围
 
@@ -20,11 +20,11 @@
 
 | 方法 | 已核实状态与来源 | 与当前研究的关系 | 尚待完成的核查 |
 | --- | --- | --- | --- |
-| KTST | JEDM 18(1)，2026-02-07，89–112页；[期刊页面](https://jedm.educationaldatamining.org/index.php/JEDM/article/view/961)、[全文](https://jedm.educationaldatamining.org/index.php/JEDM/article/download/961/271)、[作者代码](https://github.com/kainbr/kt_set_transformers) | 集合式交互表示、可学习ALiBi；8个pyKT数据集包括本项目三个数据集。mean 已完成 B002 本地校准、v2 前向检查；[主表和20份逐折配置已核](evidence/KTST_2026-10-14.md)。 | B003 已获启动授权，按50轮/耐心3执行；固定小配置与作者最优不同，后续须做强配置或同预算搜索。 |
+| KTST | JEDM 18(1)，2026-02-07，89–112页；[期刊页面](https://jedm.educationaldatamining.org/index.php/JEDM/article/view/961)、[全文](https://jedm.educationaldatamining.org/index.php/JEDM/article/download/961/271)、[作者代码](https://github.com/kainbr/kt_set_transformers) | 集合式交互表示、可学习ALiBi；8个pyKT数据集包括本项目三个数据集。mean 已完成 B002 本地校准、v2 前向检查；[主表和20份逐折配置已核](evidence/KTST_2026-10-14.md)。 | R1按50轮/耐心3执行固定小配置；[实际CPU构造计数](../reports/KTST_STRONG_CONFIG_CAPACITY_2026-10-15.md)确认作者fold0参数量为其1.49/7.36/1.92倍（AS09/AS15/NIPS34）。后续须做强配置或同预算搜索，参数计数本身不证明GPU可训练或效果。 |
 | MoC-KT | TOIS；出版商元数据的online日期为2026-09-15；[DOI](https://doi.org/10.1145/3847658)、[作者团队介绍](https://pykt.org/mockt) | 多尺度因果卷积、自适应分段和距离衰减注意力；已进入pyKT。作者报告4个数据集、26个比较模型。 | 全文实验表中的具体数据集、版本、预算与数值；导入成功不能替代复现。pyKT新闻日期05-08是集成日期。 |
 | FA-KT | WWW 2026，7080–7090页；出版商online日期2026-04-12；[DOI](https://doi.org/10.1145/3774904.3792272)、[官方介绍](https://pykt.org/fakt) | 频率感知的异构专家混合，含attention、Mamba、CNN、LSTM；作者报告5个数据集、20个基线。已进入pyKT。 | 具体实验表及配置；检查ROCm运行。当前adapter要求真实timestamps，缺失时间时不纳入共同信息主榜。不能伪造时间或替换专家后仍称原模型复现。 |
-| CGMKT | 2026-09-22已有[官方公开介绍与集成](https://pykt.org/cgmkt)；[DOI](https://doi.org/10.1016/j.inffus.2026.104800)对应Information Fusion的2027年3月卷期 | 双图融合与学生group-level mastery；作者报告3个数据集、21个基线。对“显式知识状态”方向必须比较。 | 区分公开可用日期与卷期年份；核对三个数据集、图构建数据范围、状态更新的因果顺序和内存成本。 |
-| UKT | AAAI 2025，官方发表日期2025-04-11；[论文](https://ojs.aaai.org/index.php/AAAI/article/view/35007)、[作者代码](https://github.com/UncertaintyForKnowledgeTracing/UKT) | 概率分布表示、Wasserstein attention、不确定性对比学习；六个数据集包括本项目三个数据集，已进入pyKT。[主表已核](evidence/UNCERTAINTY_KT_2026-10-14.md)，AS15 低于同表 AKT；[作者/pyKT限定前向审计](evidence/UKT_CAUSALITY_2026-10-14.md)216项结果及签名差异已记录。 | 真实多KC与共享adapter、训练/增强分支仍待审；在相同输入、划分和预算下重新比较。 |
+| CGMKT | 2026-09-22已有[官方公开介绍与集成](https://pykt.org/cgmkt)；[DOI](https://doi.org/10.1016/j.inffus.2026.104800)对应Information Fusion的2027年3月卷期 | 双图融合与学生group-level mastery；作者报告3个数据集、21个基线。对“显式知识状态”方向是必须解释差异的近邻。[固定源码审计](evidence/CGMKT_2026-10-15.md)已完成。 | 源码有AS09/NIPS34路径而无AS15；外部KC向量、图与分组来源未闭环，不能默认与本项目同输入。逐步预测静态未见未来回答依赖，动态与图来源验收仍待完成；论文实际三集及主表尚未核实。 |
+| UKT | AAAI 2025，官方发表日期2025-04-11；[论文](https://ojs.aaai.org/index.php/AAAI/article/view/35007)、[作者代码](https://github.com/UncertaintyForKnowledgeTracing/UKT) | 概率分布表示、Wasserstein attention、不确定性对比学习；六个数据集包括本项目三个数据集，已进入pyKT。[主表已核](evidence/UNCERTAINTY_KT_2026-10-14.md)，AS15 低于同表 AKT；[作者/pyKT限定前向审计](evidence/UKT_CAUSALITY_2026-10-14.md)216项结果及签名差异已记录。 | 共享adapter、作者增强和训练接入的人工CPU验收已通过，三集21,403行训练输入域已核验；B004仍待真实训练与完整验证，不能将接入检查当成论文成绩复现。 |
 | KeenKT | AAAI 2026，官方发表日期2026-03-14；[论文](https://ojs.aaai.org/index.php/AAAI/article/view/39004)、[作者代码](https://github.com/HubuKG/KeenKT) | 状态分布、去噪重构和分布对比学习；AS2009、AL2005、BD2006、NIPS34、AS2015、POJ。公开划分代码为20%固定test加80%内5折。 | [固定快照的36项合成控制](evidence/UNCERTAINTY_KT_2026-10-14.md)定位全序列SE和attention空首行两条不可见答案依赖；不据此归因论文成绩，接入前须明确合法前缀路径/修正版及数据对应关系。 |
 
 基础锚点保留 DKT、AKT、simpleKT；QIKT、DTransformer、FoLiBiKT、stableKT、FlucKT、RobustKT按研究方向及验证表现补充。列入候选清单不代表已经具备直接训练条件，仍需完成协议与实现审计并登记预算；满足条件后可按持续授权执行。当前模型集成情况可查[pyKT官方模型文档](https://pykt-toolkit.readthedocs.io/en/latest/models.html)。
@@ -41,7 +41,7 @@
 | ACE-KT | [AISTATS 2026/PMLR](https://proceedings.mlr.press/v300/guo26b.html)、[作者代码](https://github.com/AWord992/ACEKT)。AS09、AL05、BD06、NIPS34、EdNet；会议日期05-02至05-05。 | 正文报告在5个数据集中4个最好，EdNet低于最高方法0.014；不能从摘要推导“全部数据集最好”。 |
 | Jev / JevKT | [arXiv:2610.11135v1](https://arxiv.org/abs/2610.11135v1)，2026-10-08首发预印本，题名 *Can a System-One LLM Perform Knowledge Tracing When Few or No Learners Are Logged?*；作者给出匿名代码与结果仓库链接。本轮只核官方摘要、版本记录及该链接的存在，未审实现。 | 研究零/少量平台学习者日志与预训练LLM单次概率推理；监督KT在更多日志条件下会追上，是作者摘要已披露的边界。训练样本量、预训练信息和API成本与本项目完整训练集不同，不能用其少样本均值替代三集共同条件SOTA；不调用付费API。 |
 
-补充待核查：KDD2026的[Structured Inductive Bias for Multi-timescale Knowledge Tracing](https://kdd2026.kdd.org/papers/)已在官方名单，但本阶段未核定全文/代码；[RegKT](https://arxiv.org/abs/2609.21791)首发2026-09-18，目前只确认预印本状态。二者进入近邻检索，不作为已复现SOTA。
+补充核查见[RegKT与多时间尺度证据卡](evidence/REGKT_AND_MULTISCALE_2026-10-15.md)：KDD2026的[Structured Inductive Bias for Multi-timescale Knowledge Tracing](https://kdd2026.kdd.org/papers/)已核官方收录与 DOI，全文及确切作者仓库关系尚未取得，不据候选仓库猜机制或成绩。RegKT实际是[HEXED@EDM 2025 workshop论文](https://hexed-workshop.github.io/schedule/)，2026-09-18才上传[arXiv](https://arxiv.org/abs/2609.21791)，不能只称2026新预印本。它以IRT能力监督DKT辅助输出，只在筛选500题的AS09上对照DKT/IRT；保留为研究近邻，不作为当前三个主数据集的SOTA锚点。
 
 ## 4. 每篇论文必须补齐的证据卡
 

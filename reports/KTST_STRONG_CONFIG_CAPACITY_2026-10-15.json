@@ -1,0 +1,286 @@
+{
+  "schema_version": 1,
+  "audit": "ktst-mean-parameter-capacity-construction-only-v1",
+  "created_at": "2026-10-14T17:37:58.486298+00:00",
+  "scope": {
+    "device": "cpu",
+    "cpu_threads": 1,
+    "model_constructions": 6,
+    "forward_calls": 0,
+    "backward_calls": 0,
+    "optimizer_steps": 0,
+    "optimizers_constructed": 0,
+    "checkpoint_loads": 0,
+    "gpu_initialized": false,
+    "data_records_read": false,
+    "test_access": false,
+    "only_dataset_manifest_dimensions_used": true
+  },
+  "provenance": {
+    "upstream_commit": "e6331a6f45e597f286d1272fbb96e7bb67bcaa52",
+    "vendor_lock_sha256": "5b5dc24948a7d227003b5cd285227a20989811cc170809480c0ae80e611345b9",
+    "config_fetch_receipt_sha256": "448b036d947bfbadf022da87ca9defca08d7d880ec05ee918644ac76b1c1469d",
+    "b003_canonical_sha256": "765c4d0183fd0b4332d50f6b6f7a206c845e007fb06fa87a640bf286e5e80d44",
+    "builder_sha256": "e3ea16b79dda72a97d0dffc5fa3103938596bf91351be4410cfe499b96724a85",
+    "oneoff_script_sha256": "d1a87e238cfc5e5d66017f7c9f9868f85424ffe1500ec51462f7189870373471",
+    "torch_version": "2.9.1+rocm7.2.1.gitff65f5bc",
+    "python_version": "3.12.3"
+  },
+  "construction_seed": 0,
+  "construction_seed_has_no_effect_on_parameter_count": true,
+  "datasets": [
+    {
+      "dataset": "assist2009",
+      "dataset_manifest_sha256": "e2c939dfe4479327c223644bce6aee88c56bc362d1169164332ae9ca479fc703",
+      "data_dimensions": {
+        "num_q": 17737,
+        "num_c": 123,
+        "max_concepts": 4,
+        "maxlen": 200
+      },
+      "baseline_run_id": "B003-ktst_mean-assist2009-f0-s42",
+      "author_yaml": {
+        "path": "pkg/config/reproduce/ktst/benchmark/reproduce_65.yaml",
+        "sha256": "8cafb286f141b6f0f1bd14876d32e3b728382b576a87a9304f7b78356dd7870a",
+        "bytes": 920,
+        "receipt_verified": true,
+        "fold": 0,
+        "url": "https://github.com/kainbr/kt_set_transformers/blob/e6331a6f45e597f286d1272fbb96e7bb67bcaa52/pkg/config/reproduce/ktst/benchmark/reproduce_65.yaml"
+      },
+      "author_training_settings_not_executed": {
+        "seed": 33,
+        "epochs": 200,
+        "patience": 10,
+        "batch_size": 128,
+        "validation_batch_size": 64
+      },
+      "variants": {
+        "b003_mean": {
+          "parameters": 2948777,
+          "trainable_parameters": 2948777,
+          "fp32_parameter_bytes": 11795108,
+          "resolved_model_config": {
+            "d_model": 128,
+            "nhead_tf": 8,
+            "nhead_agg": 4,
+            "num_layers_tf_dec": 2,
+            "num_layers_tf_enc": 1,
+            "num_layers_agg": 1,
+            "dim_feedforward": 256,
+            "dropout": 0.1,
+            "dim_classifier": 256,
+            "use_bias_emb": true,
+            "use_zero_init": true,
+            "use_decoder_only": false,
+            "attn_variant": "learnable_alibi_monotonic_q_k",
+            "bias_before_agg": false,
+            "num_questions": 17737,
+            "num_concepts": 123,
+            "max_concepts": 4,
+            "max_len": 200,
+            "aggregation": "q_mean_c"
+          },
+          "relative_to_b003_parameters": 1.0
+        },
+        "author_fold0_mean": {
+          "parameters": 4402801,
+          "trainable_parameters": 4402801,
+          "fp32_parameter_bytes": 17611204,
+          "resolved_model_config": {
+            "d_model": 128,
+            "nhead_tf": 8,
+            "nhead_agg": 4,
+            "num_layers_tf_dec": 6,
+            "num_layers_tf_enc": 2,
+            "num_layers_agg": 2,
+            "dim_feedforward": 512,
+            "dropout": 0.05,
+            "dim_classifier": 256,
+            "use_bias_emb": true,
+            "use_zero_init": true,
+            "use_decoder_only": false,
+            "attn_variant": "learnable_alibi_monotonic_q_k",
+            "bias_before_agg": false,
+            "num_questions": 17737,
+            "num_concepts": 123,
+            "max_concepts": 4,
+            "max_len": 200,
+            "aggregation": "q_mean_c"
+          },
+          "relative_to_b003_parameters": 1.493093916562697
+        }
+      }
+    },
+    {
+      "dataset": "assist2015",
+      "dataset_manifest_sha256": "698be4553033f3891757eea79bed34c9394e77eb4a90475d2ca24cc9905b6441",
+      "data_dimensions": {
+        "num_q": 0,
+        "num_c": 100,
+        "max_concepts": 1,
+        "maxlen": 200
+      },
+      "baseline_run_id": "B003-ktst_mean-assist2015-f0-s42",
+      "author_yaml": {
+        "path": "pkg/config/reproduce/ktst/benchmark/reproduce_15.yaml",
+        "sha256": "302d896c48cb400a9366268339eb28edc2c6cb7eda61ef966548ac9c3d622be9",
+        "bytes": 959,
+        "receipt_verified": true,
+        "fold": 0,
+        "url": "https://github.com/kainbr/kt_set_transformers/blob/e6331a6f45e597f286d1272fbb96e7bb67bcaa52/pkg/config/reproduce/ktst/benchmark/reproduce_15.yaml"
+      },
+      "author_training_settings_not_executed": {
+        "seed": 78,
+        "epochs": 200,
+        "patience": 10,
+        "batch_size": 128,
+        "validation_batch_size": 64
+      },
+      "variants": {
+        "b003_mean": {
+          "parameters": 675625,
+          "trainable_parameters": 675625,
+          "fp32_parameter_bytes": 2702500,
+          "resolved_model_config": {
+            "d_model": 128,
+            "nhead_tf": 8,
+            "nhead_agg": 4,
+            "num_layers_tf_dec": 2,
+            "num_layers_tf_enc": 1,
+            "num_layers_agg": 1,
+            "dim_feedforward": 256,
+            "dropout": 0.1,
+            "dim_classifier": 256,
+            "use_bias_emb": true,
+            "use_zero_init": true,
+            "use_decoder_only": false,
+            "attn_variant": "learnable_alibi_monotonic_q_k",
+            "bias_before_agg": false,
+            "num_questions": 1,
+            "num_concepts": 100,
+            "max_concepts": 1,
+            "max_len": 200,
+            "aggregation": "q_mean_c"
+          },
+          "relative_to_b003_parameters": 1.0
+        },
+        "author_fold0_mean": {
+          "parameters": 4969305,
+          "trainable_parameters": 4969305,
+          "fp32_parameter_bytes": 19877220,
+          "resolved_model_config": {
+            "d_model": 256,
+            "nhead_tf": 8,
+            "nhead_agg": 4,
+            "num_layers_tf_dec": 4,
+            "num_layers_tf_enc": 3,
+            "num_layers_agg": 2,
+            "dim_feedforward": 512,
+            "dropout": 0.2,
+            "dim_classifier": 256,
+            "use_bias_emb": true,
+            "use_zero_init": true,
+            "use_decoder_only": false,
+            "attn_variant": "learnable_alibi_monotonic_q_k",
+            "bias_before_agg": false,
+            "num_questions": 1,
+            "num_concepts": 100,
+            "max_concepts": 1,
+            "max_len": 200,
+            "aggregation": "q_mean_c"
+          },
+          "relative_to_b003_parameters": 7.355123034227567
+        }
+      }
+    },
+    {
+      "dataset": "nips_task34",
+      "dataset_manifest_sha256": "db0795bfe4b5f8e88e11b51c95626fe5d8dc4e6dc5529a9ac179128cf0eb8398",
+      "data_dimensions": {
+        "num_q": 948,
+        "num_c": 57,
+        "max_concepts": 2,
+        "maxlen": 200
+      },
+      "baseline_run_id": "B003-ktst_mean-nips_task34-f0-s42",
+      "author_yaml": {
+        "path": "pkg/config/reproduce/ktst/benchmark/reproduce_29.yaml",
+        "sha256": "0e8ea43e3eacbd1bd8d4d917fb874223d840cf504edf41601873e1a44bb8ec0a",
+        "bytes": 961,
+        "receipt_verified": true,
+        "fold": 0,
+        "url": "https://github.com/kainbr/kt_set_transformers/blob/e6331a6f45e597f286d1272fbb96e7bb67bcaa52/pkg/config/reproduce/ktst/benchmark/reproduce_29.yaml"
+      },
+      "author_training_settings_not_executed": {
+        "seed": 53,
+        "epochs": 200,
+        "patience": 10,
+        "batch_size": 128,
+        "validation_batch_size": 64
+      },
+      "variants": {
+        "b003_mean": {
+          "parameters": 791337,
+          "trainable_parameters": 791337,
+          "fp32_parameter_bytes": 3165348,
+          "resolved_model_config": {
+            "d_model": 128,
+            "nhead_tf": 8,
+            "nhead_agg": 4,
+            "num_layers_tf_dec": 2,
+            "num_layers_tf_enc": 1,
+            "num_layers_agg": 1,
+            "dim_feedforward": 256,
+            "dropout": 0.1,
+            "dim_classifier": 256,
+            "use_bias_emb": true,
+            "use_zero_init": true,
+            "use_decoder_only": false,
+            "attn_variant": "learnable_alibi_monotonic_q_k",
+            "bias_before_agg": false,
+            "num_questions": 948,
+            "num_concepts": 57,
+            "max_concepts": 2,
+            "max_len": 200,
+            "aggregation": "q_mean_c"
+          },
+          "relative_to_b003_parameters": 1.0
+        },
+        "author_fold0_mean": {
+          "parameters": 1520689,
+          "trainable_parameters": 1520689,
+          "fp32_parameter_bytes": 6082756,
+          "resolved_model_config": {
+            "d_model": 128,
+            "nhead_tf": 4,
+            "nhead_agg": 4,
+            "num_layers_tf_dec": 4,
+            "num_layers_tf_enc": 4,
+            "num_layers_agg": 2,
+            "dim_feedforward": 256,
+            "dropout": 0.25,
+            "dim_classifier": 128,
+            "use_bias_emb": true,
+            "use_zero_init": true,
+            "use_decoder_only": false,
+            "attn_variant": "learnable_alibi_monotonic_q_k",
+            "bias_before_agg": false,
+            "num_questions": 948,
+            "num_concepts": 57,
+            "max_concepts": 2,
+            "max_len": 200,
+            "aggregation": "q_mean_c"
+          },
+          "relative_to_b003_parameters": 1.9216705398584926
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "Parameter storage only; excludes gradients, optimizer states, buffers, activations, allocator and validation costs.",
+    "CPU construction does not establish GPU peak memory, runtime, trainability or model quality.",
+    "Uses project manifest dimensions, including ASSIST2015 dummy question vocabulary of 1; no author-data replay.",
+    "Author architecture flags are preserved. Future project 50 epochs/patience3/seed42 and shared v2 histories differ from author 200/10/original seeds.",
+    "No new training manifest, training run, inference result or SOTA claim was produced."
+  ]
+}
