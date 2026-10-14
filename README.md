@@ -1,6 +1,6 @@
 # Knowledge Tracing Research
 
-基于固定版本 pyKT 的独立知识追踪研究项目。目标是构建有研究证据支持的模型改进，并在可比协议下超越强基线。**B001/B002 已完成运行校准；B003及其独立恢复批次已完成ASSIST2009的四模型，KTST mean验证AUC为0.792165，当前高于AKT的0.779116、MoC-KT的0.773668和simpleKT的0.764001。队列已接续ASSIST2015。** [四模型比较](reports/B003_FIRST_FOUR_BASELINES_2026-10-15.md)汇总4/12阶段结果；[故障与剩余实验恢复](reports/B003_FAILURE_AND_RECOVERY_2026-10-15.md)保留原MoC零更新失败和修复记录。尚无整批比较、最终测试或 SOTA 结论。
+基于固定版本 pyKT 的独立知识追踪研究项目。目标是构建有研究证据支持的模型改进，并在可比协议下超越强基线。**B001/B002 已完成运行校准；B003及其独立恢复批次现已完成5/12组。ASSIST2009四模型中KTST mean验证AUC为0.792165，当前最强；AKT/ASSIST2015已在第15轮早停，最佳第12轮AUC为0.731876，队列接续simpleKT/ASSIST2015。** [四模型比较](reports/B003_FIRST_FOUR_BASELINES_2026-10-15.md)与[ASSIST2015首个基线](reports/B003_ASSIST2015_FIRST_BASELINE_2026-10-15.md)保留阶段结果；[故障与剩余实验恢复](reports/B003_FAILURE_AND_RECOVERY_2026-10-15.md)保留原MoC零更新失败和修复记录。尚无整批比较、最终测试或 SOTA 结论。
 
 首期数据集为 ASSIST2009、ASSIST2015、NIPS34；以 2026-10-29 为首轮结果汇报节点，提前验证完成就提前交付。困难场景主线只在验证阶段决定，不能看过最终测试再选择有利指标。
 
@@ -64,6 +64,7 @@ B001、[B002](configs/batches/B002-one-epoch-calibration.json) 已在各自冻�
 - [B003 首两组基线比较](reports/B003_FIRST_TWO_BASELINES_2026-10-15.md)：AKT与simpleKT相同验证事件的配对结果、学生抽样区间与固定误差分层。
 - [B003 首三组基线比较](reports/B003_FIRST_THREE_BASELINES_2026-10-15.md)：加入MoC-KT后的历史快照，保留跨批次比较依据。
 - [B003 ASSIST2009四模型比较](reports/B003_FIRST_FOUR_BASELINES_2026-10-15.md)：KTST mean成为当前已完成模型中的最强参考；附学生配对区间、固定分层、收敛及资源记录。
+- [B003 ASSIST2015首个基线](reports/B003_ASSIST2015_FIRST_BASELINE_2026-10-15.md)：AKT最佳验证AUC为0.731876，15轮早停；仅保存预测审计和预定分层，不追加模型复测。
 - [E001固定等权组合](reports/E001_AKT_MOCKT_EQUAL_PROBABILITY_2026-10-15.md)：仅用AKT/MoC保存概率作一次0.5/0.5平均，AS09验证AUC为0.781737；存在互补线索，尚非原创模型、多seed或SOTA结果。
 - [共享事件开发协议](docs/SHARED_EVENT_PROTOCOL.md)：不同模型使用同一目标事件和允许历史的验证规则。
 - [已保存验证预测的离线分析](docs/SAVED_PREDICTION_ANALYSIS.md)：收据核对、单/多KC分层、按学生配对重采样；仅探索性验证，不加载模型或解封test。

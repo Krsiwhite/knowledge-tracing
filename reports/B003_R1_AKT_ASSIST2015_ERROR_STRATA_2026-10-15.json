@@ -1,0 +1,235 @@
+{
+  "schema_version": 1,
+  "diagnostic": "saved_shared_validation_independent_error_strata",
+  "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+  "split": "valid",
+  "run_id": "B003-R1-akt-assist2015-f0-s42",
+  "model": "akt",
+  "ukt_training_recipe": null,
+  "comparison_label": "akt",
+  "dataset": "assist2015",
+  "fold": 0,
+  "seed": 42,
+  "selection": {
+    "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+    "dataset": "assist2015",
+    "split": "valid",
+    "fold": 0,
+    "source_sha256": "83ff2090d1ddaa6295854984733b699b52fa3b656d7c814d6c9da56822964ac7",
+    "target_sha256": "6a038195100b0760c43ccba807989ce17c5c70e635340e8d34b688e3051caf0f",
+    "context_sha256": "c6587ae6ab2a9be6f42031484edc9aeabbeb7828143c59afc5a17d74d63f62c8",
+    "selected_targets": 102776
+  },
+  "batch_id": "B003-R1-shared-convergence-baselines",
+  "canonical_batch_sha256": "c2c4dbc0ffcfee1bb591948e6dffac26366b723bd13d7c8e484ebff886c15bd3",
+  "overall": {
+    "n": 102776,
+    "students": 3055,
+    "positive_rate": 0.7402701019693314,
+    "auc": 0.7318764960895497,
+    "accuracy": 0.7586693391453257,
+    "nll": 0.5055830683698428,
+    "brier": 0.1668081334571533,
+    "ece_15bins": 0.014742222040293722,
+    "auc_unavailable_reason": null
+  },
+  "strata": {
+    "visible_history_events": {
+      "supported": true,
+      "bins": {
+        "1-5": {
+          "n": 14294,
+          "students": 3055,
+          "positive_rate": 0.7504547362529733,
+          "auc": 0.7189914599164957,
+          "accuracy": 0.7615782845949349,
+          "nll": 0.5044710739225977,
+          "brier": 0.16559463284679166,
+          "ece_15bins": 0.011480959771091294,
+          "auc_unavailable_reason": null
+        },
+        "6-20": {
+          "n": 30085,
+          "students": 2510,
+          "positive_rate": 0.7493767658301479,
+          "auc": 0.7383191177327043,
+          "accuracy": 0.768223367126475,
+          "nll": 0.4932514974443477,
+          "brier": 0.16185501181720013,
+          "ece_15bins": 0.011121939828729875,
+          "auc_unavailable_reason": null
+        },
+        "21-50": {
+          "n": 29855,
+          "students": 1487,
+          "positive_rate": 0.7401440294757997,
+          "auc": 0.7357894420675355,
+          "accuracy": 0.7565231954446492,
+          "nll": 0.5035905145690635,
+          "brier": 0.1662362088959751,
+          "ece_15bins": 0.016775386844387487,
+          "auc_unavailable_reason": null
+        },
+        ">50": {
+          "n": 28542,
+          "students": 646,
+          "positive_rate": 0.7257024735477542,
+          "auc": 0.7260812403136647,
+          "accuracy": 0.7493868684745287,
+          "nll": 0.5212224017608003,
+          "brier": 0.1732349868674426,
+          "ece_15bins": 0.02211507609336326,
+          "auc_unavailable_reason": null
+        }
+      }
+    },
+    "question_train_event_frequency": {
+      "supported": false,
+      "reason": "No question/item IDs in concept-only data (num_q=0)",
+      "bins": null
+    },
+    "visible_history_same_question": {
+      "supported": false,
+      "reason": "No question/item IDs in concept-only data (num_q=0)",
+      "bins": null
+    },
+    "query_kc_visible_history_support": {
+      "supported": true,
+      "bins": {
+        "0": {
+          "n": 16449,
+          "students": 2496,
+          "positive_rate": 0.6749954404523071,
+          "auc": 0.7389836584073377,
+          "accuracy": 0.7211988570733783,
+          "nll": 0.5509448960358018,
+          "brier": 0.1853419304316513,
+          "ece_15bins": 0.02788947485407708,
+          "auc_unavailable_reason": null
+        },
+        ">=1": {
+          "n": 86327,
+          "students": 3055,
+          "positive_rate": 0.7527077275939161,
+          "auc": 0.727492234248967,
+          "accuracy": 0.7658090747969928,
+          "nll": 0.49693969256299947,
+          "brier": 0.16327664937414893,
+          "ece_15bins": 0.0122371058943148,
+          "auc_unavailable_reason": null
+        }
+      }
+    }
+  },
+  "stratification": {
+    "independent_not_crossed": true,
+    "bins_fixed_before_analysis": {
+      "visible_history_events": [
+        "1-5",
+        "6-20",
+        "21-50",
+        ">50"
+      ],
+      "question_train_event_frequency": [
+        "0",
+        "1-5",
+        "6-20",
+        "21-100",
+        ">100"
+      ],
+      "visible_history_same_question": [
+        "0",
+        ">=1"
+      ],
+      "query_kc_visible_history_support": [
+        "0",
+        ">=1"
+      ]
+    },
+    "history": "exact complete-event suffix visible to this target under KC200",
+    "train_frequency": "all canonical events in non-held-out folds, including first events; repeated KCs count once",
+    "query_kc_support": "number of visible history events intersecting any query KC; each event counts once",
+    "ece_bins": 15,
+    "metric_weighting": "events"
+  },
+  "training_frequency_scope": {
+    "folds": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "students": 12220,
+    "canonical_events": 438508,
+    "first_events_included": true,
+    "counting_unit": "canonical_question_event_not_repeated_KC"
+  },
+  "provenance": {
+    "batch": {
+      "sha256": "92e211976e8d33d89d75021e9489210d991f05260e6acfebc0a752509bab2310",
+      "bytes": 24339
+    },
+    "dataset_manifest": {
+      "sha256": "698be4553033f3891757eea79bed34c9394e77eb4a90475d2ca24cc9905b6441",
+      "bytes": 6143
+    },
+    "canonical_development_source": {
+      "sha256": "83ff2090d1ddaa6295854984733b699b52fa3b656d7c814d6c9da56822964ac7",
+      "bytes": 2804084
+    },
+    "run_files": {
+      "prediction": {
+        "sha256": "2b9e5112a950a0837a88a305740958372028f1056b80cfee34c2d27f3395959a",
+        "bytes": 18442115
+      },
+      "sidecar": {
+        "sha256": "ad67f689dedec2f1a1adac1a0cce8f6f3ec2d50b2decea1b083c8b7febd6d6bc",
+        "bytes": 3479
+      },
+      "metadata": {
+        "sha256": "b17a63add521b89484504daed291a9350aa0187909d3e84bfcdceb6e27ca64ad",
+        "bytes": 4671
+      },
+      "config": {
+        "sha256": "bcd25e98aa5e10b4afd5dfc2697a4825b4e1960e45a5b3c6f97be6e8d8408aaf",
+        "bytes": 1028
+      },
+      "metrics": {
+        "sha256": "b63a05b72bae3e1d3d00a55a0bd0de40da2a6bb1f8535aa24c97097062fa4508",
+        "bytes": 1050
+      }
+    },
+    "diagnostic_script": {
+      "sha256": "65af9b4d989d130e7075e3563699f42df962d7517433002d3330d9b97a019f2b",
+      "bytes": 15300
+    },
+    "receipt_helper": {
+      "sha256": "7ffd86b7910dfb3a970a9e4a942be59854d737cb21caeba916f1c3bfa3ae6ad7",
+      "bytes": 33284
+    },
+    "shared_events_source": {
+      "sha256": "a2a5170ca039e140621278e1566ea5fefa133588cc925a206a35e277fd575f63",
+      "bytes": 19359
+    },
+    "training_implementation_sha256_recorded": "bf5fcd0f23645b31f76c9486f4a98b3a5f9667886f5f80d62efc596b9a610a1d",
+    "checkpoint_sha256_recorded": "10923df07dee700573fc90228f48ff70c45dfebbead3f955fdb7c93cac617960"
+  },
+  "selected_export_auc_check": {
+    "delta": 0.0,
+    "absolute_tolerance": 1e-06
+  },
+  "limitations": [
+    "Descriptive development diagnostics only; validation also selected the checkpoint. No significance tests or SOTA claim.",
+    "Strata are independent summaries, not causal effects. Training question frequency is not inferred from validation frequency.",
+    "Saved receipts do not independently prove training or a direct checkpoint-to-prediction binding. No checkpoint bytes were read.",
+    "The analysis worktree may differ from training; canonical event code is separately hashed and every target/history/label is checked."
+  ],
+  "development_data_accessed": true,
+  "test_accessed": false,
+  "weights_read_or_verified": false,
+  "model_loads": 0,
+  "model_forward_calls": 0,
+  "new_optimizer_steps": 0,
+  "significance_tests": false,
+  "automatic_publication": false
+}
