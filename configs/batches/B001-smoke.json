@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "batch_id": "B001-smoke",
+  "status": "proposed",
+  "purpose": "Verify optimizer/checkpoint/validation pipeline, not assess predictive quality or SOTA.",
+  "source_sha256": "108442518c04856dd64bdbca4b2062277ded9a110c805e51c29c243cc47442f7",
+  "git_commit_at_preparation": "4df85c5a4fa2e9c41c898ff8a22df5c75b54a481",
+  "limits": {
+    "total_optimizer_steps": 10,
+    "per_run_wall_seconds": 900,
+    "paid_services": false
+  },
+  "test_access": false,
+  "runs": [
+    {
+      "run_id": "B001-akt-assist2015-f0-s42",
+      "dataset_manifest_sha256": "698be4553033f3891757eea79bed34c9394e77eb4a90475d2ca24cc9905b6441",
+      "config": {
+        "dataset_manifest": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/assist2015/manifest.json",
+        "model": "akt",
+        "model_config": {
+          "d_model": 64,
+          "n_blocks": 1,
+          "dropout": 0.1,
+          "d_ff": 128,
+          "final_fc_dim": 128,
+          "num_attn_heads": 4
+        },
+        "fold": 0,
+        "seed": 42,
+        "device": "cuda",
+        "batch_size": 32,
+        "epochs": 1,
+        "learning_rate": 0.001,
+        "weight_decay": 0.0,
+        "patience": 10,
+        "early_stop_min_delta": 0.0,
+        "max_train_steps": 5,
+        "max_validation_batches": 10,
+        "max_wall_seconds": 900,
+        "debug_smoke": true,
+        "purpose": "execution_smoke_not_model_quality"
+      }
+    },
+    {
+      "run_id": "B001-simplekt-assist2015-f0-s42",
+      "dataset_manifest_sha256": "698be4553033f3891757eea79bed34c9394e77eb4a90475d2ca24cc9905b6441",
+      "config": {
+        "dataset_manifest": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/assist2015/manifest.json",
+        "model": "simplekt",
+        "model_config": {
+          "d_model": 64,
+          "n_blocks": 1,
+          "dropout": 0.1,
+          "d_ff": 128,
+          "final_fc_dim": 128,
+          "num_attn_heads": 4
+        },
+        "fold": 0,
+        "seed": 42,
+        "device": "cuda",
+        "batch_size": 32,
+        "epochs": 1,
+        "learning_rate": 0.001,
+        "weight_decay": 0.0,
+        "patience": 10,
+        "early_stop_min_delta": 0.0,
+        "max_train_steps": 5,
+        "max_validation_batches": 10,
+        "max_wall_seconds": 900,
+        "debug_smoke": true,
+        "purpose": "execution_smoke_not_model_quality"
+      }
+    }
+  ]
+}

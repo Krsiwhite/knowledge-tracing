@@ -1,0 +1,118 @@
+{
+  "checked_at": "2026-10-14T10:20:49.311344+00:00",
+  "source_sha256": "108442518c04856dd64bdbca4b2062277ded9a110c805e51c29c243cc47442f7",
+  "device": "AMD Radeon RX 9070 XT",
+  "optimizer_steps": 0,
+  "test_accessed": false,
+  "quality_metrics_computed": false,
+  "checks": [
+    {
+      "dataset": "assist2009",
+      "model": "akt",
+      "shape": [
+        32,
+        199
+      ],
+      "selected_targets": 277,
+      "finite": true,
+      "forward_seconds": 1.2462394120000013,
+      "dataset_manifest_sha256": "e2c939dfe4479327c223644bce6aee88c56bc362d1169164332ae9ca479fc703"
+    },
+    {
+      "dataset": "assist2009",
+      "model": "simplekt",
+      "shape": [
+        32,
+        199
+      ],
+      "selected_targets": 277,
+      "finite": true,
+      "forward_seconds": 0.005289760000000143,
+      "dataset_manifest_sha256": "e2c939dfe4479327c223644bce6aee88c56bc362d1169164332ae9ca479fc703"
+    },
+    {
+      "dataset": "assist2009",
+      "model": "mockt",
+      "shape": [
+        32,
+        199
+      ],
+      "selected_targets": 277,
+      "finite": true,
+      "forward_seconds": 2.580907955999999,
+      "dataset_manifest_sha256": "e2c939dfe4479327c223644bce6aee88c56bc362d1169164332ae9ca479fc703"
+    },
+    {
+      "dataset": "assist2015",
+      "model": "akt",
+      "shape": [
+        32,
+        199
+      ],
+      "selected_targets": 855,
+      "finite": true,
+      "forward_seconds": 0.018224983999999722,
+      "dataset_manifest_sha256": "698be4553033f3891757eea79bed34c9394e77eb4a90475d2ca24cc9905b6441"
+    },
+    {
+      "dataset": "assist2015",
+      "model": "simplekt",
+      "shape": [
+        32,
+        199
+      ],
+      "selected_targets": 855,
+      "finite": true,
+      "forward_seconds": 0.005466453999996901,
+      "dataset_manifest_sha256": "698be4553033f3891757eea79bed34c9394e77eb4a90475d2ca24cc9905b6441"
+    },
+    {
+      "dataset": "assist2015",
+      "model": "mockt",
+      "shape": [
+        32,
+        199
+      ],
+      "selected_targets": 855,
+      "finite": true,
+      "forward_seconds": 0.10751449300000004,
+      "dataset_manifest_sha256": "698be4553033f3891757eea79bed34c9394e77eb4a90475d2ca24cc9905b6441"
+    },
+    {
+      "dataset": "nips_task34",
+      "model": "akt",
+      "shape": [
+        32,
+        199
+      ],
+      "selected_targets": 955,
+      "finite": true,
+      "forward_seconds": 0.017585062999998513,
+      "dataset_manifest_sha256": "db0795bfe4b5f8e88e11b51c95626fe5d8dc4e6dc5529a9ac179128cf0eb8398"
+    },
+    {
+      "dataset": "nips_task34",
+      "model": "simplekt",
+      "shape": [
+        32,
+        199
+      ],
+      "selected_targets": 955,
+      "finite": true,
+      "forward_seconds": 0.005847591999998514,
+      "dataset_manifest_sha256": "db0795bfe4b5f8e88e11b51c95626fe5d8dc4e6dc5529a9ac179128cf0eb8398"
+    },
+    {
+      "dataset": "nips_task34",
+      "model": "mockt",
+      "shape": [
+        32,
+        199
+      ],
+      "selected_targets": 955,
+      "finite": true,
+      "forward_seconds": 0.12344180099999846,
+      "dataset_manifest_sha256": "db0795bfe4b5f8e88e11b51c95626fe5d8dc4e6dc5529a9ac179128cf0eb8398"
+    }
+  ]
+}

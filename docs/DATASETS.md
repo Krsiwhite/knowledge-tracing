@@ -41,6 +41,23 @@ copy, records both hashes, and verifies that all five consumed columns
 ASCII values. No rows, tags, identifiers or labels are repaired or replaced.
 Timestamp preprocessing runs in UTC and package versions are recorded.
 
+Local preparation on 2026-10-14 produced the following eligible full-student
+records before length-200 chunking. These are dataset counts, not model results.
+
+| Dataset | Eligible students | Development / test students | Original interactions | After concept expansion |
+| --- | ---: | ---: | ---: | ---: |
+| ASSIST2009 | 3,852 | 3,082 / 770 | 282,619 | 337,424 |
+| ASSIST2015 | 19,093 | 15,275 / 3,818 | 682,797 | 682,797 |
+| NIPS34 | 4,918 | 3,935 / 983 | 1,382,727 | 1,399,520 |
+
+The regenerated ASSIST2015 student/fold assignments exactly match the data
+bundled in the pinned pyKT archive. Its official download differs from the
+bundled CSV only in CRLF versus LF line endings. The complete Eedi archive also
+matches the publisher's HTTP Content-MD5 header; its SHA256 is pinned in the
+catalog. The exact selected evaluation target counts can be lower than these
+full-student counts because upstream chunking excludes initial targets and
+short tails.
+
 The manifest is `data/prepared/<dataset>/manifest.json` and provides:
 
 - `data_dir`, `data_config`, and `files` (filenames, sizes, SHA256);
