@@ -31,25 +31,26 @@ python -m pytest -q
 
 ## 实验工作流
 
+2026-10-14 最新指令优先于旧的逐批批准约定：用户已授权启动 B003，并持续授权本机项目内后续执行，无需逐批再次询问。每次训练最多50轮，连续3轮验证 AUC 无严格改善即早停；仍须保存具体清单、哈希、预算和真实授权依据。付费云资源不在默认授权范围。
+
 1. 固定数据、学生划分、允许输入和评测协议，验证文件哈希。
 2. 用实际数据与当前源码生成批次清单，展示模型、参数、预算和停止条件。
-3. 用户确认该批次后，记录与清单哈希绑定的审批，再执行训练。项目初始化授权不代替逐批训练确认。
+3. 将最新持续授权依据与该清单哈希绑定并记录，再执行训练；本机项目内批次不再逐次请求批准。
 4. 仅用训练与验证数据选择模型、检查点和研究方向。
-5. 冻结候选、分析方案及检查点，在已确认批次内开放最终测试。
+5. 冻结候选、分析方案及检查点后，按持续授权开放最终测试并保存解封记录，无需再次批准；测试标签仍不得参与选模。
 
 ```bash
-python -m ktlab batch prepare-smoke
-python -m ktlab batch inspect configs/batches/B001-smoke.json
-# 下一条必须已有用户对这份具体清单的确认及对应审批记录：
-python -m ktlab train --batch configs/batches/B001-smoke.json --approval approvals/B001-smoke.json
+python -m ktlab batch inspect configs/batches/B003-shared-convergence-baselines.json
+# 执行前保存落实最新限制的清单，以及绑定其哈希的持续授权记录：
+python -m ktlab train --batch configs/batches/B003-shared-convergence-baselines.json --approval approvals/B003-shared-convergence-baselines.json
 python -m ktlab report
 ```
 
-B001、[B002](configs/batches/B002-one-epoch-calibration.json) 已在各自冻结版本上完成，原审批仅覆盖对应批次。不要用当前代码重跑历史清单：源码或数据清单改变会使旧审批失效。B002 训练与验证循环累计775.15秒，记录起止跨度1065.44秒，峰值已分配显存2.166 GiB；KTST独立参考轨与其他模型分表报告。下一批训练仍需单独批准。
+B001、[B002](configs/batches/B002-one-epoch-calibration.json) 已在各自冻结版本上完成，原审批仅覆盖对应历史批次。不要用当前代码重跑历史清单：源码或数据清单改变后，应建立新清单并绑定最新持续授权。B002 训练与验证循环累计775.15秒，记录起止跨度1065.44秒，峰值已分配显存2.166 GiB；KTST独立参考轨与其他模型分表报告。
 
-[B003具体清单](configs/batches/B003-shared-convergence-baselines.json)已准备，尚未获批：四模型×三集，fold0/seed42，最多200轮、连续10轮无改善早停、完整共同验证；AS09/AS15每次4小时、NIPS34每次8小时，累计上限64小时。这是固定配置收敛探索，不是64小时的预计耗时或SOTA承诺。
+[B003具体清单](configs/batches/B003-shared-convergence-baselines.json)已获启动授权：四模型×三集，fold0/seed42，按最新指令改为最多50轮、连续3轮验证 AUC 无严格改善早停、完整共同验证。执行须绑定落实上述设置的新清单；实际启动和完成状态以运行记录为准。AS09/AS15每次4小时、NIPS34每次8小时，累计上限64小时。这是固定配置收敛探索，不是64小时的预计耗时或SOTA承诺。
 
-当前共享协议版本已通过174项自动回归及15项真实数据GPU无梯度检查，详见[验收记录](reports/SHARED_PROTOCOL_VALIDATION_2026-10-14.json)。这些检查不代替新协议的获批训练或正式结果。
+当前共享协议版本已通过174项自动回归及15项真实数据GPU无梯度检查，详见[验收记录](reports/SHARED_PROTOCOL_VALIDATION_2026-10-14.json)。这些检查不代替新协议下实际完成的训练或正式结果。
 
 ## 评测与研究记录
 
@@ -68,7 +69,7 @@ B001、[B002](configs/batches/B002-one-epoch-calibration.json) 已在各自冻�
 
 主实验采用统一题目级验证和测试、完整精度概率及真实最佳验证检查点。它与上游默认的重复 KC 验证、四位概率舍入及检查点阈值存在明确差异，不能无标记地与论文最高 AUC 直接排名。
 
-AKT/simpleKT 为基础对照；MoC-KT、KTST 已完成单轮训练校准，FA-KT 的完整依赖仍待解决。B002 的 KTST 使用 `ktlab-ktst-reference-dev-v1`，与 v1 不混排 AUC。新增 `ktlab-v2-shared-event-context-kc200-dev` 统一开发集的目标、允许历史及 epoch0/每轮最佳验证检查点选择；保留各模型原训练表示，明确披露 KC/事件 loss 等差异。旧权重不能重标为新协议成果。共享协议的最终测试入口持续关闭，仍需后续冻结与单独解封。
+AKT/simpleKT 为基础对照；MoC-KT、KTST 已完成单轮训练校准，FA-KT 的完整依赖仍待解决。B002 的 KTST 使用 `ktlab-ktst-reference-dev-v1`，与 v1 不混排 AUC。新增 `ktlab-v2-shared-event-context-kc200-dev` 统一开发集的目标、允许历史及 epoch0/每轮最佳验证检查点选择；保留各模型原训练表示，明确披露 KC/事件 loss 等差异。旧权重不能重标为新协议成果。共享协议的最终测试入口当前仍关闭；完成候选、检查点与分析方案冻结后，可按持续授权实施解封并留痕，无需再次批准。
 
 ## 许可
 

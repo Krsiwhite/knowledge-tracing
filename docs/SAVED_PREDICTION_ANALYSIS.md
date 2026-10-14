@@ -2,7 +2,7 @@
 
 [分析脚本](../scripts/analyze_shared_predictions.py) 只分析已经保存的完整 v2 验证预测。它不导入 `ktlab`、PyTorch 或模型，不读取原始数据、权重文件、私人审批记录，不重新前向或训练，也不自动发布结果。
 
-2026-10-14 本轮仅用人工 CSV 和人工收据验收工具；**尚未分析真实 B003，B003 仍须取得具体批次批准。** 下列命令是未来正式工件产生后的用法，不表示这些运行已完成。
+2026-10-14 本轮仅用人工 CSV 和人工收据验收工具；**尚未分析真实 B003。用户最新指令已授权启动 B003：每次最多50轮，连续3轮验证 AUC 无严格改善早停；本机项目内后续执行无需逐批再次批准。** 清单、哈希与持续授权依据仍须记录。下列命令是未来正式工件产生后的用法，不表示这些运行已经启动或完成。
 
 ## 输入与用法
 
@@ -32,7 +32,7 @@ python scripts/analyze_shared_predictions.py \
 
 只接受 `ktlab-v2-shared-event-context-kc200-dev`、`split=valid`、KC 预算200。必须有 `selected_targets = expected_total = eligible_total`，且 `max_targets=null`、`selected_for_debug=false`、`selection_limited=false`。拒绝 train、test、旧 v1/KTST 参考轨、抽样、重复 ID、缺目标、非法概率/标签、调试配置及缺失的训练导出身份。
 
-训练收据必须为 `completed`、实际记录更新数大于零且不超过批准清单记录的上限。batch canonical SHA 必须与配置和 metadata 中保存的 approved batch SHA 一致；配置哈希、模型及实现摘要、数据清单摘要、验证来源/目标/历史摘要也须相互一致。清单中的模型参数必须包含于实际保存配置，允许引擎填入额外默认值。
+训练收据必须为 `completed`、实际记录更新数大于零且不超过绑定授权依据的清单上限。batch canonical SHA 必须与配置和 metadata 中保存的 approved batch SHA 一致；该字段继续用于留痕，不要求用户重新逐批确认。配置哈希、模型及实现摘要、数据清单摘要、验证来源/目标/历史摘要也须相互一致。清单中的模型参数必须包含于实际保存配置，允许引擎填入额外默认值。
 
 **epoch 0 可以是合法的最终最佳候选。** 若训练确实记录了更新，但后续候选都没有改善初始验证 AUC，工具保留该运行，输出 `selected_checkpoint_stage=initial_untrained`。其它阶段区分完整 epoch 与受预算截断的部分 epoch；不会只留下“训练后改善”的模型。
 

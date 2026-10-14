@@ -10,7 +10,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--hours-per-run", type=float, default=4.)
     parser.add_argument("--nips-hours-per-run", type=float, default=8.)
+    parser.add_argument("--epochs", type=int, default=50)
+    parser.add_argument("--patience", type=int, default=3)
     args = parser.parse_args()
+    if args.epochs < 1 or args.patience < 1:
+        parser.error("--epochs and --patience must be positive")
     if not 0 < args.hours_per_run <= 24:
         parser.error("--hours-per-run must be in (0, 24]")
     if not 0 < args.nips_hours_per_run <= 24:
@@ -29,12 +33,12 @@ def main():
                  comparison_boundary="Validation targets/histories and checkpoint selection are shared; original repeated-KC versus set-event training is retained; no paper-best or SOTA claim")
     per_dataset = {"assist2009": int(args.hours_per_run * 3600), "assist2015": int(args.hours_per_run * 3600),
                    "nips_task34": int(args.nips_hours_per_run * 3600)}
-    batch["limits"].update(epochs_per_run=200, per_run_wall_seconds=max(per_dataset.values()),
+    batch["limits"].update(epochs_per_run=args.epochs, per_run_wall_seconds=max(per_dataset.values()),
                            per_dataset_run_wall_seconds=per_dataset, sum_run_wall_seconds=0,
                            total_optimizer_steps_upper_bound=0)
     batch["selection"] = {"protocol": PROTOCOL, "fold": 0, "seed": 42, "initial_validation": True,
                            "every_epoch_full_validation": True, "strict_best_auc": True,
-                           "patience": 10, "ties_keep_earlier_checkpoint": True,
+                           "patience": args.patience, "ties_keep_earlier_checkpoint": True,
                            "final_best_checkpoint_reload_and_export": True,
                            "hyperparameter_search_trials_per_model_dataset": 1}
     for run in batch["runs"]:
@@ -51,8 +55,8 @@ def main():
         run["shared_validation"] = {key: audit[key] for key in (
             "protocol", "selected_targets", "source_sha256", "target_sha256", "context_sha256",
             "canonical_events", "exclusion_counts")}
-        steps = ((run["train_sequence_rows"] + config["batch_size"] - 1) // config["batch_size"]) * 200
-        config.update(protocol=PROTOCOL, epochs=200, patience=10, early_stop_min_delta=0.,
+        steps = ((run["train_sequence_rows"] + config["batch_size"] - 1) // config["batch_size"]) * args.epochs
+        config.update(protocol=PROTOCOL, epochs=args.epochs, patience=args.patience, early_stop_min_delta=0.,
                       max_train_steps=steps, max_wall_seconds=seconds, debug_smoke=False,
                       initial_validation=True, validation_batch_size=32, max_rows_per_forward=32,
                       purpose="fixed_configuration_convergence_anchor_shared_validation_not_sota")

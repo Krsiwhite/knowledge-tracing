@@ -4,6 +4,8 @@
 
 本文件记录候选方法和比较条件，**不提供已经复现的排名**。目前已完成 B001 链路检查与 B002 单轮运行校准，尚无收敛比较或本项目测试集结果。文中的性能优势均为论文或作者报告；代码公开、成功导入和训练复现是三种不同状态。
 
+2026-10-14 最新授权：启动 B003，每次最多50轮，连续3轮验证 AUC 无严格改善早停；后续本机项目内批次无需再次请求批准。仍须登记具体清单、哈希、预算及持续授权依据。最终测试先冻结候选、检查点和分析方案，再按持续授权执行；付费云资源不在默认授权内。此处记录授权，不表示训练已经启动或完成。
+
 本轮补充的[完整证据卡](evidence/README.md)覆盖 KTST 逐折官方配置、MoC 代码与全文缺口、UKT/KeenKT 主表及 KeenKT 合成因果审计、题目收缩近邻。KeenKT 指定公开前向存在当前/未来答案依赖，尚不能直接进入比较；简单频次收缩的宽泛原创性也不足。具体证据和限制见各卡。
 
 ## 1. 本阶段的问题与数据范围
@@ -16,14 +18,14 @@
 
 | 方法 | 已核实状态与来源 | 与当前研究的关系 | 尚待完成的核查 |
 | --- | --- | --- | --- |
-| KTST | JEDM 18(1)，2026-02-07，89–112页；[期刊页面](https://jedm.educationaldatamining.org/index.php/JEDM/article/view/961)、[全文](https://jedm.educationaldatamining.org/index.php/JEDM/article/download/961/271)、[作者代码](https://github.com/kainbr/kt_set_transformers) | 集合式交互表示、可学习ALiBi；8个pyKT数据集包括本项目三个数据集。mean 已完成 B002 本地校准、v2 前向检查；[主表和20份逐折配置已核](evidence/KTST_2026-10-14.md)。 | B003 待批准；固定小配置与作者最优不同，后续须做强配置或同预算搜索。 |
+| KTST | JEDM 18(1)，2026-02-07，89–112页；[期刊页面](https://jedm.educationaldatamining.org/index.php/JEDM/article/view/961)、[全文](https://jedm.educationaldatamining.org/index.php/JEDM/article/download/961/271)、[作者代码](https://github.com/kainbr/kt_set_transformers) | 集合式交互表示、可学习ALiBi；8个pyKT数据集包括本项目三个数据集。mean 已完成 B002 本地校准、v2 前向检查；[主表和20份逐折配置已核](evidence/KTST_2026-10-14.md)。 | B003 已获启动授权，按50轮/耐心3执行；固定小配置与作者最优不同，后续须做强配置或同预算搜索。 |
 | MoC-KT | TOIS；出版商元数据的online日期为2026-09-15；[DOI](https://doi.org/10.1145/3847658)、[作者团队介绍](https://pykt.org/mockt) | 多尺度因果卷积、自适应分段和距离衰减注意力；已进入pyKT。作者报告4个数据集、26个比较模型。 | 全文实验表中的具体数据集、版本、预算与数值；导入成功不能替代复现。pyKT新闻日期05-08是集成日期。 |
 | FA-KT | WWW 2026，7080–7090页；出版商online日期2026-04-12；[DOI](https://doi.org/10.1145/3774904.3792272)、[官方介绍](https://pykt.org/fakt) | 频率感知的异构专家混合，含attention、Mamba、CNN、LSTM；作者报告5个数据集、20个基线。已进入pyKT。 | 具体实验表及配置；检查ROCm运行。当前adapter要求真实timestamps，缺失时间时不纳入共同信息主榜。不能伪造时间或替换专家后仍称原模型复现。 |
 | CGMKT | 2026-09-22已有[官方公开介绍与集成](https://pykt.org/cgmkt)；[DOI](https://doi.org/10.1016/j.inffus.2026.104800)对应Information Fusion的2027年3月卷期 | 双图融合与学生group-level mastery；作者报告3个数据集、21个基线。对“显式知识状态”方向必须比较。 | 区分公开可用日期与卷期年份；核对三个数据集、图构建数据范围、状态更新的因果顺序和内存成本。 |
 | UKT | AAAI 2025，官方发表日期2025-04-11；[论文](https://ojs.aaai.org/index.php/AAAI/article/view/35007)、[作者代码](https://github.com/UncertaintyForKnowledgeTracing/UKT) | 概率分布表示、Wasserstein attention、不确定性对比学习；六个数据集包括本项目三个数据集，已进入pyKT。[主表已核](evidence/UNCERTAINTY_KT_2026-10-14.md)，AS15 低于同表 AKT；[作者/pyKT限定前向审计](evidence/UKT_CAUSALITY_2026-10-14.md)216项结果及签名差异已记录。 | 真实多KC与共享adapter、训练/增强分支仍待审；在相同输入、划分和预算下重新比较。 |
 | KeenKT | AAAI 2026，官方发表日期2026-03-14；[论文](https://ojs.aaai.org/index.php/AAAI/article/view/39004)、[作者代码](https://github.com/HubuKG/KeenKT) | 状态分布、去噪重构和分布对比学习；AS2009、AL2005、BD2006、NIPS34、AS2015、POJ。公开划分代码为20%固定test加80%内5折。 | [固定快照的36项合成控制](evidence/UNCERTAINTY_KT_2026-10-14.md)定位全序列SE和attention空首行两条不可见答案依赖；不据此归因论文成绩，接入前须明确合法前缀路径/修正版及数据对应关系。 |
 
-基础锚点保留 DKT、AKT、simpleKT；QIKT、DTransformer、FoLiBiKT、stableKT、FlucKT、RobustKT按研究方向及验证表现补充。候选清单不等于一次性批准全部训练。当前模型集成情况可查[pyKT官方模型文档](https://pykt-toolkit.readthedocs.io/en/latest/models.html)。
+基础锚点保留 DKT、AKT、simpleKT；QIKT、DTransformer、FoLiBiKT、stableKT、FlucKT、RobustKT按研究方向及验证表现补充。列入候选清单不代表已经具备直接训练条件，仍需完成协议与实现审计并登记预算；满足条件后可按持续授权执行。当前模型集成情况可查[pyKT官方模型文档](https://pykt-toolkit.readthedocs.io/en/latest/models.html)。
 
 ## 3. 需要分开比较的前沿方法
 
@@ -48,15 +50,15 @@
 3. 划分单位、固定测试集与否、validation用途、窗口切分、测试时可见历史及聚合规则。
 4. 额外信息：文本、选项、时间、图、预训练表示；是否由全体交互或测试标签产生统计量。
 5. 搜索次数、训练轮数、early stopping、种子/fold、参数量、硬件及训练成本。
-6. 证据状态依次为“已定位论文”“已读协议”“代码已审计”“无梯度检查通过”“获准训练”“验证结果”“冻结后测试”；不跳级。
+6. 证据状态依次为“已定位论文”“已读协议”“代码已审计”“无梯度检查通过”“登记训练清单与授权依据”“验证结果”“冻结后测试”；不跳级。
 
 研究账本保留失败复现与负结果。无法获取或无法运行的方法写明缺口，不能用猜测分数补表。
 
 ## 5. 十五天内的优先级
 
 - 10-14至10-16：冻结三数据集定义、协议和复现锚点；提取优先候选的完整实验表。先解决泄漏和指标口径。
-- 10-17至10-21：仅在用户逐批批准后开展基线筛选；结合验证集整体AUC、短历史和长尾题目分层定位稳定失败点。
+- 10-17至10-21：登记批次范围与预算后，按持续授权开展基线筛选；结合验证集整体AUC、短历史和长尾题目分层定位稳定失败点。
 - 10-22至10-26：对最多两个原创假设做公平验证和核心消融，不预先锁定语义/IRT或复杂模块组合。
 - 10-27至10-29：交付第一轮已验证结果、证据边界、成本和下一批建议。完整5-fold×3-seed确认若尚未完成，交付明确的阶段结果并延长，不用单次最好结果冒充最终结论。
 
-每一批梯度训练都要先对齐范围、预算和预期产物；日历日期不能代替批准。
+每一批梯度训练仍须先记录范围、预算、预期产物和持续授权依据，遵守50轮上限与耐心3；不再逐批询问。日历日期不能代替协议审计、候选冻结或实际结果。
