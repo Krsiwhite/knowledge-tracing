@@ -29,7 +29,7 @@ KeenKT 为 AAAI 2026 正式论文（官方发表日期2026-03-14），采用 Nor
 
 两个公开 `split_datasets.py` 的 Git blob 均为 `95e5e6b0e35dc329a1dcc479f3e1f7d3dbb689cb`：代码按学生序列使用 seed1024 固定20%测试，其余80%做5折；默认长度200，多KC先展开。由此可以确认公开处理脚本具备固定 test 的流程，不能继续仅因 KeenKT 正文写“5折”而断言它没有固定 test。但同脚本不等于原始输入版本、输出数据哈希及论文实际运行索引完全相同。[UKT 预处理](https://github.com/UncertaintyForKnowledgeTracing/UKT/blob/86ad9d8f76ee2c761e116fcadc43705f66ffd0b6/preprocess/split_datasets.py)、[KeenKT 预处理](https://github.com/HubuKG/KeenKT/blob/911e4e460b0e2ddb25142fb3c7e46123c1043690/KeenKT_Code/preprocess/split_datasets.py)
 
-仍需闭环的项目包括：实际数据映射与分块/滑窗路径、事件或KC评分单位、multi-KC 聚合、checkpoint 规则、每集最优参数及搜索预算。命令行默认参数不是论文逐数据集最佳配置。UKT 本轮未做模型级合成因果审计，也未接入本项目共享验证 adapter。
+仍需闭环的项目包括：实际数据映射与分块/滑窗路径、事件或KC评分单位、multi-KC 聚合、checkpoint 规则、每集最优参数及搜索预算。命令行默认参数不是论文逐数据集最佳配置。后续已完成[UKT 作者/pyKT 的限定合成审计](UKT_CAUSALITY_2026-10-14.md)：198项不变量检查在预设容差内，18项历史阳性控制敏感；尚未接入共享验证 adapter，也未验证训练分支。
 
 ## KeenKT：两个可定位的不可见答案依赖路径
 

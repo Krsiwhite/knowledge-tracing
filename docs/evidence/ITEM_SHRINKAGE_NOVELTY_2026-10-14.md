@@ -28,7 +28,9 @@ SLC 冻结 KT 主干，用独立 calibration 窗口的响应估计逐题 logit �
 
 **Q-MCKT 是比只对比 QIKT 更贴近假设 B 的基线。** 其 2024 arXiv v3 明确把少交互题目的过拟合作为问题：按频次阈值确定低频 anchor，从同 KC 的较高频题中按难度选正负样本，做题目对比学习；题和概念两路还有专家门控。它已覆盖“用丰富的相关证据改善稀疏题”，但不是单纯次数门控制 item 残差。[Q-MCKT §4.2–4.4](https://arxiv.org/html/2403.07322v3)
 
-作者仓库 commit `ee1698638888c5cddd577326aa30cadd5538f42d` 中，模型实际名为 `qikt+`：`qikt_plus.py::Aggregate_MoE.forward` 做 softmax 专家加权；`get_positive_pairs` 读取 `q_pos_neg`；`contrastive_loss_func` 对题目向量施加距离约束。已静态核对模型侧，**尚未闭环核对 q_pos_neg 生成时究竟使用哪些 fold**。论文所谓 global accuracy 不能单凭措辞判定泄漏，也不能据此假定已经隔离 validation/test。接入前必须检查生成脚本并按训练 fold 重新拟合。[模型源码](https://github.com/rattlesnakey/Q-MCKT/blob/ee1698638888c5cddd577326aa30cadd5538f42d/pykt/models/qikt_plus.py)、[模型注册](https://github.com/rattlesnakey/Q-MCKT/blob/ee1698638888c5cddd577326aa30cadd5538f42d/pykt/models/init_model.py)
+作者仓库 commit `ee1698638888c5cddd577326aa30cadd5538f42d` 中，模型实际名为 `qikt+`：`qikt_plus.py::Aggregate_MoE.forward` 做 softmax 专家加权；`get_positive_pairs` 读取 `q_pos_neg`；`contrastive_loss_func` 对题目向量施加距离约束。[模型源码](https://github.com/rattlesnakey/Q-MCKT/blob/ee1698638888c5cddd577326aa30cadd5538f42d/pykt/models/qikt_plus.py)、[模型注册](https://github.com/rattlesnakey/Q-MCKT/blob/ee1698638888c5cddd577326aa30cadd5538f42d/pykt/models/init_model.py)
+
+2026-10-14 补充审计已闭环生成路径：`KTQueDataset.__load_data__` 先筛训练 folds，再统计频次/正确率；标准干净重建路径没有混入验证或测试响应。**缓存没有数据/配置指纹，负例也没有论文所述的高频过滤**；统计来自切块后保留的位置，不能默认为全部原始事件。历史运行缓存及阈值选择来源仍未知。不能从 global accuracy 措辞判泄漏，也不能把源码隔离升级为历史实验的运行证明。详见[固定行号审计与接入取舍](QMCKT_STATISTICS_AUDIT_2026-10-14.md)。
 
 出版状态：arXiv v3 标注 TKDD accepted，[作者主页](https://www.zitaoliu.com/index.html)列为 TKDD 2025；本轮 ACM DOI 页面访问返回 403，因此方法核查依据为作者 v3 和代码，未用出版页补写未经核实的细节。[元数据](https://arxiv.org/abs/2403.07322)
 
@@ -105,4 +107,4 @@ e_q=c_{K(q)}+g(n_q)u_q,\qquad g(n_q)>0,
 
 本轮通过公开论文/作者代码和 `git ls-remote ... HEAD` 核对上述远端 commit；没有克隆、安装或运行第三方项目。GitHub 未认证 API 限流，已改用公开 raw 文件及只读 Git 引用查询；未绕过权限。pyKT 和 KTST 使用本项目已锁定 commit 的源码作实现证据。
 
-尚未完成：Q-MCKT 正负题统计的 fold 数据流审计、SLC 全评价脚本的逐行协议复核、PICKT 全文和实现复核，以及在本项目协议下复现任何近邻。未获得这些证据前，不能将作者报告的 AUC 与本项目数值直接相减，也不能把本页认作穷尽性的新颖性检索。
+Q-MCKT 正负题统计的标准 fold 数据流已在同日补充审计中闭环；仍未完成其历史缓存/阈值设定来源核验、SLC 全评价脚本的逐行协议复核、PICKT 全文和实现复核，以及在本项目协议下复现任何近邻。未获得这些证据前，不能将作者报告的 AUC 与本项目数值直接相减，也不能把本页认作穷尽性的新颖性检索。

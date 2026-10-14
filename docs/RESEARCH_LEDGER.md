@@ -20,7 +20,7 @@
 | MoC-KT | TOIS；出版商元数据的online日期为2026-09-15；[DOI](https://doi.org/10.1145/3847658)、[作者团队介绍](https://pykt.org/mockt) | 多尺度因果卷积、自适应分段和距离衰减注意力；已进入pyKT。作者报告4个数据集、26个比较模型。 | 全文实验表中的具体数据集、版本、预算与数值；导入成功不能替代复现。pyKT新闻日期05-08是集成日期。 |
 | FA-KT | WWW 2026，7080–7090页；出版商online日期2026-04-12；[DOI](https://doi.org/10.1145/3774904.3792272)、[官方介绍](https://pykt.org/fakt) | 频率感知的异构专家混合，含attention、Mamba、CNN、LSTM；作者报告5个数据集、20个基线。已进入pyKT。 | 具体实验表及配置；检查ROCm运行。当前adapter要求真实timestamps，缺失时间时不纳入共同信息主榜。不能伪造时间或替换专家后仍称原模型复现。 |
 | CGMKT | 2026-09-22已有[官方公开介绍与集成](https://pykt.org/cgmkt)；[DOI](https://doi.org/10.1016/j.inffus.2026.104800)对应Information Fusion的2027年3月卷期 | 双图融合与学生group-level mastery；作者报告3个数据集、21个基线。对“显式知识状态”方向必须比较。 | 区分公开可用日期与卷期年份；核对三个数据集、图构建数据范围、状态更新的因果顺序和内存成本。 |
-| UKT | AAAI 2025，官方发表日期2025-04-11；[论文](https://ojs.aaai.org/index.php/AAAI/article/view/35007)、[作者代码](https://github.com/UncertaintyForKnowledgeTracing/UKT) | 概率分布表示、Wasserstein attention、不确定性对比学习；六个数据集包括本项目三个数据集，已进入pyKT。[主表已核](evidence/UNCERTAINTY_KT_2026-10-14.md)，AS15 低于同表 AKT。 | 核实当前集成与作者代码差异、因果性；在相同输入、划分和预算下重新比较。 |
+| UKT | AAAI 2025，官方发表日期2025-04-11；[论文](https://ojs.aaai.org/index.php/AAAI/article/view/35007)、[作者代码](https://github.com/UncertaintyForKnowledgeTracing/UKT) | 概率分布表示、Wasserstein attention、不确定性对比学习；六个数据集包括本项目三个数据集，已进入pyKT。[主表已核](evidence/UNCERTAINTY_KT_2026-10-14.md)，AS15 低于同表 AKT；[作者/pyKT限定前向审计](evidence/UKT_CAUSALITY_2026-10-14.md)216项结果及签名差异已记录。 | 真实多KC与共享adapter、训练/增强分支仍待审；在相同输入、划分和预算下重新比较。 |
 | KeenKT | AAAI 2026，官方发表日期2026-03-14；[论文](https://ojs.aaai.org/index.php/AAAI/article/view/39004)、[作者代码](https://github.com/HubuKG/KeenKT) | 状态分布、去噪重构和分布对比学习；AS2009、AL2005、BD2006、NIPS34、AS2015、POJ。公开划分代码为20%固定test加80%内5折。 | [固定快照的36项合成控制](evidence/UNCERTAINTY_KT_2026-10-14.md)定位全序列SE和attention空首行两条不可见答案依赖；不据此归因论文成绩，接入前须明确合法前缀路径/修正版及数据对应关系。 |
 
 基础锚点保留 DKT、AKT、simpleKT；QIKT、DTransformer、FoLiBiKT、stableKT、FlucKT、RobustKT按研究方向及验证表现补充。候选清单不等于一次性批准全部训练。当前模型集成情况可查[pyKT官方模型文档](https://pykt-toolkit.readthedocs.io/en/latest/models.html)。
@@ -35,6 +35,7 @@
 | OPERA | [作者团队介绍](https://pykt.org/opera)日期2026-08-24，已列入[CIKM 2026官方program](https://cikm2026.diag.uniroma1.it/program/)。离线生成并审核选项级推理/误概念说明；pyKT提供五个增强变体。 | 面向multiple-choice数据，依赖题干、选项和对应表示。属于内容增强轨道，不能把额外信息收益全部归于预测网络结构。 |
 | CDFKT | [官方集成公告](https://pykt.org/cdfkt)日期2026-10-11；[出版社页面](https://www.sciencedirect.com/science/article/pii/S1566253526005245)对应Information Fusion 137，2027年1月。Mamba知识积累、序列步衰减适应性和自适应融合。 | 已公开可用，但卷期为2027。官方文档明确依赖mamba-ssm和causal-conv1d，必须先过ROCm兼容性检查。作者报告3数据集；本账本尚未提取完整实验表。 |
 | ACE-KT | [AISTATS 2026/PMLR](https://proceedings.mlr.press/v300/guo26b.html)、[作者代码](https://github.com/AWord992/ACEKT)。AS09、AL05、BD06、NIPS34、EdNet；会议日期05-02至05-05。 | 正文报告在5个数据集中4个最好，EdNet低于最高方法0.014；不能从摘要推导“全部数据集最好”。 |
+| Jev / JevKT | [arXiv:2610.11135v1](https://arxiv.org/abs/2610.11135v1)，2026-10-08首发预印本，题名 *Can a System-One LLM Perform Knowledge Tracing When Few or No Learners Are Logged?*；作者给出匿名代码与结果仓库链接。本轮只核官方摘要、版本记录及该链接的存在，未审实现。 | 研究零/少量平台学习者日志与预训练LLM单次概率推理；监督KT在更多日志条件下会追上，是作者摘要已披露的边界。训练样本量、预训练信息和API成本与本项目完整训练集不同，不能用其少样本均值替代三集共同条件SOTA；不调用付费API。 |
 
 补充待核查：KDD2026的[Structured Inductive Bias for Multi-timescale Knowledge Tracing](https://kdd2026.kdd.org/papers/)已在官方名单，但本阶段未核定全文/代码；[RegKT](https://arxiv.org/abs/2609.21791)首发2026-09-18，目前只确认预印本状态。二者进入近邻检索，不作为已复现SOTA。
 
