@@ -55,6 +55,7 @@ B001、[B002](configs/batches/B002-one-epoch-calibration.json) 已在各自冻�
 
 - [评测协议](docs/PROTOCOL.md)：主指标、五折与随机种子、因果边界、与官方协议的差别。
 - [前沿研究证据表](docs/RESEARCH_LEDGER.md)：论文状态、作者报告、可复现代码、输入与协议限制。
+- [完整证据卡](docs/evidence/README.md)：KTST逐折强配置、MoC全文缺口、UKT/KeenKT主表、KeenKT无梯度因果反例，以及频次收缩原创性判断。
 - [候选研究方向](docs/RESEARCH_DIRECTION.md)：待验证假设、最近邻方法和否证条件，不冒充已证实创新。
 - [初始化交付](reports/INITIALIZATION_2026-10-14.md)：实际完成项、验证范围及首批训练申请。
 - [B001 结果与 B002 方案](reports/B001_RESULTS_AND_B002_PLAN_2026-10-14.md)：已完成训练的证据及下一批具体预算。

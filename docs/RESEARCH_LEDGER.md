@@ -4,6 +4,8 @@
 
 本文件记录候选方法和比较条件，**不提供已经复现的排名**。目前已完成 B001 链路检查与 B002 单轮运行校准，尚无收敛比较或本项目测试集结果。文中的性能优势均为论文或作者报告；代码公开、成功导入和训练复现是三种不同状态。
 
+本轮补充的[完整证据卡](evidence/README.md)覆盖 KTST 逐折官方配置、MoC 代码与全文缺口、UKT/KeenKT 主表及 KeenKT 合成因果审计、题目收缩近邻。KeenKT 指定公开前向存在当前/未来答案依赖，尚不能直接进入比较；简单频次收缩的宽泛原创性也不足。具体证据和限制见各卡。
+
 ## 1. 本阶段的问题与数据范围
 
 第一阶段研究 ASSISTments2009、ASSISTments2015、NIPS34，主任务是根据历史交互预测下一次作答正确概率。三个数据集采用同一份[项目评测协议](PROTOCOL.md)，先建立可靠强基线，再选择原创研究假设。题目文本、选项、LLM生成解题过程暂不作为共同输入，相关方法放入独立的内容增强比较。
@@ -14,12 +16,12 @@
 
 | 方法 | 已核实状态与来源 | 与当前研究的关系 | 尚待完成的核查 |
 | --- | --- | --- | --- |
-| KTST | JEDM 18(1)，2026-02-07，89–112页；[期刊页面](https://jedm.educationaldatamining.org/index.php/JEDM/article/view/961)、[全文](https://jedm.educationaldatamining.org/index.php/JEDM/article/download/961/272)、[作者代码](https://github.com/kainbr/kt_set_transformers) | 集合式交互表示、可学习ALiBi；8个pyKT数据集包括本项目三个数据集。是事件表示与强Transformer基线的重要近邻。 | 移植成本、与当前pyKT提交的数据一致性、本地CPU/ROCm运行、同预算结果。 |
+| KTST | JEDM 18(1)，2026-02-07，89–112页；[期刊页面](https://jedm.educationaldatamining.org/index.php/JEDM/article/view/961)、[全文](https://jedm.educationaldatamining.org/index.php/JEDM/article/download/961/271)、[作者代码](https://github.com/kainbr/kt_set_transformers) | 集合式交互表示、可学习ALiBi；8个pyKT数据集包括本项目三个数据集。mean 已完成 B002 本地校准、v2 前向检查；[主表和20份逐折配置已核](evidence/KTST_2026-10-14.md)。 | B003 待批准；固定小配置与作者最优不同，后续须做强配置或同预算搜索。 |
 | MoC-KT | TOIS；出版商元数据的online日期为2026-09-15；[DOI](https://doi.org/10.1145/3847658)、[作者团队介绍](https://pykt.org/mockt) | 多尺度因果卷积、自适应分段和距离衰减注意力；已进入pyKT。作者报告4个数据集、26个比较模型。 | 全文实验表中的具体数据集、版本、预算与数值；导入成功不能替代复现。pyKT新闻日期05-08是集成日期。 |
 | FA-KT | WWW 2026，7080–7090页；出版商online日期2026-04-12；[DOI](https://doi.org/10.1145/3774904.3792272)、[官方介绍](https://pykt.org/fakt) | 频率感知的异构专家混合，含attention、Mamba、CNN、LSTM；作者报告5个数据集、20个基线。已进入pyKT。 | 具体实验表及配置；检查ROCm运行。当前adapter要求真实timestamps，缺失时间时不纳入共同信息主榜。不能伪造时间或替换专家后仍称原模型复现。 |
 | CGMKT | 2026-09-22已有[官方公开介绍与集成](https://pykt.org/cgmkt)；[DOI](https://doi.org/10.1016/j.inffus.2026.104800)对应Information Fusion的2027年3月卷期 | 双图融合与学生group-level mastery；作者报告3个数据集、21个基线。对“显式知识状态”方向必须比较。 | 区分公开可用日期与卷期年份；核对三个数据集、图构建数据范围、状态更新的因果顺序和内存成本。 |
-| UKT | AAAI 2025，官方发表日期2025-04-11；[论文](https://ojs.aaai.org/index.php/AAAI/article/view/35007)、[作者代码](https://github.com/UncertaintyForKnowledgeTracing/UKT) | 概率分布表示、Wasserstein attention、不确定性对比学习；六个数据集包括本项目三个数据集，已进入pyKT。 | 核实当前集成与作者代码差异；在相同输入、划分和预算下重新比较。 |
-| KeenKT | AAAI 2026，官方发表日期2026-03-14；[论文](https://ojs.aaai.org/index.php/AAAI/article/view/39004)、[作者代码](https://github.com/HubuKG/KeenKT) | 状态分布、去噪重构和分布对比学习；AS2009、AL2005、BD2006、NIPS34、AS2015、POJ。是噪声与不确定性方向的必要近邻。 | 学生5-fold不自动等于pyKT固定test协议；检查状态参数含义、数据处理及移植成本。 |
+| UKT | AAAI 2025，官方发表日期2025-04-11；[论文](https://ojs.aaai.org/index.php/AAAI/article/view/35007)、[作者代码](https://github.com/UncertaintyForKnowledgeTracing/UKT) | 概率分布表示、Wasserstein attention、不确定性对比学习；六个数据集包括本项目三个数据集，已进入pyKT。[主表已核](evidence/UNCERTAINTY_KT_2026-10-14.md)，AS15 低于同表 AKT。 | 核实当前集成与作者代码差异、因果性；在相同输入、划分和预算下重新比较。 |
+| KeenKT | AAAI 2026，官方发表日期2026-03-14；[论文](https://ojs.aaai.org/index.php/AAAI/article/view/39004)、[作者代码](https://github.com/HubuKG/KeenKT) | 状态分布、去噪重构和分布对比学习；AS2009、AL2005、BD2006、NIPS34、AS2015、POJ。公开划分代码为20%固定test加80%内5折。 | [固定快照的36项合成控制](evidence/UNCERTAINTY_KT_2026-10-14.md)定位全序列SE和attention空首行两条不可见答案依赖；不据此归因论文成绩，接入前须明确合法前缀路径/修正版及数据对应关系。 |
 
 基础锚点保留 DKT、AKT、simpleKT；QIKT、DTransformer、FoLiBiKT、stableKT、FlucKT、RobustKT按研究方向及验证表现补充。候选清单不等于一次性批准全部训练。当前模型集成情况可查[pyKT官方模型文档](https://pykt-toolkit.readthedocs.io/en/latest/models.html)。
 

@@ -20,6 +20,8 @@
 
 **最相近方法。** [UKT](https://ojs.aaai.org/index.php/AAAI/article/view/35007)和[KeenKT](https://ojs.aaai.org/index.php/AAAI/article/view/39004)已研究不确定性与去噪；[MoC-KT](https://pykt.org/mockt)、[CDFKT](https://pykt.org/cdfkt)、RobustKT与FlucKT已区分长期变化和短期波动。因此，“给更新加门控”或“把知识和噪声分开”本身不构成原创贡献。
 
+[本轮证据卡](evidence/UNCERTAINTY_KT_2026-10-14.md)补齐 UKT/KeenKT 主表，并在 KeenKT 指定公开整段前向发现不可见答案依赖。这使因果审计成为接入前置条件，但发现他人代码问题不自动使我们的门控假设新颖，也不能据此宣称模型超过其论文结果。
+
 **进入实现前需明确的差异。** 模块究竟使用什么仅由过去可得的证据；它为何能处理最近邻方法的具体失败案例；相比相同参数量的普通门控/残差平滑，新增假设产生了什么可检验预测。若无法写清，不为它创造新模型名字。
 
 **否证条件。** 收益只存在于人工翻转标签、只靠更多参数/更长历史、无法在预先指定的真实短历史子集重现，或总体AUC下降且校准无收益，则停止该假设。不得把“随机噪声鲁棒”写成识别学生真实心理原因。
@@ -30,9 +32,11 @@
 
 **最小候选。** 保留题目/KC两类表示，并加入可审计的频次条件收缩或正则项。统计量仅来自当前fold训练集。不得使用validation/test的正确率或交互频次；冷题ID应有预先定义的共享后备表示。没有独立题ID的数据集关闭题目分支，保留KC骨干，并报告此限制。
 
-**最相近方法。** [AKT、simpleKT、QIKT的官方说明](https://pykt-toolkit.readthedocs.io/en/latest/models.html)已经建模题目差异；[KTST](https://jedm.educationaldatamining.org/index.php/JEDM/article/download/961/272)讨论交互集合表示及题嵌入初始化；[CGMKT](https://pykt.org/cgmkt)借用知识关系和group mastery；[BAIM](https://aclanthology.org/2026.findings-acl.1125/)与[OPERA](https://pykt.org/opera)提供额外语义证据。需继续检索层级IRT、Bayesian shrinkage、频次自适应嵌入和冷题KT，确认本假设的剩余空间。
+**原创性判断：当前宽泛机制偏弱。** [专项审计](evidence/ITEM_SHRINKAGE_NOVELTY_2026-10-14.md)已核到 SLC 2026 的逐题 empirical-Bayes 偏差收缩、Q-MCKT 的低频题对比学习、DKTT 的频繁/稀疏题共享动机，以及 AKT/simpleKT 的共享概念加题目差异项。训练期把题目残差收缩到 KC 中心与 SLC 的后处理偏差不同，但这个差异仍需证明价值，不能宣称首次使用题目收缩。
 
-**必须对照。** 普通权重衰减、固定共享/题目混合、按训练频次的简单手工混合，以及同参数量基线。没有额外文本的候选不与含文本方法直接归因比较。
+**必须对照。** 相同零初始化、普通权重衰减、固定共享/题目混合、按训练频次的简单手工混合、频次加权L2及同参数量基线。固定非零门 `g(n_q)u_q` 可换元为自由残差，未增加可表示函数集合；对 `u_q` 的L2等价于对残差施加 `lambda/g(n_q)^2` 加权惩罚，优化轨迹则未必相同。若拟加入 Q-MCKT 或 SLC，须先完成训练fold统计/独立calibration设计，不能在用于评分的同一验证标签上拟合校正器。没有额外文本的候选不与含文本方法直接归因比较。
+
+**AS15 限制。** 本项目 manifest 为 `num_q=0, num_c=100`，不能检验独立题目参数收缩或 cold-item 效应；该集只能检验共同 KC 骨干。AS09/NIPS34 上的收益也不能自动外推为三个数据集都支持题目机制。
 
 **否证条件。** 简单频次混合达到同样结果；收益依赖全数据统计；长尾收益由测试后选择阈值产生；或在AS09和NIPS34上方向不稳定，则不支持新增复杂模型。严格cold-item实验只作为另行登记的扩展，不能用warm-item结果代替。
 
