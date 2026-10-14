@@ -66,6 +66,7 @@ B001、[B002](configs/batches/B002-one-epoch-calibration.json) 已在各自冻�
 - [B005 KTST作者配置对照](reports/B005_KTST_AUTHOR_CONFIG_PLAN_2026-10-15.md)：三集fold0公开架构和优化设置已落实为具体清单，8,450次更新/24小时软上限，等待B003-R1与B004结束核验后接续；尚未启动。
 - [E001固定等权组合](reports/E001_AKT_MOCKT_EQUAL_PROBABILITY_2026-10-15.md)：仅用AKT/MoC保存概率作一次0.5/0.5平均，AS09验证AUC为0.781737；存在互补线索，尚非原创模型、多seed或SOTA结果。
 - [共享事件开发协议](docs/SHARED_EVENT_PROTOCOL.md)：不同模型使用同一目标事件和允许历史的验证规则。
+- [共享最终测试入口](docs/SHARED_FINAL_TEST.md)：单独冻结候选、原训练身份与新评测身份，首次读取前登记执行并保留独立结果；本分支已完成合成验收，尚未开放真实测试。
 - [已保存验证预测的离线分析](docs/SAVED_PREDICTION_ANALYSIS.md)：收据核对、单/多KC分层、按学生配对重采样；仅探索性验证，不加载模型或解封test。
 - [KTST 接入审计](docs/KTST_INTEGRATION.md)：官方实现、题级集合表示和协议差异。
 - [KTST 协议复核](docs/KTST_PROTOCOL_REVIEW.md)：独立参考流程与未来统一比较的要求。

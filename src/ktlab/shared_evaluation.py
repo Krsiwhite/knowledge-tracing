@@ -1,7 +1,8 @@
-"""Development-only evaluation on a fixed common event/context selection.
+"""Evaluation on a fixed common event/context selection.
 
 This module has no training or checkpoint-selection entry point. In particular,
 it cannot promote an existing v1/reference checkpoint to a v2 benchmark result.
+Final-test use additionally requires final_test.py's active release capability.
 """
 from __future__ import annotations
 
@@ -16,6 +17,7 @@ import numpy as np
 
 from .evaluation import binary_metrics
 from .provenance import sha256_file, source_fingerprint, utc_now, write_json
+from .shared_events import FINAL_PROTOCOL
 
 PROTOCOL = "ktlab-v2-shared-event-context-kc200-dev"
 FIELDS = ["uid", "event_id", "question_id", "label", "probability", "kc_count", "target_sha256", "context_sha256"]
@@ -27,8 +29,8 @@ def _positive_integer(value, name):
 
 
 def evaluate_shared(model, dataset, device, prediction_path=None, *, batch_size=32,
-                    max_rows_per_forward=32, compute_metrics=True, deadline=None):
-    """Evaluate exactly the dataset's frozen development selection, once.
+                    max_rows_per_forward=32, compute_metrics=True, deadline=None, final_access=None):
+    """Evaluate exactly the dataset's frozen selection, once.
 
     Debug limits belong to SharedEventDataset(max_targets=...), so the reported
     hashes describe the actual selected targets. This function does not silently
@@ -40,9 +42,18 @@ def evaluate_shared(model, dataset, device, prediction_path=None, *, batch_size=
     _positive_integer(batch_size, "batch_size")
     _positive_integer(max_rows_per_forward, "max_rows_per_forward")
     audit = dataset.audit
-    if dataset.protocol != PROTOCOL or audit.get("protocol") != PROTOCOL:
+    final = final_access is not None
+    expected_protocol = FINAL_PROTOCOL if final else PROTOCOL
+    if final:
+        from .final_test import FinalTestAccess
+        if not isinstance(final_access, FinalTestAccess):
+            raise PermissionError("Final evaluation requires a registered test attempt")
+        final_access.check_dataset(dataset)
+        if not compute_metrics:
+            raise ValueError("Released final evaluation must compute its frozen metrics")
+    if dataset.protocol != expected_protocol or audit.get("protocol") != expected_protocol:
         raise ValueError("Shared evaluation requires the declared common-event protocol")
-    if audit.get("split") not in {"train", "valid"}:
+    if audit.get("split") not in ({"test"} if final else {"train", "valid"}):
         raise PermissionError("Shared evaluation is development-only; test remains sealed")
     if len(dataset) == 0 or audit.get("selected_targets") != len(dataset):
         raise ValueError("Empty or inconsistent frozen target selection")
@@ -101,23 +112,27 @@ def evaluate_shared(model, dataset, device, prediction_path=None, *, batch_size=
             raise ValueError("Scored target/history sequence differs from the frozen selection")
         if sha256_file(source_path) != audit["source_sha256"]:
             raise ValueError("Shared development source changed during evaluation")
-        result = {"n": len(probabilities), "protocol": PROTOCOL, "split": audit["split"],
+        result = {"n": len(probabilities), "protocol": expected_protocol, "split": audit["split"],
                   "target_sha256": audit["target_sha256"], "context_sha256": audit["context_sha256"],
                   "source_sha256": audit["source_sha256"], "quality_metrics_computed": bool(compute_metrics),
                   "selection_limited": bool(audit.get("selection_limited")),
-                  "evaluation_seconds": time.perf_counter() - started, "test_accessed": False,
+                  "evaluation_seconds": time.perf_counter() - started, "test_accessed": final,
                   "model": model.model_name, "implementation_sha256": source_fingerprint(),
                   "model_source_sha256": model.ktlab_source_sha256,
                   "model_training_and_checkpoint_selection_not_verified": True}
         if compute_metrics:
             result.update(binary_metrics(labels, probabilities))
+        if final:
+            final_access.verify_receipts()
+            final_access.verify_data_receipts()
+            result.update(final_access.output_identity())
         if path:
             stream.close()
             stream = None
             pending.replace(path)
             write_json(sidecar, {"schema_version": 1, "created_at": utc_now(), "dataset_audit": audit,
                                  "result": result, "prediction_sha256": sha256_file(path),
-                                 "metric_scope": "development_only_not_sota_or_final_test"})
+                                 "metric_scope": "released_final_test" if final else "development_only_not_sota_or_final_test"})
         return result
     finally:
         if stream:

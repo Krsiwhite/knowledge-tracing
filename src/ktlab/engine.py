@@ -205,6 +205,11 @@ def _selected_shared_checkpoint(path, metadata, identity, manifest_sha256, model
     if metadata.get("checkpoint_sha256") != _sha(path):
         raise ValueError("Shared checkpoint file changed since selection")
     checkpoint = torch.load(path, map_location=device, weights_only=True)
+    return _validate_shared_checkpoint(checkpoint, metadata, identity, manifest_sha256, model_config)
+
+
+def _validate_shared_checkpoint(checkpoint, metadata, identity, manifest_sha256, model_config):
+    """Validate a loaded candidate against its ORIGINAL selection identity."""
     expected = {"protocol": SHARED_PROTOCOL, "dataset_manifest_sha256": manifest_sha256, **identity}
     for key, value in expected.items():
         if checkpoint.get(key) != value or metadata.get(key) != value:
@@ -462,7 +467,7 @@ def train(config: dict, run_dir: Path) -> dict:
         validation.close()
 
 
-def evaluate_run(run_dir: Path, split: str = "valid", allow_test: bool = False) -> dict:
+def evaluate_run(run_dir: Path, split: str = "valid", allow_test: bool = False, *, test_release_file=None) -> dict:
     run_dir = Path(run_dir)
     if split not in {"valid", "test"}:
         raise ValueError("Evaluation split must be valid or test")
@@ -470,13 +475,17 @@ def evaluate_run(run_dir: Path, split: str = "valid", allow_test: bool = False) 
         raise PermissionError("Test is sealed; explicit frozen-candidate test release is required")
     config = json.loads((run_dir / "resolved_config.json").read_text(encoding="utf-8"))
     if config.get("protocol") == SHARED_PROTOCOL:
+        if split == "test":
+            from .final_test import evaluate_shared_test
+            release = test_release_file or config.get("test_release_file", run_dir.parent / "test-release.json")
+            return evaluate_shared_test(run_dir, Path(release), allow_test=allow_test)
         return _evaluate_shared_run(run_dir, config, split)
     if config.get("model") in {"ktst_mean", "ktst_mhsa"}:
         from .ktst_engine import evaluate_ktst_run
         return evaluate_ktst_run(run_dir, split=split)
     if split == "test":
         from .provenance import validate_test_release
-        release = Path(config.get("test_release_file", run_dir.parent / "test-release.json"))
+        release = Path(test_release_file or config.get("test_release_file", run_dir.parent / "test-release.json"))
         validate_test_release(run_dir, config, release)
         if (run_dir / "test_metrics.json").exists():
             raise FileExistsError("Final test already evaluated; reuse its saved predictions and metrics")

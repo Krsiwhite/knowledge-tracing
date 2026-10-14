@@ -1,7 +1,9 @@
-"""Model-independent, complete-event development contexts under a 200-KC budget.
+"""Model-independent, complete-event contexts under a 200-KC budget.
 
 This is a new protocol, not either model's original preprocessing. Only the
-sealed ``train_valid.csv`` development source is accepted. Targets are stored as
+``train_valid.csv`` development source is accepted by the public development
+class. The separate final-test class requires a registered release capability.
+Targets are stored as
 compact row/ordinal indexes; histories are reconstructed on demand, never
 expanded into a dataset-sized CSV or tensor.
 """
@@ -20,6 +22,7 @@ from typing import Any, Iterator
 
 
 PROTOCOL = "ktlab-v2-shared-event-context-kc200-dev"
+FINAL_PROTOCOL = "ktlab-v2-shared-event-context-kc200-test-v1"
 HASH_SCHEME = "ktlab-shared-event-compositional-sha256-v1"
 _TARGET_DOMAIN = b"ktlab.shared.target.v1\0"
 _HISTORY_DOMAIN = b"ktlab.shared.history-event.v1\0"
@@ -172,6 +175,20 @@ class SharedEventDataset:
                  max_targets: int | None = None):
         if split not in {"train", "valid"}:
             raise ValueError("Shared-event development protocol supports train/valid only; test remains sealed")
+        self._initialize(manifest, fold, split, kc_budget, max_targets)
+
+    def _initialize(self, manifest, fold, split, kc_budget, max_targets, *, access=None):
+        final = access is not None
+        if not final and split not in {"train", "valid"}:
+            raise PermissionError("Test remains sealed without a registered attempt")
+        if final:
+            from .final_test import FinalTestAccess
+            if not isinstance(access, FinalTestAccess):
+                raise PermissionError("Final event data requires a registered test attempt")
+            access.check_data_access(manifest)
+            if split != "test" or fold != -1 or max_targets is not None:
+                raise ValueError("Final evaluation requires the entire held-out split with fold -1")
+        self.protocol = FINAL_PROTOCOL if final else PROTOCOL
         if not isinstance(kc_budget, Integral) or isinstance(kc_budget, bool) or kc_budget != 200:
             raise ValueError("The kc200 protocol requires kc_budget=200")
         if max_targets is not None and (not isinstance(max_targets, Integral) or isinstance(max_targets, bool) or max_targets <= 0):
@@ -182,17 +199,19 @@ class SharedEventDataset:
         if any(not isinstance(part, Integral) or isinstance(part, bool) for part in config["folds"]):
             raise ValueError("Manifest development folds must be integers")
         folds = {int(part) for part in config["folds"]}
-        if not folds or not folds.issubset(set(range(5))) or int(fold) not in folds:
+        if not folds or not folds.issubset(set(range(5))) or (not final and int(fold) not in folds):
             raise ValueError("Shared-event folds must be development folds 0 through 4")
-        if config.get("train_valid_original_file") != "train_valid.csv":
-            raise ValueError("Shared-event input must be the canonical train_valid.csv original development source")
+        filename = "test.csv" if final else "train_valid.csv"
+        config_key = "test_original_file" if final else "train_valid_original_file"
+        if config.get(config_key) != filename:
+            raise ValueError(f"Shared-event input must be the canonical {filename} original source")
         base = Path(manifest.get("data_dir", ""))
         if not base.is_absolute() or not base.is_dir():
             raise ValueError("manifest.data_dir must be an existing absolute prepared-data directory")
-        self.path = (base / "train_valid.csv").resolve()
+        self.path = (base / filename).resolve()
         if self.path.parent != base.resolve() or not self.path.is_file():
             raise ValueError("Original development source is missing or outside data_dir")
-        receipt = manifest.get("files", {}).get("train_valid.csv")
+        receipt = manifest.get("files", {}).get(filename)
         if not isinstance(receipt, dict) or not receipt.get("sha256") or "bytes" not in receipt:
             raise ValueError("Original development source has no pinned checksum")
         source_sha = _digest(self.path)
@@ -219,11 +238,11 @@ class SharedEventDataset:
         context_hasher = hashlib.sha256(b"ktlab.shared.context-sequence.v1\0")
         for row_index, offset, row in _csv_rows(self.path):
             uid, part = row["uid"], int(row["fold"])
-            if uid in seen_uids or part not in folds:
+            if uid in seen_uids or part not in ({-1} if final else folds):
                 raise ValueError("Original development membership contains duplicate users or a non-development fold")
             seen_uids.add(uid)
             source_rows += 1
-            if not (part == self.fold if split == "valid" else part != self.fold):
+            if not final and not (part == self.fold if split == "valid" else part != self.fold):
                 continue
             selected_students += 1
             events, row_duplicates = _events_from_row(row, self.num_concepts, self.num_questions)
@@ -264,7 +283,7 @@ class SharedEventDataset:
                 if history_hashes is None:
                     history_hashes = b"".join(_history_bytes(_history_event(self.name, uid, i, e))
                                               for i, e in enumerate(events))
-                identity = {"protocol": PROTOCOL, "uid": uid, "fold": part,
+                identity = {"protocol": self.protocol, "uid": uid, "fold": part,
                             "event_id": f"{self.name}:{uid}:{ordinal}", "target_index": ordinal,
                             "query": _query(event)}
                 target = _target_bytes(identity)
@@ -275,7 +294,7 @@ class SharedEventDataset:
                 self._target_ordinals.append(ordinal)
                 self._history_starts.append(start)
         self.audit = {
-            "protocol": PROTOCOL, "dataset": self.name, "split": split, "fold": self.fold,
+            "protocol": self.protocol, "dataset": self.name, "split": split, "fold": self.fold,
             "source_path": str(self.path), "source_sha256": source_sha, "source_bytes": receipt["bytes"],
             "kc_budget": self.kc_budget, "source_students": source_rows, "split_students": selected_students,
             "indexed_students": len(self._students), "canonical_events": event_total,
@@ -295,7 +314,7 @@ class SharedEventDataset:
             "index_bytes": sum(value.itemsize * len(value) for value in
                                (self._row_ids, self._target_ordinals, self._history_starts)),
             "student_cache_limit": _CACHE_STUDENTS, "materialized_contexts": False,
-            "test_access": False, "optimizer_steps": 0,
+            "test_access": final, "optimizer_steps": 0,
         }
         if event_total != eligible_total + sum(exclusions.values()):
             raise AssertionError("Canonical event accounting does not balance")
@@ -329,7 +348,7 @@ class SharedEventDataset:
         history = [_history_event(self.name, student.uid, i, events[i]) for i in range(start, ordinal)]
         history_kcs = sum(len(item["concepts"]) for item in history)
         context = {
-            "protocol": PROTOCOL, "uid": student.uid, "fold": student.fold,
+            "protocol": self.protocol, "uid": student.uid, "fold": student.fold,
             "event_id": f"{self.name}:{student.uid}:{ordinal}", "target_index": ordinal,
             "history": history, "query": _query(event), "label": event.response,
             "history_start_index": start, "history_kc_count": history_kcs,
@@ -347,3 +366,15 @@ class SharedEventDataset:
         """Verify the pinned original source at evaluation boundaries."""
         if self.path.stat().st_size != self.audit["source_bytes"] or _digest(self.path) != self.audit["source_sha256"]:
             raise ValueError("Original development source changed after its target/context audit")
+
+
+class SharedTestEventDataset(SharedEventDataset):
+    """Held-out events, accessible only after a persistent final-test attempt.
+
+    The training fold is deliberately absent: every frozen model sees the same
+    test students with source fold -1 and the same event/context identities.
+    """
+    protocol = FINAL_PROTOCOL
+
+    def __init__(self, manifest: dict, *, access):
+        self._initialize(manifest, -1, "test", 200, None, access=access)

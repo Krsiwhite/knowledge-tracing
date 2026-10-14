@@ -63,6 +63,7 @@ def main(argv: list[str] | None = None) -> int:
     evaluate.add_argument("--run", type=Path, required=True)
     evaluate.add_argument("--split", choices=["valid", "test"], default="valid")
     evaluate.add_argument("--allow-test", action="store_true", help="Also requires an approved frozen test-release record")
+    evaluate.add_argument("--test-release", type=Path, help="External frozen release; does not edit the training config")
     commands.add_parser("report", help="List actual completed-run summaries; never invent results")
     args = parser.parse_args(argv)
     root = p.project_root()
@@ -103,7 +104,7 @@ def main(argv: list[str] | None = None) -> int:
                     return 2
         elif args.command == "evaluate":
             from .engine import evaluate_run
-            _emit(evaluate_run(args.run, split=args.split, allow_test=args.allow_test))
+            _emit(evaluate_run(args.run, split=args.split, allow_test=args.allow_test, test_release_file=args.test_release))
         elif args.command == "report":
             summaries = []
             for run_dir in sorted((root / "runs").glob("*")):
