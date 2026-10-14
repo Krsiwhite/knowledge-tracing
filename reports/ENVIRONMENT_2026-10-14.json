@@ -1,0 +1,20 @@
+{
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "executable": "/home/ml/.venvs/knowledge-tracing/bin/python",
+  "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+  "torch": "2.9.1+rocm7.2.1.gitff65f5bc",
+  "hip": "7.2.53211-e1a6bc5663",
+  "gpu_available": true,
+  "gpu": "AMD Radeon RX 9070 XT",
+  "gpu_memory_gib": 15.81,
+  "workspace_free_gib": 47.16,
+  "modules": {
+    "pytest": true,
+    "toml": true,
+    "entmax": true,
+    "yaml": true,
+    "requests": true,
+    "einops": true,
+    "matplotlib": true
+  }
+}

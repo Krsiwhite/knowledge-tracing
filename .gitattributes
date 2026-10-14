@@ -1,0 +1,4 @@
+* text=auto eol=lf
+third_party/pykt/** -text -whitespace
+*.png binary
+*.jpg binary
