@@ -150,12 +150,17 @@ metadata, validation predictions, histories and weights are never rewritten.
 Receipts/source are checked again around export. If all labels have one class,
 AUC is null and explicitly marked unavailable; other metrics remain defined.
 
-## Deliberate remaining boundary
+## Saved final statistics and remaining boundary
 
-This delivery implements release, data, checkpoint and evaluation entry points.
-It does not add a final-statistics artifact reader, bootstrap runner, candidate
-selection utility or recovery workflow. Existing saved-prediction analysis is
-development-only and must not be repointed to these outputs by changing a
-protocol string. A future final-statistics reader must check the terminal
-attempt, all output receipts, the frozen analysis plan and per-event
-label/target/history alignment before constructing statistical inputs.
+The separate [final saved-prediction reader](SHARED_FINAL_PREDICTION_ANALYSIS.md)
+checks terminal attempts, all output receipts, the complete frozen cohort and
+per-event label/target/history alignment. Its `final_statistics` block must be
+part of the hash-frozen analysis plan before the first test attempt. It supports
+the complete multi-dataset 5-fold × 3-seed design through the existing pure
+statistics function, without changing evaluator source or reopening raw data.
+The older saved-prediction analysis remains development-only; changing its
+protocol string is not a final-test analysis path.
+
+Candidate selection and failed-attempt recovery remain outside these entries.
+Neither statistical availability nor a positive interval independently proves
+model originality, training authenticity or a SOTA result.

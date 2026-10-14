@@ -68,6 +68,7 @@ B001、[B002](configs/batches/B002-one-epoch-calibration.json) 已在各自冻�
 - [共享事件开发协议](docs/SHARED_EVENT_PROTOCOL.md)：不同模型使用同一目标事件和允许历史的验证规则。
 - [共享最终测试入口](docs/SHARED_FINAL_TEST.md)：单独冻结候选、原训练身份与新评测身份，首次读取前登记执行并保留独立结果；本分支已完成合成验收，尚未开放真实测试。
 - [已保存验证预测的离线分析](docs/SAVED_PREDICTION_ANALYSIS.md)：收据核对、单/多KC分层、按学生配对重采样；仅探索性验证，不加载模型或解封test。
+- [最终测试保存工件的统计入口](docs/SHARED_FINAL_PREDICTION_ANALYSIS.md)：冻结完整多数据集5-fold×3-seed配对、终态attempt/收据链及原定AUC学生bootstrap；只读保存工件，不重跑模型。
 - [KTST 接入审计](docs/KTST_INTEGRATION.md)：官方实现、题级集合表示和协议差异。
 - [KTST 协议复核](docs/KTST_PROTOCOL_REVIEW.md)：独立参考流程与未来统一比较的要求。
 - `reports/`：只记录已经执行并验证的阶段事实。`runs/` 存本机运行证据。
