@@ -1,0 +1,312 @@
+{
+  "schema_version": 1,
+  "diagnostic": "saved_shared_validation_independent_error_strata",
+  "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+  "split": "valid",
+  "run_id": "B003-akt-assist2009-f0-s42",
+  "model": "akt",
+  "ukt_training_recipe": null,
+  "comparison_label": "akt",
+  "dataset": "assist2009",
+  "fold": 0,
+  "seed": 42,
+  "selection": {
+    "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+    "dataset": "assist2009",
+    "split": "valid",
+    "fold": 0,
+    "source_sha256": "d590ba88d8d7ab630e635a89b56df55219f49a75b55caa0df571a1f3b460404e",
+    "target_sha256": "c4c432fca4c3a3308dd6e9dc9b852a7d9b3f6852caa2ee8074379b209f8b2190",
+    "context_sha256": "491600d611a2726d3ffb85b55c0b9e2e44fabde6e365e7faf89844a243a6da54",
+    "selected_targets": 43295
+  },
+  "batch_id": "B003-shared-convergence-baselines",
+  "canonical_batch_sha256": "765c4d0183fd0b4332d50f6b6f7a206c845e007fb06fa87a640bf286e5e80d44",
+  "overall": {
+    "n": 43295,
+    "students": 617,
+    "positive_rate": 0.6630326827578242,
+    "auc": 0.7791159915501122,
+    "accuracy": 0.7398082919505716,
+    "nll": 0.5397073990102211,
+    "brier": 0.1763194515518142,
+    "ece_15bins": 0.04718095523144663,
+    "auc_unavailable_reason": null
+  },
+  "strata": {
+    "visible_history_events": {
+      "supported": true,
+      "bins": {
+        "1-5": {
+          "n": 2969,
+          "students": 617,
+          "positive_rate": 0.6648703267093298,
+          "auc": 0.7664734513499616,
+          "accuracy": 0.7356012125294712,
+          "nll": 0.5609347295755474,
+          "brier": 0.180303435629338,
+          "ece_15bins": 0.05713037494848737,
+          "auc_unavailable_reason": null
+        },
+        "6-20": {
+          "n": 6155,
+          "students": 529,
+          "positive_rate": 0.6186839967506093,
+          "auc": 0.786822552838775,
+          "accuracy": 0.7413484971567831,
+          "nll": 0.5559319688548782,
+          "brier": 0.1799321270127172,
+          "ece_15bins": 0.046460811448284546,
+          "auc_unavailable_reason": null
+        },
+        "21-50": {
+          "n": 7149,
+          "students": 311,
+          "positive_rate": 0.6339348160581899,
+          "auc": 0.7737822678858883,
+          "accuracy": 0.7273744579661491,
+          "nll": 0.5644074967079978,
+          "brier": 0.1843969653380705,
+          "ece_15bins": 0.058143257746590134,
+          "auc_unavailable_reason": null
+        },
+        ">50": {
+          "n": 27022,
+          "students": 179,
+          "positive_rate": 0.6806305972910961,
+          "auc": 0.7789617708742327,
+          "accuracy": 0.7432092369180667,
+          "nll": 0.5271447770620411,
+          "brier": 0.17292182694053557,
+          "ece_15bins": 0.04779456536235357,
+          "auc_unavailable_reason": null
+        }
+      }
+    },
+    "question_train_event_frequency": {
+      "supported": true,
+      "bins": {
+        "0": {
+          "n": 379,
+          "students": 102,
+          "positive_rate": 0.6754617414248021,
+          "auc": 0.702807418699187,
+          "accuracy": 0.6939313984168866,
+          "nll": 0.6149025564219948,
+          "brier": 0.2008803843009962,
+          "ece_15bins": 0.10163487887809937,
+          "auc_unavailable_reason": null
+        },
+        "1-5": {
+          "n": 5464,
+          "students": 364,
+          "positive_rate": 0.6923499267935578,
+          "auc": 0.7637973224087282,
+          "accuracy": 0.7366398243045388,
+          "nll": 0.5745171733958083,
+          "brier": 0.1812559832071311,
+          "ece_15bins": 0.08325388205962655,
+          "auc_unavailable_reason": null
+        },
+        "6-20": {
+          "n": 18729,
+          "students": 557,
+          "positive_rate": 0.6753163543168349,
+          "auc": 0.7921544093073676,
+          "accuracy": 0.7512413903572001,
+          "nll": 0.523029002018206,
+          "brier": 0.16939963558350446,
+          "ece_15bins": 0.053758674938376536,
+          "auc_unavailable_reason": null
+        },
+        "21-100": {
+          "n": 18608,
+          "students": 544,
+          "positive_rate": 0.6424118658641444,
+          "auc": 0.7720743991130412,
+          "accuracy": 0.7299011177987962,
+          "nll": 0.544888313471703,
+          "brier": 0.18138464944731625,
+          "ece_15bins": 0.03262569775551039,
+          "auc_unavailable_reason": null
+        },
+        ">100": {
+          "n": 115,
+          "students": 73,
+          "positive_rate": 0.5652173913043478,
+          "auc": 0.8316923076923077,
+          "accuracy": 0.782608695652174,
+          "nll": 0.5159132169431838,
+          "brier": 0.16819969811164479,
+          "ece_15bins": 0.13430548070565515,
+          "auc_unavailable_reason": null
+        }
+      }
+    },
+    "visible_history_same_question": {
+      "supported": true,
+      "bins": {
+        "0": {
+          "n": 42911,
+          "students": 617,
+          "positive_rate": 0.6628370347929435,
+          "auc": 0.7789778952576515,
+          "accuracy": 0.7395306564750297,
+          "nll": 0.5401889539788033,
+          "brier": 0.1764791286619136,
+          "ece_15bins": 0.04714323433569483,
+          "auc_unavailable_reason": null
+        },
+        ">=1": {
+          "n": 384,
+          "students": 97,
+          "positive_rate": 0.6848958333333334,
+          "auc": 0.7909059485277944,
+          "accuracy": 0.7708333333333334,
+          "nll": 0.4858948853205804,
+          "brier": 0.1584759503240184,
+          "ece_15bins": 0.07343658409904366,
+          "auc_unavailable_reason": null
+        }
+      }
+    },
+    "query_kc_visible_history_support": {
+      "supported": true,
+      "bins": {
+        "0": {
+          "n": 5047,
+          "students": 468,
+          "positive_rate": 0.6110560729146027,
+          "auc": 0.7677323943010546,
+          "accuracy": 0.7158708143451555,
+          "nll": 0.5978632550828371,
+          "brier": 0.19185189593006072,
+          "ece_15bins": 0.0594480447345128,
+          "auc_unavailable_reason": null
+        },
+        ">=1": {
+          "n": 38248,
+          "students": 612,
+          "positive_rate": 0.6698912361430663,
+          "auc": 0.7805420015838351,
+          "accuracy": 0.7429669525203932,
+          "nll": 0.5320334655862907,
+          "brier": 0.17426987388038018,
+          "ece_15bins": 0.04670024823253164,
+          "auc_unavailable_reason": null
+        }
+      }
+    }
+  },
+  "stratification": {
+    "independent_not_crossed": true,
+    "bins_fixed_before_analysis": {
+      "visible_history_events": [
+        "1-5",
+        "6-20",
+        "21-50",
+        ">50"
+      ],
+      "question_train_event_frequency": [
+        "0",
+        "1-5",
+        "6-20",
+        "21-100",
+        ">100"
+      ],
+      "visible_history_same_question": [
+        "0",
+        ">=1"
+      ],
+      "query_kc_visible_history_support": [
+        "0",
+        ">=1"
+      ]
+    },
+    "history": "exact complete-event suffix visible to this target under KC200",
+    "train_frequency": "all canonical events in non-held-out folds, including first events; repeated KCs count once",
+    "query_kc_support": "number of visible history events intersecting any query KC; each event counts once",
+    "ece_bins": 15,
+    "metric_weighting": "events"
+  },
+  "training_frequency_scope": {
+    "folds": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "students": 2465,
+    "canonical_events": 185559,
+    "first_events_included": true,
+    "counting_unit": "canonical_question_event_not_repeated_KC"
+  },
+  "provenance": {
+    "batch": {
+      "sha256": "c5efe0fa0c1c37634d2eb1cb85afa5df3a92b4729d34023850065d66e0d0ed96",
+      "bytes": 24742
+    },
+    "dataset_manifest": {
+      "sha256": "e2c939dfe4479327c223644bce6aee88c56bc362d1169164332ae9ca479fc703",
+      "bytes": 9057
+    },
+    "canonical_development_source": {
+      "sha256": "d590ba88d8d7ab630e635a89b56df55219f49a75b55caa0df571a1f3b460404e",
+      "bytes": 3305879
+    },
+    "run_files": {
+      "prediction": {
+        "sha256": "8f85b1281af0883dfb20d28f25adcc9a3f6bb2f5437d6d9c81181782b9cab9ee",
+        "bytes": 7861641
+      },
+      "sidecar": {
+        "sha256": "f2913ffb8ef54a82c21defda35ee5d66a0135769f291f30048677149017cdef9",
+        "bytes": 3517
+      },
+      "metadata": {
+        "sha256": "6720d033f38691f6067ee9b9d5ad7a174a7096f19bbac3d4991c4b95fde6d220",
+        "bytes": 4705
+      },
+      "config": {
+        "sha256": "6bcb2233667763687f77739fe7ec890235dd327484bdf6206fcd5f10b129c7ad",
+        "bytes": 1024
+      },
+      "metrics": {
+        "sha256": "2fca85f96a51d338c57cd33cfcf5184f01626551be54f5ba7ac7ad48728eeece",
+        "bytes": 1045
+      }
+    },
+    "diagnostic_script": {
+      "sha256": "65af9b4d989d130e7075e3563699f42df962d7517433002d3330d9b97a019f2b",
+      "bytes": 15300
+    },
+    "receipt_helper": {
+      "sha256": "0418e4fdd077f1be531dab79d6787cd81cd81c2390050096c6f87516b0087aa5",
+      "bytes": 29578
+    },
+    "shared_events_source": {
+      "sha256": "a2a5170ca039e140621278e1566ea5fefa133588cc925a206a35e277fd575f63",
+      "bytes": 19359
+    },
+    "training_implementation_sha256_recorded": "e865cf930845b50d12bcad4afbd02a39e18e67bbcf7dc57ad9dbc1038a9dc1cb",
+    "checkpoint_sha256_recorded": "c7f9e14d14ea74def0852dc3cd22d674d2cf551fa7abb6d7ce85f2ffb4184aa8"
+  },
+  "selected_export_auc_check": {
+    "delta": 0.0,
+    "absolute_tolerance": 1e-06
+  },
+  "limitations": [
+    "Descriptive development diagnostics only; validation also selected the checkpoint. No significance tests or SOTA claim.",
+    "Strata are independent summaries, not causal effects. Training question frequency is not inferred from validation frequency.",
+    "Saved receipts do not independently prove training or a direct checkpoint-to-prediction binding. No checkpoint bytes were read.",
+    "The analysis worktree may differ from training; canonical event code is separately hashed and every target/history/label is checked."
+  ],
+  "development_data_accessed": true,
+  "test_accessed": false,
+  "weights_read_or_verified": false,
+  "model_loads": 0,
+  "model_forward_calls": 0,
+  "new_optimizer_steps": 0,
+  "significance_tests": false,
+  "automatic_publication": false
+}
