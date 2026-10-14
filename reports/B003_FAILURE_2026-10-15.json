@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "batch_id": "B003-shared-convergence-baselines",
+  "status": "failed",
+  "canonical_batch_sha256": "765c4d0183fd0b4332d50f6b6f7a206c845e007fb06fa87a640bf286e5e80d44",
+  "implementation_sha256": "e865cf930845b50d12bcad4afbd02a39e18e67bbcf7dc57ad9dbc1038a9dc1cb",
+  "exit_code": 2,
+  "ended_at": "2026-10-14T17:02:28.243145+00:00",
+  "worker_and_child_absent_when_checked": true,
+  "completed_runs": 2,
+  "failed_runs": 1,
+  "not_started_runs": 9,
+  "total_recorded_optimizer_steps": 1900,
+  "failure_stage": "first_MoC_training_forward_after_successful_epoch0_shared_validation",
+  "failed_initial_validation_is_untrained_not_quality_result": true,
+  "automatic_retry_performed": false,
+  "original_artifacts_preserved": true,
+  "batch_file": {
+    "sha256": "c5efe0fa0c1c37634d2eb1cb85afa5df3a92b4729d34023850065d66e0d0ed96",
+    "bytes": 24742
+  },
+  "training_log": {
+    "sha256": "3557fb25a21d70c00fee21e4f875171fc0da09cb96c7f331d3b45d62f72e3cf4",
+    "bytes": 37291
+  },
+  "runs": [
+    {
+      "run_id": "B003-akt-assist2009-f0-s42",
+      "status": "completed",
+      "optimizer_steps": 1140,
+      "best_epoch": 9,
+      "best_valid_auc": 0.7791159915501122,
+      "stop_reason": "early_stopping",
+      "error": null,
+      "started_at": "2026-10-14T15:56:46.956685+00:00",
+      "ended_at": "2026-10-14T16:38:30.596625+00:00",
+      "initial_checkpoint_untrained": true,
+      "metadata_file": {
+        "sha256": "6720d033f38691f6067ee9b9d5ad7a174a7096f19bbac3d4991c4b95fde6d220",
+        "bytes": 4705
+      }
+    },
+    {
+      "run_id": "B003-simplekt-assist2009-f0-s42",
+      "status": "completed",
+      "optimizer_steps": 760,
+      "best_epoch": 5,
+      "best_valid_auc": 0.7640014501810941,
+      "stop_reason": "early_stopping",
+      "error": null,
+      "started_at": "2026-10-14T16:38:46.938926+00:00",
+      "ended_at": "2026-10-14T16:59:34.845250+00:00",
+      "initial_checkpoint_untrained": true,
+      "metadata_file": {
+        "sha256": "690b2cf87cca608d50ca263f4cb4482665bbc3cd6a24732fae576cd5bddfa0fe",
+        "bytes": 4709
+      }
+    },
+    {
+      "run_id": "B003-mockt-assist2009-f0-s42",
+      "status": "failed",
+      "optimizer_steps": 0,
+      "best_epoch": 0,
+      "best_valid_auc": 0.4908911058184578,
+      "stop_reason": null,
+      "error": "RuntimeError: Inference tensors cannot be saved for backward. Please do not use Tensors created in inference mode in computation tracked by autograd. To work around this, you can make a clone to get a normal tensor and use it in autograd, or use `torch.no_grad()` instead of `torch.inference_mode()`.",
+      "started_at": "2026-10-14T16:59:51.236580+00:00",
+      "ended_at": "2026-10-14T17:02:25.901102+00:00",
+      "initial_checkpoint_untrained": true,
+      "metadata_file": {
+        "sha256": "b6ed5cd63d36e6a70e53d7028f177efcd12151aa54a87e25336070c89200e1b2",
+        "bytes": 4950
+      }
+    },
+    {
+      "run_id": "B003-ktst_mean-assist2009-f0-s42",
+      "status": "not_started",
+      "optimizer_steps": 0
+    },
+    {
+      "run_id": "B003-akt-assist2015-f0-s42",
+      "status": "not_started",
+      "optimizer_steps": 0
+    },
+    {
+      "run_id": "B003-simplekt-assist2015-f0-s42",
+      "status": "not_started",
+      "optimizer_steps": 0
+    },
+    {
+      "run_id": "B003-mockt-assist2015-f0-s42",
+      "status": "not_started",
+      "optimizer_steps": 0
+    },
+    {
+      "run_id": "B003-ktst_mean-assist2015-f0-s42",
+      "status": "not_started",
+      "optimizer_steps": 0
+    },
+    {
+      "run_id": "B003-akt-nips_task34-f0-s42",
+      "status": "not_started",
+      "optimizer_steps": 0
+    },
+    {
+      "run_id": "B003-simplekt-nips_task34-f0-s42",
+      "status": "not_started",
+      "optimizer_steps": 0
+    },
+    {
+      "run_id": "B003-mockt-nips_task34-f0-s42",
+      "status": "not_started",
+      "optimizer_steps": 0
+    },
+    {
+      "run_id": "B003-ktst_mean-nips_task34-f0-s42",
+      "status": "not_started",
+      "optimizer_steps": 0
+    }
+  ],
+  "test_accessed": false,
+  "model_loads_for_this_audit": 0,
+  "new_optimizer_steps_for_this_audit": 0
+}
