@@ -64,6 +64,7 @@ B001、[B002](configs/batches/B002-one-epoch-calibration.json) 已在各自冻�
 - [B003 首两组基线比较](reports/B003_FIRST_TWO_BASELINES_2026-10-15.md)：AKT与simpleKT相同验证事件的配对结果、学生抽样区间与固定误差分层。
 - [B003 首三组基线比较](reports/B003_FIRST_THREE_BASELINES_2026-10-15.md)：加入已完成的MoC-KT，逐运行绑定原批次或恢复清单，比较预测质量、收敛与资源开销；AKT仍是当前ASSIST2009参考。
 - [B005 KTST作者配置对照](reports/B005_KTST_AUTHOR_CONFIG_PLAN_2026-10-15.md)：三集fold0公开架构和优化设置已落实为具体清单，8,450次更新/24小时软上限，等待B003-R1与B004结束核验后接续；尚未启动。
+- [E001固定等权组合](reports/E001_AKT_MOCKT_EQUAL_PROBABILITY_2026-10-15.md)：仅用AKT/MoC保存概率作一次0.5/0.5平均，AS09验证AUC为0.781737；存在互补线索，尚非原创模型、多seed或SOTA结果。
 - [共享事件开发协议](docs/SHARED_EVENT_PROTOCOL.md)：不同模型使用同一目标事件和允许历史的验证规则。
 - [已保存验证预测的离线分析](docs/SAVED_PREDICTION_ANALYSIS.md)：收据核对、单/多KC分层、按学生配对重采样；仅探索性验证，不加载模型或解封test。
 - [KTST 接入审计](docs/KTST_INTEGRATION.md)：官方实现、题级集合表示和协议差异。
