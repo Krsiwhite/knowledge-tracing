@@ -141,6 +141,8 @@ def _shared_config(config: dict) -> dict:
     """Resolve only explicitly requested shared validation, never relabel v1."""
     if config.get("protocol") != SHARED_PROTOCOL:
         raise ValueError("Shared validation requires its explicit protocol")
+    from .mockt_training import validate_recipe_config
+    validate_recipe_config(config)
     if config.get("model") not in {"akt", "simplekt", "mockt", "ukt", "ktst_mean", "ktst_mhsa"}:
         raise ValueError("This model has no shared-context adapter")
     if config.get("max_validation_batches") is not None:
@@ -277,6 +279,8 @@ def train(config: dict, run_dir: Path) -> dict:
     """
     if config.get("_batch_approved") is not True:
         raise PermissionError("Training requires explicit per-batch approval via the ktlab CLI")
+    from .mockt_training import validate_recipe_config, bind_training_recipe
+    mockt_recipe = validate_recipe_config(config)
     if config.get("model") in {"ktst_mean", "ktst_mhsa"}:
         from .ktst_engine import train_ktst
         return train_ktst(config, run_dir)
@@ -306,6 +310,8 @@ def train(config: dict, run_dir: Path) -> dict:
         torch.cuda.reset_peak_memory_stats(device)
     _seed(int(config.get("seed", 42)))
     model = build_model(config["model"], manifest["data_config"], config.get("model_config"), device)
+    if mockt_recipe is not None:
+        bind_training_recipe(model, config)
     if config["model"] == "ukt":
         from .ukt_training import training_recipe
         recipe = training_recipe(model)
@@ -335,6 +341,8 @@ def train(config: dict, run_dir: Path) -> dict:
                 "gpu_name": torch.cuda.get_device_name(device) if device.type == "cuda" else None}
     identity = _shared_identity(config, model, validation) if shared else None
     metadata["partial_debug"] = (config.get("max_validation_targets") is not None if shared else max_validation_batches is not None)
+    if mockt_recipe is not None:
+        metadata["mockt_training_recipe"] = mockt_recipe
     if shared:
         metadata.update(identity, valid_event_audit=validation.audit,
                         training_representation="original_pykt_repeated_kc", initial_validation=True,

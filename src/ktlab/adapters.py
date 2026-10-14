@@ -236,6 +236,10 @@ def forward_model(model: torch.nn.Module, batch: dict) -> tuple[torch.Tensor, to
     if model.model_name == "akt":
         predictions, regularizer = model(full("cseqs"), full("rseqs"), full("qseqs"))
     elif model.model_name == "mockt":
+        recipe = getattr(model, "ktlab_mockt_training_recipe", None)
+        if model.training and recipe is not None:
+            from .mockt_training import forward_mockt_training
+            return forward_mockt_training(model, batch, recipe)
         predictions, regularizer = model(batch["ground_seq"], full("cseqs"), full("rseqs"), full("qseqs"))
     elif model.model_name == "simplekt":
         predictions = model(batch)

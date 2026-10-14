@@ -1,0 +1,167 @@
+{
+  "schema_version": 1,
+  "check_id": "S006-mockt-prefix-cpu",
+  "report_date_hong_kong": "2026-10-15",
+  "status": "passed",
+  "scope": "bounded_synthetic_cpu_acceptance_and_artificial_saved_receipt_tests",
+  "manifest_file": "configs/checks/S006-mockt-prefix-cpu.json",
+  "manifest_canonical_sha256": "f04a5126293b635e00a53ab3d25faba04797a8efc39ad219dcbeb12393a70ea7",
+  "manifest_file_sha256": "494ab9e0a01953eebd6113052f2f6afebd48f78826f8d7235b352f3dd1938955",
+  "implementation_sha256": "0e9eb36f2ef023f51400ee74ff7bc3ae699aac0b52fbe1568bc73389b4cf07f0",
+  "bound_files_sha256": {
+    "src/ktlab/mockt_training.py": "5a3554ae2764e8a7212a1b726f84e3ac4bec434d72fa8a8ae2f139f884931be1",
+    "src/ktlab/adapters.py": "2bca25e81e0e1a82b9847144bc7e9a55ee4241db7167fbc1f381c8d4eef0d751",
+    "src/ktlab/engine.py": "6f0abc0dfb292546daa4226d559a56d7bca4ee2859636ac238a272c0c80e969f",
+    "src/ktlab/provenance.py": "7f732691614227eb84ead5c578f24c338153304d503c569fb55c59c7f6e12c2a",
+    "src/ktlab/shared_adapters.py": "838983f3ba0469ca4cf92b237a76ce87321fb3b7e9dafb021e730c639b14af27",
+    "third_party/pykt/pykt/models/mockt.py": "de2a66f98e163164bfcfcc60af60df6bf9f06765f44cb21de630f7b278c63f31",
+    "scripts/analyze_shared_predictions.py": "9bb0ef0e0b7a1c5fc1923ec8a1b2ff04bb0fe64ae13758a07083930c3e7f3fda",
+    "scripts/summarize_shared_batch.py": "2f59be60445f464619ae889358943af201513d3e03672dd61c69c0d03ece47a2",
+    "tests/test_mockt_prefix_training.py": "ec0f01d193dbd9483fd5e7fe035c2817802864fa4a6ac1248b1e7c5b7b0847d2",
+    "tests/test_saved_prediction_analysis.py": "e2b2adc47639631adb733ff9f8833618498fd8ff6b2fd1a1315844f9fa0d39a0",
+    "tests/test_shared_batch_summary.py": "3810e12ec2fcc0be8d13e4675f6544dd6d7542f7f1564669ad4bf5b03a42e315",
+    ".cache/run_s006.py": "256ce19653b5e918103f957dae011d671167c88af93b86dc7ac9236f36ea89eb"
+  },
+  "runner_result": {
+    "check_id": "S006-mockt-prefix-cpu",
+    "status": "passed",
+    "exit_code": 0,
+    "timed_out": false,
+    "started_at": "2026-10-14T19:17:26.115875+00:00",
+    "finished_at": "2026-10-14T19:17:33.821495+00:00",
+    "elapsed_seconds": 7.703651456999978,
+    "manifest_sha256": "f04a5126293b635e00a53ab3d25faba04797a8efc39ad219dcbeb12393a70ea7",
+    "implementation_sha256": "0e9eb36f2ef023f51400ee74ff7bc3ae699aac0b52fbe1568bc73389b4cf07f0",
+    "source_and_bound_files_unchanged": true,
+    "logs": {
+      "S006.stdout.log": "837460ee02897a520d726bfbcf4dfcd9a6f40820683c6b236707be4a6f5e22a3",
+      "S006.stderr.log": "5a11e993e956765bd1ff12cbe0a33636e5e24b354e262150bb397996776ac639"
+    }
+  },
+  "private_receipts_sha256": {
+    "S006-result.json": "0199bfd7ebc7913762f4c32b985e900f6868c185acd2e05cae8b73e5257d9bb4",
+    "S006-attempt.json": "d9697d9e1632ff0ca70df75195cb0667dd417fa1ec545a2c5259d7d2235c79f6",
+    "S006.stdout.log": "837460ee02897a520d726bfbcf4dfcd9a6f40820683c6b236707be4a6f5e22a3",
+    "S006.stderr.log": "5a11e993e956765bd1ff12cbe0a33636e5e24b354e262150bb397996776ac639"
+  },
+  "pytest": {
+    "passed": 196,
+    "skipped": 0,
+    "failed": 0,
+    "errors": 0,
+    "warnings": 14,
+    "elapsed_seconds": 5.5,
+    "arguments": [
+      "-q",
+      "-s",
+      "tests/test_mockt_prefix_training.py",
+      "tests/test_saved_prediction_analysis.py",
+      "tests/test_shared_batch_summary.py",
+      "-ra"
+    ],
+    "warning_scope": "Pinned model imports Matplotlib; warnings are pyparsing deprecations."
+  },
+  "budget": {
+    "original_model_instances": 2,
+    "original_model_forward_calls": 64,
+    "expected_original_model_forward_calls": 58,
+    "autograd_grad_calls": 4,
+    "backward_calls": 0,
+    "optimizer_constructions": 0,
+    "optimizer_steps": 0,
+    "subprocess_wall_seconds": 300
+  },
+  "actual": {
+    "original_models": 2,
+    "original_forwards": 58,
+    "autograd_grad_calls": 4,
+    "backward_calls": 0,
+    "optimizer_constructions": 0,
+    "optimizer_steps": 0
+  },
+  "synthetic_model": {
+    "num_q": [
+      0,
+      5
+    ],
+    "num_c": 7,
+    "d_model": 16,
+    "n_blocks": 1,
+    "d_ff": 32,
+    "num_attn_heads": 2,
+    "final_fc_dim": 32,
+    "dropout": 0.0,
+    "seq_len": 200,
+    "kernel_size": 4,
+    "emb_type": "qid_conv_ker_noexp",
+    "l2": 0.01
+  },
+  "model_results": [
+    {
+      "num_q": 0,
+      "gradient_max_abs_error": 1.4901161193847656e-08,
+      "prefix_bce_abs_error": 0.0,
+      "full_batch_l2": 0.0,
+      "history_change_max": 0.00011900067329406738
+    },
+    {
+      "num_q": 5,
+      "gradient_max_abs_error": 1.4901161193847656e-08,
+      "prefix_bce_abs_error": 0.0,
+      "full_batch_l2": 0.039639998227357864,
+      "history_change_max": 0.00012475252151489258
+    }
+  ],
+  "tolerances": {
+    "probability_atol": 1e-06,
+    "probability_rtol": 0.0,
+    "global_bce_atol": 1e-07,
+    "global_bce_rtol": 0.0,
+    "gradient_atol": 5e-06,
+    "gradient_rtol": 0.0001,
+    "regularizer_atol": 0.0,
+    "regularizer_rtol": 0.0
+  },
+  "environment": {
+    "PYTHONPATH": "src",
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "CUDA_VISIBLE_DEVICES": "",
+    "HIP_VISIBLE_DEVICES": "",
+    "ROCR_VISIBLE_DEVICES": "",
+    "KTLAB_RUN_MOCKT_PREFIX_CPU_ACCEPTANCE": "1"
+  },
+  "cpu_threads": 1,
+  "seed": 42,
+  "checks": [
+    "target prefix routing at 49/50/51/149/150/151",
+    "original cropped-prefix probabilities, global masked BCE and parameter gradients",
+    "one nonzero full-batch original L2 term including original padding contribution",
+    "mixed right padding and singleton equivalence",
+    "current/future response isolation and permitted-history positive control",
+    "no_grad cache warmup then length changes then gradient computation",
+    "three-pass ground-seq control and absent-recipe/default evaluation dispatch",
+    "pre-construction rejection and explicit saved-result recipe identity"
+  ],
+  "execution_count": 1,
+  "automatic_retry": false,
+  "real_training_run_started": false,
+  "real_dataset_accessed": false,
+  "existing_weights_accessed": false,
+  "test_dataset_accessed": false,
+  "gpu_used": false,
+  "paid_services_used": false,
+  "stderr_scope": "Expected rejection messages from passing artificial-file negative tests: existing output, prediction hash mismatch, unfinished/missing synthetic runs or metrics. They do not indicate an actual training failure.",
+  "stdout_fixture_scope": "Offline summary fixtures contain artificial saved optimizer_steps values; these are synthetic file contents, not executed updates. Actual executed optimizer steps are zero.",
+  "conclusion": "The explicit prefix recipe matches original cropped-prefix predictions, one globally masked BCE, and parameter gradients at the declared tolerances with dropout zero. The control matches original full-ground-seq forwarding. Source and bound acceptance files remained unchanged during the one execution.",
+  "limitations": [
+    "Synthetic numerical checks are not real-data performance evidence.",
+    "Only branch-length conditioning changes; repeated-KC and window/event-loss differences remain.",
+    "Dropout-enabled independent prefixes are not claimed numerically identical.",
+    "CPU fixture changes only construction-time tensor placement; production device guards and vendor bytes remain unchanged.",
+    "This is a training adaptation and controlled consistency experiment, not a new mechanism or an original-paper reproduction.",
+    "No real-data accuracy gain, SOTA, multi-seed robustness, GPU memory fit, or dropout-enabled prefix-wise numerical equivalence is established.",
+    "A future B006 real-data experiment requires its own concrete manifest and resource record; none was created or started here."
+  ]
+}

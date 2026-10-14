@@ -131,3 +131,22 @@ python -m pytest -q tests/test_saved_prediction_analysis.py
 2026-10-14 实际验收结果：**51 项通过，pytest 计时 1.67 秒**。另经独立静态复核确认两个现有训练引擎的导出 schema 与本工具匹配。真实 B003 工件尚未产生，因此这不是实际训练产物的端到端验收。
 
 2026-10-15 多真实清单扩展的纯文件验收：**118 项通过，pytest 计时 1.98 秒**。新增两/三清单与不同实现来源、逐 run 真实归属、单路径 API/CLI 兼容、重复 `--batch`、三种 UKT recipe、错误或歧义清单映射、跨批次逐事件身份/标签、数据清单/fold/seed 不一致及清单输入竞态检查。全部使用临时人工工件；本次没有读取真实运行预测、运行模型或执行梯度更新。
+
+## MoC 训练 recipe 的显式比较身份（S006 已验收）
+
+`model=mockt` 可保持原训练（无 `mockt_training_recipe`），或显式指定
+`mockt-target-prefix-branches-v1` / `mockt-three-pass-ground-seq-control-v1`。
+两者仅适用于共享开发协议、`qid_conv_ker_noexp`、kernel=4、T=200、50/150 阈值；
+其训练含义和未解决的重复 KC／窗口限制见 [设计记录](MOCKT_PREFIX_TRAINING.md)。
+它们是原模型的训练适配／控制实验，不是新模型名或原论文复现。
+
+分析继续核对每个 run 的真实配置和清单哈希，再推导身份。
+公开 `comparison_identity(config)` 现在还输出 `mockt_training_recipe`（其它模型为 null），
+`comparison_key(identity)` 使用 model、UKT recipe 和 MoC recipe 三元组；
+报告的 `comparison_label` 为 `mockt` 或 `mockt / <完整 recipe>`。
+两种合法 recipe 以及原路径可配对，相同 recipe 的不同超参或自定义显示名不能绕过重复拒绝。
+汇总工具复用同一 key。数据、fold、seed、每事件标签／目标／历史、选择策略和所有原收据校验均不放宽。
+新增人工文件用例随 S006 唯一执行通过：三份测试文件合计196项通过、零跳过，pytest耗时5.50秒。
+其中模型一致性验收严格限于人工 CPU 张量；本分析与汇总测试仍仅使用临时人工文件，
+没有读取任何真实预测、训练数据、权重或测试集。模型调用预算与实际计数见设计记录，
+本次没有真实数据训练或性能结果。

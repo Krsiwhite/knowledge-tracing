@@ -67,6 +67,8 @@ B001、[B002](configs/batches/B002-one-epoch-calibration.json) 已在各自冻�
 - [E001固定等权组合](reports/E001_AKT_MOCKT_EQUAL_PROBABILITY_2026-10-15.md)：仅用AKT/MoC保存概率作一次0.5/0.5平均，AS09验证AUC为0.781737；存在互补线索，尚非原创模型、多seed或SOTA结果。
 - [共享事件开发协议](docs/SHARED_EVENT_PROTOCOL.md)：不同模型使用同一目标事件和允许历史的验证规则。
 - [已保存验证预测的离线分析](docs/SAVED_PREDICTION_ANALYSIS.md)：收据核对、单/多KC分层、按学生配对重采样；仅探索性验证，不加载模型或解封test。
+- [MoC前缀训练适配](docs/MOCKT_PREFIX_TRAINING.md)：按目标前缀选择原卷积分支，附三前向结构控制；[S006验收](reports/S006_MOCKT_PREFIX_CPU_ACCEPTANCE_2026-10-15.json)196项通过，尚无真实数据增益结论。
+- [B006三数据集适配方案](reports/B006_MOCKT_PREFIX_TRAINING_PLAN_2026-10-15.md)：6组固定配置，输入形状已核；67,000次更新与32小时软预算，待现有批次完成后串行执行，尚未启动。
 - [KTST 接入审计](docs/KTST_INTEGRATION.md)：官方实现、题级集合表示和协议差异。
 - [KTST 协议复核](docs/KTST_PROTOCOL_REVIEW.md)：独立参考流程与未来统一比较的要求。
 - `reports/`：只记录已经执行并验证的阶段事实。`runs/` 存本机运行证据。

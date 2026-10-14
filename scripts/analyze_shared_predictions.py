@@ -30,6 +30,7 @@ MAX_BOOTSTRAP_EVENT_VISITS = 500_000_000
 SELECTED_EXPORT_ABS_TOL = 1e-6
 UKT_AUTHOR_AUGMENTATION = "ukt-author-first-two-from-last-86ad9d8-v1"
 UKT_RECIPES = {"ukt-no-cl", "ukt-cl-same-responses", UKT_AUTHOR_AUGMENTATION}
+MOCKT_RECIPES = {"mockt-target-prefix-branches-v1", "mockt-three-pass-ground-seq-control-v1"}
 
 
 def require(condition, message):
@@ -75,9 +76,23 @@ def comparison_identity(config):
     model = config.get("model")
     require(isinstance(model, str) and bool(model.strip()), "Missing model identity")
     recipe = config.get("ukt_training_recipe")
+    mockt_recipe = config.get("mockt_training_recipe")
+    if mockt_recipe is not None:
+        require(model == "mockt", "MoC training recipe is only valid for model mockt")
+        require(isinstance(mockt_recipe, str) and mockt_recipe in MOCKT_RECIPES,
+                "Unsupported MoC training recipe")
+        require(config.get("protocol") == PROTOCOL, "MoC training recipes require the shared-development protocol")
+        settings = config.get("model_config")
+        require(isinstance(settings, dict), "MoC comparison requires resolved model_config")
+        require(settings.get("emb_type", "qid_conv_ker_noexp") == "qid_conv_ker_noexp",
+                "MoC recipe requires qid_conv_ker_noexp")
+        for key, expected in (("kernel_size", 4), ("seq_len", 200), ("sequence1", 50), ("sequence2", 150)):
+            require(type(settings.get(key, expected)) is int and settings.get(key, expected) == expected,
+                    f"MoC recipe requires {key}={expected}")
     if model != "ukt":
         require(recipe is None, "UKT training recipe is only valid for model ukt")
-        return {"model": model, "ukt_training_recipe": None, "comparison_label": model}
+        return {"model": model, "ukt_training_recipe": None, "mockt_training_recipe": mockt_recipe,
+                "comparison_label": f"{model} / {mockt_recipe}" if mockt_recipe else model}
     require(isinstance(recipe, str) and recipe in UKT_RECIPES, "Missing or unsupported UKT training recipe")
     settings = config.get("model_config")
     require(isinstance(settings, dict), "UKT comparison requires resolved model_config")
@@ -90,8 +105,13 @@ def comparison_identity(config):
     expected = ("ukt-no-cl" if not flags["use_CL"] else
                 UKT_AUTHOR_AUGMENTATION if flags["use_uncertainty_aug"] else "ukt-cl-same-responses")
     require(recipe == expected, "UKT training recipe conflicts with resolved model switches")
-    return {"model": model, "ukt_training_recipe": recipe,
+    return {"model": model, "ukt_training_recipe": recipe, "mockt_training_recipe": None,
             "comparison_label": f"{model} / {recipe}"}
+
+
+def comparison_key(identity):
+    """Use only the validated model/recipe identity, never an arbitrary label."""
+    return identity["model"], identity["ukt_training_recipe"], identity["mockt_training_recipe"]
 
 
 def _unique_object(pairs):
@@ -399,9 +419,9 @@ def analyze(paths, batch_path, reference, *, replicates=500, seed=42):
         runs.append(run)
     require(len({r["run_id"] for r in runs}) == len(runs), "Duplicate input runs")
     comparisons = {r["run_id"]: comparison_identity(r["config"]) for r in runs}
-    variants = {(identity["model"], identity["ukt_training_recipe"]) for identity in comparisons.values()}
-    require(len(variants) >= 2, "At least two distinct models or UKT training recipes are required")
-    require(len(variants) == len(runs), "Duplicate model/UKT training recipe runs are not supported")
+    variants = {comparison_key(identity) for identity in comparisons.values()}
+    require(len(variants) >= 2, "At least two distinct models or UKT training recipes or MoC training recipes are required")
+    require(len(variants) == len(runs), "Duplicate model/UKT training recipe/MoC training recipe runs are not supported")
     require(len({r["config"]["seed"] for r in runs}) == 1, "Models must use the same training seed")
     require(reference in {r["run_id"] for r in runs}, "Reference must identify an input run_id")
     baseline = next(r for r in runs if r["run_id"] == reference)
