@@ -11,6 +11,7 @@ import json
 from numbers import Integral
 from pathlib import Path
 import time
+from collections import deque
 
 import numpy as np
 
@@ -27,7 +28,8 @@ def _positive_integer(value, name):
 
 
 def evaluate_shared(model, dataset, device, prediction_path=None, *, batch_size=32,
-                    max_rows_per_forward=32, compute_metrics=True, deadline=None):
+                    max_rows_per_forward=32, compute_metrics=True, deadline=None,
+                    shared_validation_execution=None):
     """Evaluate exactly the dataset's frozen development selection, once.
 
     Debug limits belong to SharedEventDataset(max_targets=...), so the reported
@@ -39,6 +41,13 @@ def evaluate_shared(model, dataset, device, prediction_path=None, *, batch_size=
 
     _positive_integer(batch_size, "batch_size")
     _positive_integer(max_rows_per_forward, "max_rows_per_forward")
+    grouped = shared_validation_execution is not None
+    if grouped:
+        from .shared_prefix_groups import (EXECUTION, check_dataset, check_deadline,
+                                           iter_prefix_groups, predict_prefix_groups)
+        if shared_validation_execution != EXECUTION:
+            raise ValueError("Unknown shared_validation_execution mode")
+        check_dataset(dataset, model.model_name)
     audit = dataset.audit
     if dataset.protocol != PROTOCOL or audit.get("protocol") != PROTOCOL:
         raise ValueError("Shared evaluation requires the declared common-event protocol")
@@ -61,6 +70,70 @@ def evaluate_shared(model, dataset, device, prediction_path=None, *, batch_size=
         raise FileExistsError("Prediction artifacts already exist; choose a fresh evaluation path")
     started = time.perf_counter()
     seen, labels, probabilities = set(), [], []
+    execution_stats = {"group_rows": 0, "forward_calls": 0, "singleton_groups": 0,
+                       "original_valid_tokens": 0, "packed_valid_tokens": 0}
+
+    def verify_context(context):
+        digests = context_digests(context)
+        if any(context[key] != digests[key] for key in ("target_sha256", "context_sha256")):
+            raise ValueError("A target/history context changed after dataset selection")
+        target_hasher.update(bytes.fromhex(digests["target_sha256"]))
+        context_hasher.update(bytes.fromhex(digests["context_sha256"]))
+
+    def prediction_batches():
+        if not grouped:
+            for start in range(0, len(dataset), batch_size):
+                if deadline is not None and time.monotonic() >= deadline:
+                    raise TimeoutError("Shared development evaluation deadline reached")
+                contexts = [dataset[index] for index in range(start, min(start + batch_size, len(dataset)))]
+                for context in contexts:
+                    verify_context(context)
+                yield contexts, predict_shared(model, contexts, device, max_rows_per_forward=max_rows_per_forward)
+            return
+        # The planner consumes one lookahead context. This deque stores only
+        # checked output fields; obsolete short histories are not retained.
+        pending_rows = deque()
+
+        def contexts():
+            for index in range(len(dataset)):
+                check_deadline(deadline)
+                context = dataset[index]
+                verify_context(context)
+                if type(context["label"]) is not int or context["label"] not in (0, 1):
+                    raise ValueError("Shared target labels must be binary integers")
+                pending_rows.append({key: context[key] for key in
+                                     ("uid", "event_id", "query", "label", "target_sha256", "context_sha256")})
+                execution_stats["original_valid_tokens"] += context["context_kc_count"]
+                yield context
+
+        def flush(groups):
+            check_deadline(deadline)
+            rows = []
+            for group in groups:
+                execution_stats["group_rows"] += 1
+                execution_stats["singleton_groups"] += len(group.targets) == 1
+                execution_stats["packed_valid_tokens"] += group.context["context_kc_count"]
+                for event_id, _ in group.targets:
+                    row = pending_rows.popleft()
+                    if row["event_id"] != event_id or row["uid"] != group.context["uid"]:
+                        raise ValueError("Prefix output order differs from the checked targets")
+                    rows.append(row)
+            output = predict_prefix_groups(model, groups, device,
+                                           max_rows_per_forward=max_rows_per_forward, deadline=deadline)
+            execution_stats["forward_calls"] += 1
+            return rows, output
+
+        groups = []
+        for group in iter_prefix_groups(contexts(), deadline=deadline):
+            groups.append(group)
+            if len(groups) == max_rows_per_forward:
+                yield flush(groups)
+                groups = []
+        if groups:
+            yield flush(groups)
+        if pending_rows:
+            raise ValueError("Prefix planner left unscored checked targets")
+
     stream = None
     try:
         if path:
@@ -68,17 +141,8 @@ def evaluate_shared(model, dataset, device, prediction_path=None, *, batch_size=
             stream = pending.open("w", newline="", encoding="utf-8")
             writer = csv.DictWriter(stream, fieldnames=FIELDS)
             writer.writeheader()
-        for start in range(0, len(dataset), batch_size):
-            if deadline is not None and time.monotonic() >= deadline:
-                raise TimeoutError("Shared development evaluation deadline reached")
-            contexts = [dataset[index] for index in range(start, min(start + batch_size, len(dataset)))]
-            for context in contexts:
-                digests = context_digests(context)
-                if any(context[key] != digests[key] for key in ("target_sha256", "context_sha256")):
-                    raise ValueError("A target/history context changed after dataset selection")
-                target_hasher.update(bytes.fromhex(digests["target_sha256"]))
-                context_hasher.update(bytes.fromhex(digests["context_sha256"]))
-            output = np.asarray(predict_shared(model, contexts, device, max_rows_per_forward=max_rows_per_forward), dtype=np.float64)
+        for contexts, values in prediction_batches():
+            output = np.asarray(values, dtype=np.float64)
             if output.shape != (len(contexts),) or not np.isfinite(output).all() or ((output < 0) | (output > 1)).any():
                 raise ValueError("Shared adapter returned invalid or misaligned probabilities")
             for context, probability in zip(contexts, output):
@@ -111,6 +175,15 @@ def evaluate_shared(model, dataset, device, prediction_path=None, *, batch_size=
                   "model_training_and_checkpoint_selection_not_verified": True}
         if compute_metrics:
             result.update(binary_metrics(labels, probabilities))
+        if grouped:
+            result.update(shared_validation_execution=EXECUTION,
+                          execution={**execution_stats, "target_rows": len(probabilities),
+                                     "sequence_length": 200, "max_groups_per_forward": max_rows_per_forward,
+                                     "validation_batch_size": batch_size,
+                                     "validation_batch_size_semantics": "legacy_target_batch_limit_not_used_for_grouping",
+                                     "grouping_key": ["uid", "history_start_index"],
+                                     "original_padded_tokens": len(probabilities) * 200,
+                                     "packed_padded_tokens": execution_stats["group_rows"] * 200})
         if path:
             stream.close()
             stream = None

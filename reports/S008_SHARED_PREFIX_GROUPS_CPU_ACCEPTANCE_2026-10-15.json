@@ -1,0 +1,187 @@
+{
+  "schema_version": 1,
+  "check_id": "S008-shared-prefix-groups-cpu",
+  "status": "passed",
+  "report_date_hong_kong": "2026-10-15",
+  "scope": "bounded_synthetic_cpu_acceptance_and_artificial_receipt_tests",
+  "manifest_file": "configs/checks/S008-shared-prefix-groups-cpu.json",
+  "manifest_canonical_sha256": "70fd90fdc0182b0699e93bcb27e53bd6eb658b0c51cd55e11f432ec157a82867",
+  "manifest_file_sha256": "8aec71cf02965b2f462ebd8c850ad9abb61b5b02dc29d371722a25f5fc0c4177",
+  "implementation_sha256": "6765534b76c4fad5a50bd2b5217f3ec43dec64798bcc09a535eb9d65cf50e251",
+  "bound_files_sha256": {
+    "src/ktlab/shared_prefix_groups.py": "49bd7c651d030cc426b941b3783f36eabe7e016b190085600d577a813a00b6a6",
+    "src/ktlab/shared_evaluation.py": "fac016250e1f7cd2a86c7222c1b33f1ed48ee9ac6c0ec512c936b69b7f8faa10",
+    "src/ktlab/engine.py": "f7407e19d44414198575bfbc51009c408069574e9d9c02a5c55cdeb816424c58",
+    "src/ktlab/ktst_engine.py": "7d672426e38147a469ea94137be63252e4df0c26cd501649904f36c4d8d35eeb",
+    "src/ktlab/shared_events.py": "a2a5170ca039e140621278e1566ea5fefa133588cc925a206a35e277fd575f63",
+    "src/ktlab/shared_adapters.py": "838983f3ba0469ca4cf92b237a76ce87321fb3b7e9dafb021e730c639b14af27",
+    "src/ktlab/adapters.py": "c88bf35a6f47cbd6bae6620f7466a549d0f0bd565faadfff3e9e3fec7d79d3b5",
+    "src/ktlab/ktst_model.py": "e3ea16b79dda72a97d0dffc5fa3103938596bf91351be4410cfe499b96724a85",
+    "src/ktlab/provenance.py": "7f732691614227eb84ead5c578f24c338153304d503c569fb55c59c7f6e12c2a",
+    "third_party/pykt/pykt/models/akt.py": "bba6eef192264035020e723ee5169865718b8fbec6f4373073ce0514a55f4ce9",
+    "third_party/pykt/pykt/models/simplekt.py": "049d583430aa5ee3caed8846382e3762c90a544a8d93b230573c8f7028a4f082",
+    "third_party/pykt/pykt/models/ukt.py": "edf78e409e19d7aaf70d8450bab8e10254928cd72f224bac1974b12a0e7c4d55",
+    "third_party/ktst/pkg/model/KTST.py": "5bcac1982b0d11ac625821298af148e45e9ec1b98d546cea9d2e76cc6c072b1b",
+    "tests/test_shared_prefix_groups.py": "17bd3c82d0c09ca797fc79e3fab728e3857b576369adb78b806ea5fd3fc715b0",
+    "tests/test_shared_evaluation.py": "afb9bfebd4609cd62319153a189808ff2d41531c81b01497d7d4ed77102d0da9",
+    "tests/test_shared_engine.py": "34591851ae0f7c3da9ea4499b6059dbba4a2924532752cf5140e6d35162ba2a1",
+    ".cache/run_s008.py": "4ea8f05a0fa4023ba6b58d5fabbe5edac6941cf0e81e7c82ff3fd9315e5a3c9a"
+  },
+  "runner_result": {
+    "check_id": "S008-shared-prefix-groups-cpu",
+    "status": "passed",
+    "exit_code": 0,
+    "timed_out": false,
+    "started_at": "2026-10-14T20:34:45.198371+00:00",
+    "finished_at": "2026-10-14T20:35:41.091619+00:00",
+    "elapsed_seconds": 55.8912608899991,
+    "manifest_sha256": "70fd90fdc0182b0699e93bcb27e53bd6eb658b0c51cd55e11f432ec157a82867",
+    "implementation_sha256": "6765534b76c4fad5a50bd2b5217f3ec43dec64798bcc09a535eb9d65cf50e251",
+    "source_and_bound_files_unchanged": true,
+    "logs": {
+      "S008.stdout.log": "9c94ebd8607cf08d8e2850d583d944a53d6f305f5ff03716a59299b09c751bcb",
+      "S008.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "private_receipts_sha256": {
+    "S008-result.json": "155f7f4adbb48ca25356ff9bb86142212638a8d7fd2d5ccd896e718e7b92b711",
+    "S008-attempt.json": "284a97ccd23848b28234215f38936714115a0fc9caf3a9f4d503da70b9ca68d8",
+    "S008.stdout.log": "9c94ebd8607cf08d8e2850d583d944a53d6f305f5ff03716a59299b09c751bcb",
+    "S008.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "authorization_record_sha256": "d0d5466281c9483abe77ed2998dc8700cfab54699a212139276fea002bf13dc0",
+  "authorization_basis": "Existing direct human standing authorization, not a new user confirmation",
+  "pytest": {
+    "passed": 53,
+    "warnings": 0,
+    "elapsed_seconds": 53.84,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "arguments": [
+      "-q",
+      "-s",
+      "tests/test_shared_prefix_groups.py",
+      "tests/test_shared_evaluation.py",
+      "tests/test_shared_engine.py::test_shared_config_and_validation_only_guards",
+      "tests/test_shared_engine.py::test_legacy_protocol_checkpoint_defaults_remain_unchanged",
+      "-ra"
+    ]
+  },
+  "budget": {
+    "model_instances": 12,
+    "expected_model_instances": 5,
+    "complete_forward_calls": 128,
+    "expected_complete_forward_calls": 85,
+    "autograd_grad_calls": 0,
+    "backward_calls": 0,
+    "optimizer_constructions": 0,
+    "optimizer_steps": 0,
+    "subprocess_wall_seconds": 300
+  },
+  "actual": {
+    "model_instances": 5,
+    "complete_forward_calls": 85,
+    "autograd_grad_calls": 0,
+    "backward_calls": 0,
+    "optimizer_constructions": 0,
+    "optimizer_steps": 0
+  },
+  "synthetic_model": {
+    "num_q": 0,
+    "num_c": 7,
+    "max_concepts": 1,
+    "maxlen": 200,
+    "d_model": 16,
+    "n_blocks": 2,
+    "num_attn_heads": 2,
+    "nhead_tf": 2,
+    "nhead_agg": 2,
+    "num_layers_tf_enc": 2,
+    "num_layers_tf_dec": 2,
+    "num_layers_agg": 1,
+    "d_ff": 32,
+    "dim_feedforward": 32,
+    "final_fc_dim": 32,
+    "dim_classifier": 32,
+    "dropout": 0.0,
+    "ukt_final_fc_dim2": 16,
+    "ukt_use_CL": true,
+    "ukt_use_uncertainty_aug": true
+  },
+  "models": [
+    {
+      "current_kc_abs_change": 7.623434066772461e-05,
+      "forwards": 17,
+      "history_positive_max_abs_change": 0.0014854669570922852,
+      "model": "akt",
+      "oracle_max_abs_error": 0.0
+    },
+    {
+      "current_kc_abs_change": 0.027423977851867676,
+      "forwards": 17,
+      "history_positive_max_abs_change": 0.001704573631286621,
+      "model": "simplekt",
+      "oracle_max_abs_error": 0.0
+    },
+    {
+      "current_kc_abs_change": 0.00728154182434082,
+      "forwards": 17,
+      "history_positive_max_abs_change": 0.0005880594253540039,
+      "model": "ukt",
+      "oracle_max_abs_error": 0.0
+    },
+    {
+      "current_kc_abs_change": 0.007413208484649658,
+      "forwards": 17,
+      "history_positive_max_abs_change": 0.0008832812309265137,
+      "model": "ktst_mean",
+      "oracle_max_abs_error": 0.0
+    },
+    {
+      "current_kc_abs_change": 0.0007904171943664551,
+      "forwards": 17,
+      "history_positive_max_abs_change": 0.0002639293670654297,
+      "model": "ktst_mhsa",
+      "oracle_max_abs_error": 0.0
+    }
+  ],
+  "execution": "single_kc_prefix_groups_v1",
+  "supported_paths": {
+    "akt": "qid",
+    "simplekt": "qid",
+    "ukt": "stoc_qid/w2",
+    "ktst_mean": "learnable_alibi_monotonic_q_k",
+    "ktst_mhsa": "learnable_alibi_monotonic_q_k"
+  },
+  "verified_checks": [
+    "Original per-target T200 oracle versus grouped outputs for five two-layer CPU models",
+    "Current response and future response/KC isolation, permitted-history and current-KC positive controls",
+    "Longest context contains only legal history; planner and collator cannot read independent target labels",
+    "Cross-minibatch groups, two students, singleton batches and the 201st-event window boundary",
+    "Forged prefix/order/identity/selector rejection and restored original model training mode",
+    "Original output order, per-target digests, labels, metrics, source-before/after and deadline checks",
+    "Explicit execution configuration/checkpoint/metadata/reload identity and refusal of sealed test",
+    "Original default execution and checkpoint/configuration guards remain unchanged",
+    "Unsupported models, datasets, multiconcept/question-ID representations and unreviewed attention paths rejected",
+    "Only same-check temporary synthetic state dictionaries can be saved/reloaded; no completed-run weights"
+  ],
+  "tolerances": {
+    "probability_atol": 1e-06,
+    "probability_rtol": 0,
+    "positive_control_min_abs_change": 1e-08
+  },
+  "cpu_threads": 1,
+  "gpu_used": false,
+  "real_data_access": false,
+  "test_access": false,
+  "existing_weights_access": false,
+  "limitations": [
+    "Checks cover the listed synthetic two-layer CPU configurations, not arbitrary configurations or GPU numerics.",
+    "No actual model quality or measured speedup claim follows from synthetic checks or structural group counts.",
+    "Grouping is explicitly limited to ASSIST2015 concept-only single-KC valid data and supported model paths.",
+    "MoC-KT and multi-KC grouping are unsupported.",
+    "Existing running and frozen batches are unchanged; this check does not launch or amend any training batch.",
+    "A separate bounded GPU timing check with newly initialized models can be frozen only after this passes and the GPU is idle."
+  ]
+}
