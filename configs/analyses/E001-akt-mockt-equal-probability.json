@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "analysis_id": "E001-akt-mockt-equal-probability",
+  "scope": "exploratory_saved_validation_ensemble_not_trained_model",
+  "dataset": "assist2009",
+  "fold": 0,
+  "seed": 42,
+  "reference_run_id": "B003-akt-assist2009-f0-s42",
+  "inputs": [
+    {
+      "run_id": "B003-akt-assist2009-f0-s42",
+      "batch": "B003-shared-convergence-baselines.json",
+      "canonical_batch_sha256": "765c4d0183fd0b4332d50f6b6f7a206c845e007fb06fa87a640bf286e5e80d44",
+      "prediction_sha256": "8f85b1281af0883dfb20d28f25adcc9a3f6bb2f5437d6d9c81181782b9cab9ee",
+      "weight": 0.5
+    },
+    {
+      "run_id": "B003-R1-mockt-assist2009-f0-s42",
+      "batch": "B003-R1-shared-convergence-baselines.json",
+      "canonical_batch_sha256": "c2c4dbc0ffcfee1bb591948e6dffac26366b723bd13d7c8e484ebff886c15bd3",
+      "prediction_sha256": "fcec9d656f38750df12b5fd45e72b14ee14365bbf7c0106291cc0b3c69e2c00e",
+      "weight": 0.5
+    }
+  ],
+  "expected_events": 43295,
+  "expected_students": 617,
+  "combination": "arithmetic_mean_of_probabilities_not_logits",
+  "combinations_evaluated": 1,
+  "metrics": ["auc", "nll", "brier", "accuracy", "ece_15bins"],
+  "accuracy_threshold": 0.5,
+  "bootstrap": {"unit": "student", "replicates": 500, "seed": 42, "reference": "akt", "metrics": ["auc", "nll", "brier"]},
+  "diagnostics": ["correctness_2x2_at_fixed_threshold", "mean_squared_probability_disagreement", "brier_ensemble_identity"],
+  "subgroup_analyses": false,
+  "weight_or_temperature_or_threshold_search": false,
+  "known_before_plan": "Both individual models and their three-model comparison already inspected; these were the two highest-AUC completed models on this development fold.",
+  "selection_limitation": "Checkpoints and pair selection used this validation set; plan is fixed before ensemble calculation only, not preregistered before individual model results.",
+  "existing_research_priority_auc_gain": 0.003,
+  "priority_rule_scope": "Exploratory follow-up only. Passing this threshold would not establish a novel mechanism, learnable causal gating, multiseed stability or SOTA.",
+  "model_forward_calls": 0,
+  "optimizer_steps": 0,
+  "test_access": false
+}
