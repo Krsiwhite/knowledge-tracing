@@ -8,7 +8,7 @@
 
 本轮补充的[完整证据卡](evidence/README.md)覆盖 KTST 逐折官方配置、MoC 代码与全文缺口、UKT/KeenKT 主表及 KeenKT 合成因果审计、题目收缩近邻。KeenKT 指定公开前向存在当前/未来答案依赖，尚不能直接进入比较；简单频次收缩的宽泛原创性也不足。具体证据和限制见各卡。
 
-10-15执行进展：[首两项结果](../reports/B003_FIRST_TWO_BASELINES_2026-10-15.md)已完成保存预测比较；原批次 MoC 缓存错误经修复后，[独立 B003-R1](../reports/B003_FAILURE_AND_RECOVERY_2026-10-15.md)继续剩余实验，原结果及来源保留。UKT的[训练契约](evidence/UKT_TRAINING_CONTRACT_2026-10-15.md)已核实，[独立接入分支](https://github.com/Krsiwhite/knowledge-tracing/pull/1)通过27项人工CPU训练检查和45项相关CPU回归（另2项GPU专用检查跳过），合并缓存修复后另有1项CPU无梯度前向回归通过；[B004六项清单](../reports/B004_UKT_PLAN_2026-10-15.md)已修订准备，真实数据/GPU训练尚未启动。新的[残差更新近邻审计](evidence/CAUSAL_UPDATE_NOVELTY_2026-10-15.md)认为现有假设A不足以选为原创主线，避免将答案趋势重新命名为新信息。
+10-15执行进展：[首三项结果](../reports/B003_FIRST_THREE_BASELINES_2026-10-15.md)已完成保存预测比较；原批次 MoC 缓存错误经修复后，[独立 B003-R1](../reports/B003_FAILURE_AND_RECOVERY_2026-10-15.md)中的MoC已完成，KTST/ASSIST2009接续运行，原结果及来源保留。UKT的[训练契约](evidence/UKT_TRAINING_CONTRACT_2026-10-15.md)已核实，[独立接入分支](https://github.com/Krsiwhite/knowledge-tracing/pull/1)通过27项人工CPU训练检查和45项相关CPU回归（另2项GPU专用检查跳过），合并缓存修复后另有1项CPU无梯度前向回归通过；[B004六项清单](../reports/B004_UKT_PLAN_2026-10-15.md)已修订准备。[B005三项作者KTST配置](../reports/B005_KTST_AUTHOR_CONFIG_PLAN_2026-10-15.md)也已准备，B004/B005真实训练尚未启动。新的[残差更新近邻审计](evidence/CAUSAL_UPDATE_NOVELTY_2026-10-15.md)认为现有假设A不足以选为原创主线，避免将答案趋势重新命名为新信息。
 
 ## 1. 本阶段的问题与数据范围
 
