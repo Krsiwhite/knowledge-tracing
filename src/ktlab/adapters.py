@@ -19,7 +19,7 @@ from typing import Any
 import torch
 from torch.utils.data import Dataset
 
-SUPPORTED_MODELS = {"akt": "AKT", "simplekt": "simpleKT", "mockt": "MocKT", "fa_kt": "FA_KT"}
+SUPPORTED_MODELS = {"akt": "AKT", "simplekt": "simpleKT", "mockt": "MocKT", "fa_kt": "FA_KT", "ukt": "UKT"}
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 UPSTREAM = PROJECT_ROOT / "third_party" / "pykt" / "pykt" / "models"
 
@@ -78,8 +78,11 @@ def build_model(name: str, data_config: dict, model_config: dict | None = None,
         settings.update(emb_type="qid_conv_ker_noexp", kernel_size=4)
     if name == "fa_kt":
         settings.update(emb_type="qidband", num_rgap=64, num_sgap=64, num_pcount=64)
+    if name == "ukt":
+        settings.update(emb_type="stoc_qid", use_CL=True, use_uncertainty_aug=True, cl_weight=0.02,
+                        atten_type="w2", final_fc_dim=512, final_fc_dim2=256)
     settings.update(model_config or {})
-    if name in {"simplekt", "mockt", "fa_kt"}:
+    if name in {"simplekt", "mockt", "fa_kt", "ukt"}:
         settings.setdefault("seq_len", int(data_config.get("maxlen", 200)))
     if settings["d_model"] % settings["num_attn_heads"]:
         raise ValueError("d_model must be divisible by num_attn_heads")
@@ -236,6 +239,9 @@ def forward_model(model: torch.nn.Module, batch: dict) -> tuple[torch.Tensor, to
         predictions, regularizer = model(batch["ground_seq"], full("cseqs"), full("rseqs"), full("qseqs"))
     elif model.model_name == "simplekt":
         predictions = model(batch)
+    elif model.model_name == "ukt":
+        from .ukt_training import forward_ukt
+        predictions, regularizer = forward_ukt(model, batch)
     elif model.model_name == "fa_kt":
         gap_names = ("rgaps", "sgaps", "pcounts")
         gaps = {key: batch[key] for name in gap_names for key in (name, "shft_" + name)}
