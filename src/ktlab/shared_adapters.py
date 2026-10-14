@@ -15,6 +15,7 @@ from collections.abc import Sequence
 import torch
 
 from .ktst_model import forward_ktst
+from .shared_events import FINAL_PROTOCOL
 
 
 PROTOCOL = "ktlab-v2-shared-event-context-kc200-dev"
@@ -42,8 +43,8 @@ def _question(value) -> int:
 
 def _parts(context: dict) -> tuple[list[dict], dict, int]:
     """Read only the allowed history/query; never inspect context['label']."""
-    if context.get("protocol") != PROTOCOL:
-        raise ValueError("Shared adapter requires the declared development context protocol")
+    if context.get("protocol") not in {PROTOCOL, FINAL_PROTOCOL}:
+        raise ValueError("Shared adapter requires a declared common-event context protocol")
     event_id = context["event_id"]
     if not isinstance(event_id, str) or not event_id:
         raise ValueError("Shared target event_id must be a nonempty string")
@@ -168,6 +169,9 @@ def audit_shared_projection(contexts: Sequence[dict], data_config: dict) -> dict
     summarize the decoded evidence after the equality assertions, rather than
     substituting a common source hash for an actual tensor comparison.
     """
+    protocol = contexts[0]["protocol"] if contexts else PROTOCOL
+    if any(context.get("protocol") != protocol for context in contexts):
+        raise ValueError("Projection audit cannot mix development and final-test protocols")
     records, targets, rows, total_history = [], [], 0, 0
     for context in contexts:
         history, query, count = _parts(context)
@@ -222,7 +226,7 @@ def audit_shared_projection(contexts: Sequence[dict], data_config: dict) -> dict
         records.append({**targets[-1], "history": decoded_history})
         rows += len(query["concepts"])
         total_history += count
-    return {"protocol": PROTOCOL, "passed": True, "events": len(contexts), "kc_rows": rows,
+    return {"protocol": protocol, "passed": True, "events": len(contexts), "kc_rows": rows,
             "history_kc_occurrences": total_history, "sequence_length": SEQUENCE_LENGTH,
             "query_response": QUERY_RESPONSE, "projection_target_sha256": _hash(targets),
             "projection_context_sha256": _hash(records)}

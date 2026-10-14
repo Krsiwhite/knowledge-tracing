@@ -124,14 +124,14 @@ def test_shared_epoch0_is_selected_before_optimizer_and_keeps_original_training(
 
 
 @pytest.mark.parametrize("name", ["akt", "ktst_mean"])
-def test_bound_shared_checkpoint_can_be_evaluated_but_never_tested(tmp_path, monkeypatch, name):
+def test_bound_shared_checkpoint_can_be_evaluated_but_test_requires_release(tmp_path, monkeypatch, name):
     run, config, _ = setup_until_optimizer(tmp_path, monkeypatch, name)
     metrics = e.evaluate_run(run)
     assert metrics["n"] == 3 and metrics["protocol"] == e.SHARED_PROTOCOL
     initial = json.loads((run / "initial_valid_metrics.json").read_text())
     assert metrics["target_sha256"] == initial["target_sha256"]
     assert metrics["context_sha256"] == initial["context_sha256"]
-    with pytest.raises(PermissionError, match="not implemented"):
+    with pytest.raises(PermissionError, match="sealed"):
         e.evaluate_run(run, "test", allow_test=True)
     assert not (run / "test_predictions.csv").exists()
     config["fold"] = 1
