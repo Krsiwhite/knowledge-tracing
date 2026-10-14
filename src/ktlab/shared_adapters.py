@@ -232,7 +232,7 @@ def _move(batch: dict, device: torch.device) -> dict:
     return {key: value.to(device) if isinstance(value, torch.Tensor) else value for key, value in batch.items()}
 
 
-@torch.inference_mode()
+@torch.no_grad()
 def predict_shared(model: torch.nn.Module, contexts: Sequence[dict], device: str | torch.device,
                    max_rows_per_forward: int = 32) -> list[float]:
     """Return probabilities in exact context order; no labels or loss escape.
@@ -241,6 +241,9 @@ def predict_shared(model: torch.nn.Module, contexts: Sequence[dict], device: str
     bounded even when one query has many KCs. The original KTST forward still
     computes its dummy-label loss internally, but it is discarded immediately
     and is never used for optimization, selection, metrics or this return value.
+    Use no_grad rather than inference_mode: upstream MoC caches attention
+    tensors during its first forward and reuses them in subsequent training.
+    An inference tensor in that cache prevents autograd from saving it later.
     """
     if type(max_rows_per_forward) is not int or max_rows_per_forward < 1:
         raise ValueError("max_rows_per_forward must be positive")

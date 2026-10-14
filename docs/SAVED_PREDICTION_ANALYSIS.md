@@ -20,13 +20,39 @@ python scripts/analyze_shared_predictions.py \
   --batch configs/batches/B003-shared-convergence-baselines.json \
   --predictions \
     runs/B003-akt-assist2009-f0-s42/valid_predictions.csv \
-    runs/B003-ktst_mean-assist2009-f0-s42/valid_predictions.csv \
+    runs/B003-simplekt-assist2009-f0-s42/valid_predictions.csv \
   --reference B003-akt-assist2009-f0-s42 \
   --bootstrap-replicates 500 --seed 42 \
   --output reports/B003-assist2009-saved-valid-analysis.json
 ```
 
 `--seed` 固定的是 bootstrap 抽样随机数；训练 seed 来自已保存配置，另列在报告中。对另外两集分别调用；本工具不混合不同数据集、fold 或训练 seed，不平均不同模型的预测，也不执行最终多 seed/fold 确认分析。
+
+### 显式比较多个真实批次
+
+一次比较可以重复传入 `--batch`。Python API 原有 `analyze(paths, batch_path, reference, ...)` 保持兼容；第二个参数既可以是单个路径，也可以是非空路径 list/tuple。每个预测 run 必须在所给清单中唯一声明，再按自己的真实清单核验 `batch_id`、canonical batch SHA、实现源码 SHA、配置及数据清单收据。不会生成或接受工具自行拼接的 union manifest，也不会根据模型名猜测所属批次。
+
+例如，等相应运行全部完成后，比较 B003 已完成的 AKT 与 R1 恢复批次中的 MoC：
+
+```bash
+python scripts/analyze_shared_predictions.py \
+  --batch configs/batches/B003-shared-convergence-baselines.json \
+  --batch configs/batches/B003-R1-shared-convergence-baselines.json \
+  --predictions \
+    runs/B003-akt-assist2009-f0-s42/valid_predictions.csv \
+    runs/B003-R1-mockt-assist2009-f0-s42/valid_predictions.csv \
+  --reference B003-akt-assist2009-f0-s42 \
+  --bootstrap-replicates 500 --seed 42 \
+  --output reports/B003-R1-assist2009-saved-valid-analysis.json
+```
+
+重复路径、重复 `batch_id`、跨清单重复声明同一 `run_id`（即使该 run 不在本次预测输入中）、缺失或空配置都会拒绝。每份清单可以包含未选中的运行，工具不读取这些运行的工件；所有显式清单均记录字节收据并在结束时复查。没有列出某个输入 run 所属的真实清单时拒绝，不退回其它清单匹配。
+
+跨批次仍要求同一数据清单、数据集、完整验证 fold、训练 seed、原始开发数据 SHA、目标和可见历史摘要，并逐 `(uid,event_id)` 比较题目、标签、KC 数和两项摘要；原有完整性、epoch0、模型/UKT recipe 唯一性与数值容差不变。各自的实现源码 SHA 可以不同，但必须严格匹配各自的清单及运行收据。相同协议字符串和事件身份只说明这些记录与配对条件相容，**既不自动证明训练身份或方法等价，也不意味着源码不同就不能比较**。源码变化需要结合差异和兼容性证据作人工方法审查；工具不会替代这一步，也不会新增逐批批准流程。B003→R1 的 `no_grad` 兼容性修复应引用独立修复审查与人工验收记录，不能把原 B003 收据改写成 R1 来源。
+
+报告中的 `batches` 按显式输入顺序列出每份真实 `batch_id`、`canonical_batch_sha256`、`implementation_sha256`、清单字节收据及本次选中的 `selected_run_ids`；每个 run 也列出自己的 batch、canonical SHA 和 implementation SHA。`cross_batch_comparison` 区分“提供多清单”“实际选中多批次”和“所选实现源码不同”，并明确 `method_equivalence_verified=false`。所选源码不同时设置 `manual_method_review_required=true`，作为方法解释边界，而非拒绝计算。
+
+单清单调用的旧顶层 `batch_id`、`canonical_batch_sha256`、`batch_file` 保留原值。提供多清单时这三个单值字段为 `null`，调用方须读取 `batches` 和逐 run 字段；不会虚构一个合并批次身份。报告仍不输出输入路径或学生/事件记录。
 
 ### UKT 训练模式的比较身份
 
@@ -103,3 +129,5 @@ python -m pytest -q tests/test_saved_prediction_analysis.py
 随后加入预定的选点／导出差异检查，补测小漂移通过且报告原差值、超界拒绝、非有限值拒绝，以及同一 CSV／复制收据仍严格核验：**89 项通过，pytest 计时 1.85 秒**。仍只使用人工文件。
 
 2026-10-14 实际验收结果：**51 项通过，pytest 计时 1.67 秒**。另经独立静态复核确认两个现有训练引擎的导出 schema 与本工具匹配。真实 B003 工件尚未产生，因此这不是实际训练产物的端到端验收。
+
+2026-10-15 多真实清单扩展的纯文件验收：**118 项通过，pytest 计时 1.98 秒**。新增两/三清单与不同实现来源、逐 run 真实归属、单路径 API/CLI 兼容、重复 `--batch`、三种 UKT recipe、错误或歧义清单映射、跨批次逐事件身份/标签、数据清单/fold/seed 不一致及清单输入竞态检查。全部使用临时人工工件；本次没有读取真实运行预测、运行模型或执行梯度更新。

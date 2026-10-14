@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "batch_id": "B003-R1-shared-convergence-baselines",
+  "captured_at": "2026-10-14T17:19:39.617488+00:00",
+  "launched_at": "2026-10-14T17:18:01.677330+00:00",
+  "status_at_capture": "running",
+  "canonical_batch_sha256": "c2c4dbc0ffcfee1bb591948e6dffac26366b723bd13d7c8e484ebff886c15bd3",
+  "implementation_sha256": "bf5fcd0f23645b31f76c9486f4a98b3a5f9667886f5f80d62efc596b9a610a1d",
+  "training_git_commit": "22ed28d469b20de8f2e4113637717f76a5f0bc9d",
+  "process_verification": {
+    "worker": {
+      "alive": true,
+      "start_clock_and_command_match": true
+    },
+    "child": {
+      "alive": true,
+      "start_clock_and_command_match": true
+    }
+  },
+  "runs_in_recovery_batch": 10,
+  "first_run_id": "B003-R1-mockt-assist2009-f0-s42",
+  "first_run_optimizer_steps_recorded_at_capture": 0,
+  "preserved_completed_runs": [
+    "B003-akt-assist2009-f0-s42",
+    "B003-simplekt-assist2009-f0-s42"
+  ],
+  "epochs_upper_bound": 50,
+  "patience": 3,
+  "total_optimizer_steps_upper_bound": 124500,
+  "sum_soft_wall_seconds_upper_bound": 201600,
+  "automatic_retry": false,
+  "paid_services": false,
+  "test_accessed": false,
+  "authorization_basis": "Existing standing local-project execution instruction; new concrete manifest bound before launch",
+  "limitations": [
+    "Launch and live process evidence only; not a completed run or proof of recovered real-data convergence."
+  ]
+}

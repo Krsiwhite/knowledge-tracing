@@ -3,16 +3,27 @@
   "batch_id": "B004-ukt-shared-objectives",
   "status": "prepared",
   "purpose": "Compare pinned UKT author-augmentation CL with no-CL under shared development validation",
-  "source_sha256": "97eaebf70bf700b0dcb22624c963bc6933d5af01e7133b7e512d5e277dc9e892",
-  "git_commit_at_preparation": "da2c71b15111067b9ab07a397be05893d295adf1",
+  "source_sha256": "7bbfc8ed9b60a6759fac2f1c2f0b5752e014cd89ed169dcb0bff57409dcd6b78",
+  "git_commit_at_preparation": "2133552d140dd4b7e1924fc1c0aeda9d8dc3fa8c",
   "base_batch_sha256": "765c4d0183fd0b4332d50f6b6f7a206c845e007fb06fa87a640bf286e5e80d44",
   "input_audit_sha256": "597345a2b708107ffe1be6ce39371f3a3bb1a60eea52b003a07605889d888842",
   "test_access": false,
   "stop_on_noncompleted_run": true,
   "execution_dependencies": [
-    "B003 terminal results inspected; no competing GPU job",
+    "Inspect B003-R1 terminal process/run status and saved receipts before launch; unresolved failure blocks launch",
+    "Carry forward the two original B003 completed runs with their original batch/source receipts; do not rerun them",
+    "Confirm the local GPU is idle with no competing training or inference job",
     "Bind the concrete manifest to the existing standing user authorization before launch"
   ],
+  "execution_predecessor": {
+    "batch_id": "B003-R1-shared-convergence-baselines",
+    "batch_sha256": "c2c4dbc0ffcfee1bb591948e6dffac26366b723bd13d7c8e484ebff886c15bd3",
+    "original_batch_sha256": "765c4d0183fd0b4332d50f6b6f7a206c845e007fb06fa87a640bf286e5e80d44",
+    "carry_forward_run_ids": [
+      "B003-akt-assist2009-f0-s42",
+      "B003-simplekt-assist2009-f0-s42"
+    ]
+  },
   "comparison_boundary": "Same UKT architecture and epoch/update caps across objectives; CL costs extra compute. B003 comparisons require matching validation identities, not paper-score ranking.",
   "limits": {
     "total_optimizer_steps_upper_bound": 67000,
@@ -389,5 +400,12 @@
         }
       }
     }
-  ]
+  ],
+  "revision": 1,
+  "supersedes": {
+    "batch_sha256": "59e296ce15db80c84629a8a32a938802c42e646edad8e91ce420f10edad00aae",
+    "source_sha256": "97eaebf70bf700b0dcb22624c963bc6933d5af01e7133b7e512d5e277dc9e892",
+    "status": "prepared_not_executed",
+    "reason": "Merged verified shared no_grad cache compatibility repair; run configurations and budgets unchanged"
+  }
 }

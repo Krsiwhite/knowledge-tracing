@@ -8,16 +8,18 @@ from pathlib import Path
 from ktlab.provenance import canonical_hash, git_revision, project_root, read_json, source_fingerprint, write_json
 
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--baseline-batch', type=Path, required=True)
-    parser.add_argument('--output', type=Path, required=True)
-    args = parser.parse_args()
-    if args.output.exists():
-        raise FileExistsError('Do not overwrite a prepared/frozen batch; inspect its status first')
-    root = project_root()
-    previous = read_json(args.baseline_batch)
-    inputs = read_json(root / 'reports/UKT_TRAINING_INPUT_AUDIT_2026-10-15.json')
+def prepare_batch(root, previous, inputs, recovery, *, superseded=None):
+    """Prepare metadata only; execution dependencies remain pending until launch."""
+    carry_forward = ['B003-akt-assist2009-f0-s42', 'B003-simplekt-assist2009-f0-s42']
+    recovery_info = recovery.get('recovery', {})
+    if (recovery.get('batch_id') != 'B003-R1-shared-convergence-baselines'
+            or recovery.get('test_access') is not False
+            or recovery_info.get('original_batch_id') != previous['batch_id']
+            or recovery_info.get('original_batch_sha256') != canonical_hash(previous)
+            or recovery_info.get('preserved_completed_runs') != carry_forward
+            or not set(carry_forward).issubset({r['run_id'] for r in previous['runs']})
+            or set(carry_forward).intersection(r['run_id'] for r in recovery['runs'])):
+        raise ValueError('B003-R1 recovery and original completed-run identities do not match')
     audits = {item['dataset']: item for item in inputs['datasets']}
     if inputs['test_accessed'] or inputs['model_executed']:
         raise ValueError('Unexpected scope for the training-input audit')
@@ -64,16 +66,61 @@ def main():
               'source_sha256': source_fingerprint(root), 'git_commit_at_preparation': git_revision(root),
               'base_batch_sha256': canonical_hash(previous), 'input_audit_sha256': canonical_hash(inputs),
               'test_access': False, 'stop_on_noncompleted_run': True,
-              'execution_dependencies': ['B003 terminal results inspected; no competing GPU job',
+              'execution_dependencies': ['Inspect B003-R1 terminal process/run status and saved receipts before launch; unresolved failure blocks launch',
+                                         'Carry forward the two original B003 completed runs with their original batch/source receipts; do not rerun them',
+                                         'Confirm the local GPU is idle with no competing training or inference job',
                                          'Bind the concrete manifest to the existing standing user authorization before launch'],
+              'execution_predecessor': {'batch_id': recovery['batch_id'],
+                                        'batch_sha256': canonical_hash(recovery),
+                                        'original_batch_sha256': canonical_hash(previous),
+                                        'carry_forward_run_ids': carry_forward},
               'comparison_boundary': 'Same UKT architecture and epoch/update caps across objectives; CL costs extra compute. B003 comparisons require matching validation identities, not paper-score ranking.',
               'limits': limits, 'selection': {**previous['selection'], 'patience': 3}, 'runs': runs}
     if limits['total_optimizer_steps_upper_bound'] != 67000 or limits['sum_run_wall_seconds'] != 115200:
         raise ValueError('Unexpected B004 resource totals; inspect the plan before execution')
+    if superseded is not None:
+        if superseded.get('batch_id') != result['batch_id'] or superseded.get('status') != 'prepared':
+            raise ValueError('Only this unexecuted prepared B004 may be explicitly refrozen')
+        if any((root / 'runs' / r['run_id']).exists() for r in runs):
+            raise ValueError('B004 run artifacts already exist; do not refreeze an executed batch')
+        for key in ('runs', 'limits', 'selection', 'base_batch_sha256', 'input_audit_sha256', 'test_access'):
+            if superseded.get(key) != result[key]:
+                raise ValueError(f'Refreeze must preserve B004 {key} exactly')
+        if superseded.get('source_sha256') == result['source_sha256']:
+            raise ValueError('Implementation is unchanged; no source refreeze is needed')
+        result['revision'] = superseded.get('revision', 0) + 1
+        result['supersedes'] = {'batch_sha256': canonical_hash(superseded),
+                                'source_sha256': superseded['source_sha256'],
+                                'status': 'prepared_not_executed',
+                                'reason': 'Merged verified shared no_grad cache compatibility repair; run configurations and budgets unchanged'}
+    return result
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--baseline-batch', type=Path, required=True)
+    parser.add_argument('--recovery-batch', type=Path, required=True)
+    parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--supersedes', metavar='CANONICAL_SHA256',
+                        help='Explicitly replace this exact existing, unexecuted prepared output')
+    args = parser.parse_args()
+    superseded = None
+    if args.output.exists():
+        if not args.supersedes:
+            raise FileExistsError('Existing output requires its exact --supersedes canonical SHA256')
+        superseded = read_json(args.output)
+        if canonical_hash(superseded) != args.supersedes:
+            raise ValueError('Existing output differs from the requested superseded SHA256')
+    elif args.supersedes:
+        raise FileNotFoundError('The explicitly superseded prepared output does not exist')
+    root = project_root()
+    result = prepare_batch(root, read_json(args.baseline_batch),
+                           read_json(root / 'reports/UKT_TRAINING_INPUT_AUDIT_2026-10-15.json'),
+                           read_json(args.recovery_batch), superseded=superseded)
     write_json(args.output, result)
     print({'path': str(args.output), 'canonical_sha256': canonical_hash(result),
-           'source_sha256': result['source_sha256'], 'runs': len(runs),
-           'optimizer_steps_upper_bound': limits['total_optimizer_steps_upper_bound']})
+           'source_sha256': result['source_sha256'], 'runs': len(result['runs']),
+           'optimizer_steps_upper_bound': result['limits']['total_optimizer_steps_upper_bound']})
 
 
 if __name__ == '__main__':

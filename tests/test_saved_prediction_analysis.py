@@ -610,3 +610,221 @@ def test_cli_writes_only_aggregate_and_never_overwrites(artifacts, tmp_path):
     args[-1] = str(invalid)
     paths[0].write_text("tampered")
     assert ANALYSIS.main(args) == 2 and not invalid.exists()
+
+
+def bind_synthetic_run(path, batch):
+    """Bind artificial files to their own unchanged semantic run declaration."""
+    entry = next(entry for entry in batch["runs"] if entry["run_id"] == path.parent.name)
+    batch_sha = ANALYSIS.canonical_hash(batch)
+    config = load_json(path.parent / "resolved_config.json")
+    config.update(copy.deepcopy(entry["config"]), batch_id=batch["batch_id"], approved_batch_sha256=batch_sha)
+    write_json(path.parent / "resolved_config.json", config)
+    metadata = load_json(path.parent / "metadata.json")
+    metadata.update(run_id=entry["run_id"], batch_id=batch["batch_id"], approved_batch_sha256=batch_sha,
+                    config_sha256=ANALYSIS.canonical_hash(config), implementation_sha256=batch["source_sha256"],
+                    dataset_manifest_sha256=entry["dataset_manifest_sha256"], seed=config["seed"])
+    write_json(path.parent / "metadata.json", metadata)
+    sidecar = load_json(path.with_suffix(".csv.manifest.json"))
+    sidecar["result"].update(implementation_sha256=batch["source_sha256"], model=config["model"])
+    write_json(path.with_suffix(".csv.manifest.json"), sidecar)
+    metrics = load_json(path.parent / "valid_metrics.json")
+    metrics.update(implementation_sha256=batch["source_sha256"], model=config["model"])
+    write_json(path.parent / "valid_metrics.json", metrics)
+
+
+def separate_synthetic_batches(artifacts, *, different_sources=True):
+    paths, original_path, reference = artifacts
+    original = load_json(original_path)
+    batch_paths = []
+    for index, path in enumerate(paths):
+        entry = next(entry for entry in original["runs"] if entry["run_id"] == path.parent.name)
+        batch = {"batch_id": f"B-SYNTHETIC-PART-{index}", "test_access": False,
+                 "source_sha256": sha(f"implementation-{index}" if different_sources else "same implementation"),
+                 "runs": [copy.deepcopy(entry)]}
+        batch_path = original_path.with_name(f"batch-part-{index}.json")
+        write_json(batch_path, batch)
+        bind_synthetic_run(path, batch)
+        batch_paths.append(batch_path)
+    return paths, batch_paths, reference
+
+
+@pytest.fixture
+def cross_batch_artifacts(artifacts):
+    return separate_synthetic_batches(artifacts)
+
+
+@pytest.mark.parametrize("different_sources", [False, True])
+def test_explicit_cross_batch_binding_preserves_statistics_and_reports_all_sources(artifacts, different_sources):
+    before = analyze(artifacts)
+    paths, manifests, reference = separate_synthetic_batches(artifacts, different_sources=different_sources)
+    after = ANALYSIS.analyze(paths, tuple(reversed(manifests)), reference, replicates=40, seed=42)
+    assert after["bootstrap"] == before["bootstrap"]
+    assert after["selection"] == before["selection"] and after["labels_sha256"] == before["labels_sha256"]
+    assert after["batch_id"] is None and after["canonical_batch_sha256"] is None and after["batch_file"] is None
+    assert len(after["batches"]) == 2
+    for run, path, manifest_path in zip(after["runs"], paths, manifests):
+        manifest = load_json(manifest_path)
+        saved = next(batch for batch in after["batches"] if batch["batch_id"] == manifest["batch_id"])
+        assert run["batch_id"] == saved["batch_id"]
+        assert run["canonical_batch_sha256"] == saved["canonical_batch_sha256"] == ANALYSIS.canonical_hash(manifest)
+        assert run["implementation_sha256"] == saved["implementation_sha256"] == manifest["source_sha256"]
+        assert saved["selected_run_ids"] == [path.parent.name]
+        assert saved["batch_file"] == {"sha256": hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
+                                       "bytes": manifest_path.stat().st_size}
+    scope = after["cross_batch_comparison"]
+    assert scope["multiple_batches_supplied"] and scope["multiple_batches_selected"]
+    assert scope["implementation_sources_differ"] is different_sources
+    assert scope["manual_method_review_required"] is different_sources
+    assert scope["method_equivalence_verified"] is False
+    assert len(scope["implementation_sha256_values"]) == (2 if different_sources else 1)
+    encoded = json.dumps(after)
+    assert str(manifests[0].parent) not in encoded and "PRIVATE-STUDENT" not in encoded
+
+
+def test_single_manifest_path_api_and_one_element_list_are_equivalent(artifacts):
+    paths, manifest, reference = artifacts
+    direct = analyze(artifacts)
+    assert direct == ANALYSIS.analyze(paths, [manifest], reference, replicates=40, seed=42)
+    assert direct["batch_id"] == "B-SYNTHETIC"
+    assert direct["batch_file"] == direct["batches"][0]["batch_file"]
+    assert not direct["cross_batch_comparison"]["multiple_batches_selected"]
+
+
+def test_three_real_manifests_and_ukt_recipes_remain_distinct(ukt_artifacts):
+    paths, manifest_path, reference = ukt_artifacts
+    manifest = load_json(manifest_path)
+    entry = copy.deepcopy(manifest["runs"][1])
+    entry["run_id"] = "B-SYNTHETIC-third-run"
+    entry["config"] = ukt_config("ukt-cl-same-responses", True, False) | {
+        key: value for key, value in entry["config"].items()
+        if key not in {"model", "ukt_training_recipe", "model_config"}}
+    manifest["runs"].append(entry)
+    third = paths[1].parent.parent / entry["run_id"] / "valid_predictions.csv"
+    third.parent.mkdir()
+    for source in paths[1].parent.iterdir():
+        (third.parent / source.name).write_bytes(source.read_bytes())
+    write_json(manifest_path, manifest)
+    split = separate_synthetic_batches(([*paths, third], manifest_path, reference))
+    report = analyze(split)
+    assert len(report["batches"]) == len(report["cross_batch_comparison"]["implementation_sha256_values"]) == 3
+    assert {run["ukt_training_recipe"] for run in report["runs"]} == ANALYSIS.UKT_RECIPES
+
+
+@pytest.mark.parametrize("mutation", ["missing_manifest", "wrong_batch_id", "wrong_batch_hash", "wrong_source",
+                                    "wrong_configuration", "missing_configuration", "empty_configuration",
+                                    "duplicate_path", "duplicate_batch_id", "duplicate_run", "unselected_duplicate_run"])
+def test_cross_batch_rejects_wrong_or_ambiguous_manifest_bindings(cross_batch_artifacts, mutation):
+    paths, manifests, reference = cross_batch_artifacts
+    if mutation == "missing_manifest":
+        manifests = manifests[:1]
+    elif mutation in {"wrong_batch_id", "wrong_batch_hash", "wrong_source"}:
+        path = paths[1].parent / "metadata.json"
+        metadata = load_json(path)
+        field, value = {"wrong_batch_id": ("batch_id", "OTHER-BATCH"),
+                        "wrong_batch_hash": ("approved_batch_sha256", "0" * 64),
+                        "wrong_source": ("implementation_sha256", "0" * 64)}[mutation]
+        metadata[field] = value
+        write_json(path, metadata)
+    elif mutation == "duplicate_path":
+        manifests = [*manifests, manifests[0]]
+    else:
+        batch = load_json(manifests[1])
+        if mutation == "wrong_configuration":
+            config_path = paths[1].parent / "resolved_config.json"
+            config = load_json(config_path)
+            config["model_config"]["d_model"] = 999
+            write_json(config_path, config)
+        elif mutation == "missing_configuration":
+            del batch["runs"][0]["config"]
+        elif mutation == "empty_configuration":
+            batch["runs"][0]["config"] = {}
+        elif mutation == "duplicate_batch_id":
+            batch["batch_id"] = load_json(manifests[0])["batch_id"]
+        elif mutation == "duplicate_run":
+            batch["runs"].append(copy.deepcopy(load_json(manifests[0])["runs"][0]))
+        elif mutation == "unselected_duplicate_run":
+            other = load_json(manifests[0])
+            entry = copy.deepcopy(other["runs"][0])
+            entry["run_id"] = "UNSELECTED-DUPLICATE"
+            other["runs"].append(entry)
+            batch["runs"].append(copy.deepcopy(entry))
+            write_json(manifests[0], other)
+        write_json(manifests[1], batch)
+    with pytest.raises(ValueError):
+        ANALYSIS.analyze(paths, manifests, reference, replicates=2)
+
+
+@pytest.mark.parametrize("mutation", ["label", "question", "kc", "target", "context", "duplicate", "missing"])
+def test_cross_batch_does_not_relax_per_event_identity(cross_batch_artifacts, mutation):
+    path = cross_batch_artifacts[0][1]
+    rows = read_csv(path)
+    if mutation == "duplicate":
+        rows[-1] = rows[0]
+    elif mutation == "missing":
+        rows.pop()
+    else:
+        key, value = {"label": ("label", "1"), "question": ("question_id", "999"),
+                      "kc": ("kc_count", "3"), "target": ("target_sha256", "0" * 64),
+                      "context": ("context_sha256", "0" * 64)}[mutation]
+        rows[0][key] = value
+    write_csv(path, rows)
+    rehash_csv(path)
+    with pytest.raises(ValueError):
+        analyze(cross_batch_artifacts)
+
+
+@pytest.mark.parametrize("mutation", ["seed", "dataset_manifest", "fold", "data_source", "model"])
+def test_cross_batch_rejects_consistent_but_incompatible_selection(cross_batch_artifacts, mutation):
+    paths, manifests, _ = cross_batch_artifacts
+    path, manifest_path = paths[1], manifests[1]
+    batch = load_json(manifest_path)
+    entry = batch["runs"][0]
+    if mutation == "dataset_manifest":
+        entry["dataset_manifest_sha256"] = sha("different dataset manifest")
+    elif mutation in {"seed", "fold", "model"}:
+        entry["config"][mutation] = {"seed": 99, "fold": 1, "model": "akt"}[mutation]
+    else:
+        entry["shared_validation"]["source_sha256"] = sha("different source data")
+    write_json(manifest_path, batch)
+    bind_synthetic_run(path, batch)
+    if mutation in {"fold", "data_source"}:
+        metadata = load_json(path.parent / "metadata.json")
+        sidecar = load_json(path.with_suffix(".csv.manifest.json"))
+        if mutation == "fold":
+            metadata["valid_event_audit"]["fold"] = sidecar["dataset_audit"]["fold"] = 1
+        else:
+            value = entry["shared_validation"]["source_sha256"]
+            metadata["valid_event_audit"]["source_sha256"] = sidecar["dataset_audit"]["source_sha256"] = value
+            metadata["validation_source_sha256"] = metadata["valid_file_sha256"] = value
+            sidecar["result"]["source_sha256"] = value
+            metrics = load_json(path.parent / "valid_metrics.json")
+            metrics["source_sha256"] = value
+            write_json(path.parent / "valid_metrics.json", metrics)
+        write_json(path.parent / "metadata.json", metadata)
+        write_json(path.with_suffix(".csv.manifest.json"), sidecar)
+    with pytest.raises(ValueError, match="same training seed|Dataset manifest|different target/context/source|distinct models"):
+        analyze(cross_batch_artifacts)
+
+
+def test_cross_batch_manifest_race_is_checked(cross_batch_artifacts, monkeypatch):
+    original = ANALYSIS.paired_bootstrap
+    def changed(*args, **kwargs):
+        result = original(*args, **kwargs)
+        manifest = cross_batch_artifacts[1][1]
+        manifest.write_text(manifest.read_text() + " ")
+        return result
+    monkeypatch.setattr(ANALYSIS, "paired_bootstrap", changed)
+    with pytest.raises(ValueError, match="changed during"):
+        analyze(cross_batch_artifacts)
+
+
+def test_cli_accepts_repeated_batch_flags(cross_batch_artifacts, tmp_path):
+    paths, manifests, reference = cross_batch_artifacts
+    output = tmp_path / "multiple-batches.json"
+    arguments = ["--predictions", *map(str, paths), "--reference", reference,
+                 "--bootstrap-replicates", "2", "--output", str(output)]
+    for manifest in manifests:
+        arguments.extend(["--batch", str(manifest)])
+    assert ANALYSIS.main(arguments) == 0
+    report = load_json(output)
+    assert len(report["batches"]) == 2 and report["cross_batch_comparison"]["manual_method_review_required"]

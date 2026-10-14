@@ -1,0 +1,312 @@
+{
+  "schema_version": 1,
+  "diagnostic": "saved_shared_validation_independent_error_strata",
+  "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+  "split": "valid",
+  "run_id": "B003-simplekt-assist2009-f0-s42",
+  "model": "simplekt",
+  "ukt_training_recipe": null,
+  "comparison_label": "simplekt",
+  "dataset": "assist2009",
+  "fold": 0,
+  "seed": 42,
+  "selection": {
+    "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+    "dataset": "assist2009",
+    "split": "valid",
+    "fold": 0,
+    "source_sha256": "d590ba88d8d7ab630e635a89b56df55219f49a75b55caa0df571a1f3b460404e",
+    "target_sha256": "c4c432fca4c3a3308dd6e9dc9b852a7d9b3f6852caa2ee8074379b209f8b2190",
+    "context_sha256": "491600d611a2726d3ffb85b55c0b9e2e44fabde6e365e7faf89844a243a6da54",
+    "selected_targets": 43295
+  },
+  "batch_id": "B003-shared-convergence-baselines",
+  "canonical_batch_sha256": "765c4d0183fd0b4332d50f6b6f7a206c845e007fb06fa87a640bf286e5e80d44",
+  "overall": {
+    "n": 43295,
+    "students": 617,
+    "positive_rate": 0.6630326827578242,
+    "auc": 0.764001450181094,
+    "accuracy": 0.7325095276590831,
+    "nll": 0.5559406305962472,
+    "brier": 0.18299090128725726,
+    "ece_15bins": 0.056805124740988484,
+    "auc_unavailable_reason": null
+  },
+  "strata": {
+    "visible_history_events": {
+      "supported": true,
+      "bins": {
+        "1-5": {
+          "n": 2969,
+          "students": 617,
+          "positive_rate": 0.6648703267093298,
+          "auc": 0.7643086251928335,
+          "accuracy": 0.7413270461434827,
+          "nll": 0.550880700714842,
+          "brier": 0.18079014461870405,
+          "ece_15bins": 0.051077891439332515,
+          "auc_unavailable_reason": null
+        },
+        "6-20": {
+          "n": 6155,
+          "students": 529,
+          "positive_rate": 0.6186839967506093,
+          "auc": 0.778589040004583,
+          "accuracy": 0.7366368805848903,
+          "nll": 0.5606109602074124,
+          "brier": 0.18338607992570716,
+          "ece_15bins": 0.04680176593494929,
+          "auc_unavailable_reason": null
+        },
+        "21-50": {
+          "n": 7149,
+          "students": 311,
+          "positive_rate": 0.6339348160581899,
+          "auc": 0.7556474386193066,
+          "accuracy": 0.7146454049517414,
+          "nll": 0.5845304522888279,
+          "brier": 0.19256457286852838,
+          "ece_15bins": 0.06784361535855918,
+          "auc_unavailable_reason": null
+        },
+        ">50": {
+          "n": 27022,
+          "students": 179,
+          "positive_rate": 0.6806305972910961,
+          "auc": 0.7614034510193106,
+          "accuracy": 0.7353267707793649,
+          "nll": 0.5478690007309859,
+          "brier": 0.1806098615379703,
+          "ece_15bins": 0.05797871860935018,
+          "auc_unavailable_reason": null
+        }
+      }
+    },
+    "question_train_event_frequency": {
+      "supported": true,
+      "bins": {
+        "0": {
+          "n": 379,
+          "students": 102,
+          "positive_rate": 0.6754617414248021,
+          "auc": 0.6502159552845529,
+          "accuracy": 0.6437994722955145,
+          "nll": 0.6394382763818659,
+          "brier": 0.22173366795729663,
+          "ece_15bins": 0.10366938846274525,
+          "auc_unavailable_reason": null
+        },
+        "1-5": {
+          "n": 5464,
+          "students": 364,
+          "positive_rate": 0.6923499267935578,
+          "auc": 0.7441020703315484,
+          "accuracy": 0.7342606149341142,
+          "nll": 0.588824337951798,
+          "brier": 0.18748253486893043,
+          "ece_15bins": 0.08673866132238432,
+          "auc_unavailable_reason": null
+        },
+        "6-20": {
+          "n": 18729,
+          "students": 557,
+          "positive_rate": 0.6753163543168349,
+          "auc": 0.7806577067172759,
+          "accuracy": 0.7452079662555395,
+          "nll": 0.5350372968924167,
+          "brier": 0.17486436812759534,
+          "ece_15bins": 0.06206760314343756,
+          "auc_unavailable_reason": null
+        },
+        "21-100": {
+          "n": 18608,
+          "students": 544,
+          "positive_rate": 0.6424118658641444,
+          "auc": 0.7540713942570858,
+          "accuracy": 0.7208727429062769,
+          "nll": 0.5658441081048796,
+          "brier": 0.1891342488531012,
+          "ece_15bins": 0.04341420844188921,
+          "auc_unavailable_reason": null
+        },
+        ">100": {
+          "n": 115,
+          "students": 73,
+          "positive_rate": 0.5652173913043478,
+          "auc": 0.8252307692307692,
+          "accuracy": 0.7565217391304347,
+          "nll": 0.5202227411608454,
+          "brier": 0.17134423679922442,
+          "ece_15bins": 0.11235610136519307,
+          "auc_unavailable_reason": null
+        }
+      }
+    },
+    "visible_history_same_question": {
+      "supported": true,
+      "bins": {
+        "0": {
+          "n": 42911,
+          "students": 617,
+          "positive_rate": 0.6628370347929435,
+          "auc": 0.7637794080271384,
+          "accuracy": 0.7320733611428305,
+          "nll": 0.5562922804155015,
+          "brier": 0.18319454871832197,
+          "ece_15bins": 0.056868055243849934,
+          "auc_unavailable_reason": null
+        },
+        ">=1": {
+          "n": 384,
+          "students": 97,
+          "positive_rate": 0.6848958333333334,
+          "auc": 0.7742513276560978,
+          "accuracy": 0.78125,
+          "nll": 0.5166446790493034,
+          "brier": 0.16023383119762774,
+          "ece_15bins": 0.08475340113906367,
+          "auc_unavailable_reason": null
+        }
+      }
+    },
+    "query_kc_visible_history_support": {
+      "supported": true,
+      "bins": {
+        "0": {
+          "n": 5047,
+          "students": 468,
+          "positive_rate": 0.6110560729146027,
+          "auc": 0.7512841325877634,
+          "accuracy": 0.711313651674262,
+          "nll": 0.6055656923817361,
+          "brier": 0.19821829910168662,
+          "ece_15bins": 0.059900237320066926,
+          "auc_unavailable_reason": null
+        },
+        ">=1": {
+          "n": 38248,
+          "students": 612,
+          "positive_rate": 0.6698912361430663,
+          "auc": 0.7659917529391317,
+          "accuracy": 0.7353064212507844,
+          "nll": 0.5493923748225763,
+          "brier": 0.1809815759167954,
+          "ece_15bins": 0.057963221575067315,
+          "auc_unavailable_reason": null
+        }
+      }
+    }
+  },
+  "stratification": {
+    "independent_not_crossed": true,
+    "bins_fixed_before_analysis": {
+      "visible_history_events": [
+        "1-5",
+        "6-20",
+        "21-50",
+        ">50"
+      ],
+      "question_train_event_frequency": [
+        "0",
+        "1-5",
+        "6-20",
+        "21-100",
+        ">100"
+      ],
+      "visible_history_same_question": [
+        "0",
+        ">=1"
+      ],
+      "query_kc_visible_history_support": [
+        "0",
+        ">=1"
+      ]
+    },
+    "history": "exact complete-event suffix visible to this target under KC200",
+    "train_frequency": "all canonical events in non-held-out folds, including first events; repeated KCs count once",
+    "query_kc_support": "number of visible history events intersecting any query KC; each event counts once",
+    "ece_bins": 15,
+    "metric_weighting": "events"
+  },
+  "training_frequency_scope": {
+    "folds": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "students": 2465,
+    "canonical_events": 185559,
+    "first_events_included": true,
+    "counting_unit": "canonical_question_event_not_repeated_KC"
+  },
+  "provenance": {
+    "batch": {
+      "sha256": "c5efe0fa0c1c37634d2eb1cb85afa5df3a92b4729d34023850065d66e0d0ed96",
+      "bytes": 24742
+    },
+    "dataset_manifest": {
+      "sha256": "e2c939dfe4479327c223644bce6aee88c56bc362d1169164332ae9ca479fc703",
+      "bytes": 9057
+    },
+    "canonical_development_source": {
+      "sha256": "d590ba88d8d7ab630e635a89b56df55219f49a75b55caa0df571a1f3b460404e",
+      "bytes": 3305879
+    },
+    "run_files": {
+      "prediction": {
+        "sha256": "933c6ee52d852567902f753548ae5c98d558b8f5e6f1354663fc78d12942fd3d",
+        "bytes": 7862264
+      },
+      "sidecar": {
+        "sha256": "3e5ca408d17f1925e7e8d3d38629efe2d1feae24f80a18018facc5b08c843a73",
+        "bytes": 3528
+      },
+      "metadata": {
+        "sha256": "690b2cf87cca608d50ca263f4cb4482665bbc3cd6a24732fae576cd5bddfa0fe",
+        "bytes": 4709
+      },
+      "config": {
+        "sha256": "74c7e20b73b01a66bbdcab0965934f9097693f95b507f3c2576ea8b831926b07",
+        "bytes": 1049
+      },
+      "metrics": {
+        "sha256": "7766b5fce1df18f05b2f75ac34bf44b289f427b57fff977e4bc24b3281ffeeab",
+        "bytes": 1056
+      }
+    },
+    "diagnostic_script": {
+      "sha256": "65af9b4d989d130e7075e3563699f42df962d7517433002d3330d9b97a019f2b",
+      "bytes": 15300
+    },
+    "receipt_helper": {
+      "sha256": "0418e4fdd077f1be531dab79d6787cd81cd81c2390050096c6f87516b0087aa5",
+      "bytes": 29578
+    },
+    "shared_events_source": {
+      "sha256": "a2a5170ca039e140621278e1566ea5fefa133588cc925a206a35e277fd575f63",
+      "bytes": 19359
+    },
+    "training_implementation_sha256_recorded": "e865cf930845b50d12bcad4afbd02a39e18e67bbcf7dc57ad9dbc1038a9dc1cb",
+    "checkpoint_sha256_recorded": "c5b2e55c55910e805ab4680c9847558a2b125c97075fa5cca1a923e77c07380d"
+  },
+  "selected_export_auc_check": {
+    "delta": -1.1102230246251565e-16,
+    "absolute_tolerance": 1e-06
+  },
+  "limitations": [
+    "Descriptive development diagnostics only; validation also selected the checkpoint. No significance tests or SOTA claim.",
+    "Strata are independent summaries, not causal effects. Training question frequency is not inferred from validation frequency.",
+    "Saved receipts do not independently prove training or a direct checkpoint-to-prediction binding. No checkpoint bytes were read.",
+    "The analysis worktree may differ from training; canonical event code is separately hashed and every target/history/label is checked."
+  ],
+  "development_data_accessed": true,
+  "test_accessed": false,
+  "weights_read_or_verified": false,
+  "model_loads": 0,
+  "model_forward_calls": 0,
+  "new_optimizer_steps": 0,
+  "significance_tests": false,
+  "automatic_publication": false
+}

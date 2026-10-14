@@ -11,6 +11,7 @@ import hashlib
 import io
 import json
 import math
+from os import PathLike
 from pathlib import Path
 import re
 import sys
@@ -350,16 +351,52 @@ def paired_bootstrap(labels, scores, student_index, reference, *, replicates=500
             "scope": "exploratory_fixed_prediction_validation_student_sampling; validation also selected checkpoints; not confirmatory significance or retraining/multiseed stability"}
 
 
+def _read_batches(batch_path, receipts):
+    """Index explicitly supplied real manifests without synthesizing a batch."""
+    paths = [batch_path] if isinstance(batch_path, (str, PathLike)) else batch_path
+    require(isinstance(paths, (list, tuple)) and bool(paths),
+            "Provide one batch manifest path or a nonempty list/tuple of paths")
+    require(all(isinstance(path, (str, PathLike)) for path in paths), "Invalid batch manifest path")
+    paths = [Path(path).resolve() for path in paths]
+    require(len(set(paths)) == len(paths), "Duplicate batch manifest paths")
+    batches, by_run, batch_ids = [], {}, set()
+    for path in paths:
+        batch = receipts.json(path)
+        require(batch.get("test_access") is False and isinstance(batch.get("runs"), list)
+                and bool(batch["runs"]), "Invalid sealed batch manifest")
+        batch_id = batch.get("batch_id")
+        require(isinstance(batch_id, str) and bool(batch_id.strip()) and batch_id not in batch_ids,
+                "Duplicate or missing batch ID across manifests")
+        batch_ids.add(batch_id)
+        digest(batch.get("source_sha256"), "batch source")
+        record = {"batch": batch, "canonical_batch_sha256": canonical_hash(batch),
+                  "batch_file": receipts.files[path], "selected_run_ids": []}
+        for entry in batch["runs"]:
+            require(isinstance(entry, dict), "Invalid batch run declaration")
+            run_id = entry.get("run_id")
+            require(isinstance(run_id, str) and bool(run_id.strip()) and run_id not in by_run,
+                    "Duplicate/missing batch run IDs across manifests")
+            require(isinstance(entry.get("config"), dict) and bool(entry["config"]),
+                    "Missing or ambiguous batch run configuration")
+            by_run[run_id] = record
+        batches.append(record)
+    return batches, by_run
+
+
 def analyze(paths, batch_path, reference, *, replicates=500, seed=42):
+    """Analyze saved predictions against one manifest path or explicit paths."""
     require(len(paths) >= 2, "At least two model prediction files are required")
     receipts = Receipts()
-    batch = receipts.json(batch_path)
-    batch_sha = canonical_hash(batch)
-    require(batch.get("test_access") is False and isinstance(batch.get("runs"), list), "Invalid sealed batch manifest")
-    digest(batch.get("source_sha256"), "batch source")
-    ids = [entry.get("run_id") for entry in batch["runs"]]
-    require(all(isinstance(x, str) and x for x in ids) and len(ids) == len(set(ids)), "Duplicate/missing batch run IDs")
-    runs = [_read_run(path, batch, batch_sha, receipts) for path in paths]
+    batches, by_run = _read_batches(batch_path, receipts)
+    runs = []
+    for path in paths:
+        # Directory is only a lookup hint. _read_run checks its consistency with
+        # metadata and config, including this original batch's canonical hash.
+        record = by_run.get(Path(path).resolve().parent.name)
+        require(record is not None, "Run is absent from the specified batch manifests")
+        run = _read_run(path, record["batch"], record["canonical_batch_sha256"], receipts)
+        record["selected_run_ids"].append(run["run_id"])
+        runs.append(run)
     require(len({r["run_id"] for r in runs}) == len(runs), "Duplicate input runs")
     comparisons = {r["run_id"]: comparison_identity(r["config"]) for r in runs}
     variants = {(identity["model"], identity["ukt_training_recipe"]) for identity in comparisons.values()}
@@ -415,6 +452,8 @@ def analyze(paths, batch_path, reference, *, replicates=500, seed=42):
         m = run["metadata"]
         summaries.append({"run_id": run["run_id"], **comparisons[run["run_id"]],
                           "seed": run["config"]["seed"], "fold": run["config"]["fold"],
+                           "batch_id": m["batch_id"], "canonical_batch_sha256": m["approved_batch_sha256"],
+                           "implementation_sha256": m["implementation_sha256"],
                            "selected_valid_auc_recorded": m["best_valid_auc"],
                            "export_minus_selected_auc": auc_drift,
                           "optimizer_steps_recorded": m["optimizer_steps"], "best_epoch": m["best_epoch"],
@@ -428,18 +467,35 @@ def analyze(paths, batch_path, reference, *, replicates=500, seed=42):
         labels_hasher.update(json.dumps([*key, expected_rows[key][1]], ensure_ascii=False,
                                        separators=(",", ":")).encode() + b"\n")
     receipts.verify()
+    batch_summaries = [{"batch_id": record["batch"]["batch_id"],
+                        "canonical_batch_sha256": record["canonical_batch_sha256"],
+                        "implementation_sha256": record["batch"]["source_sha256"],
+                        "batch_file": record["batch_file"], "selected_run_ids": record["selected_run_ids"]}
+                       for record in batches]
+    implementation_hashes = sorted({run["metadata"]["implementation_sha256"] for run in runs})
+    single = batch_summaries[0] if len(batch_summaries) == 1 else None
     return {"schema_version": 1, "analysis": "saved_full_shared_validation_exploratory",
             "protocol": PROTOCOL, "split": "valid", "selection": baseline["identity"],
             "dataset_manifest_sha256_recorded": baseline["metadata"]["dataset_manifest_sha256"],
             "labels_sha256": labels_hasher.hexdigest(), "students": len(students), "events": len(keys),
-            "reference_run_id": reference, "batch_id": batch["batch_id"], "canonical_batch_sha256": batch_sha,
+            "reference_run_id": reference, "batch_id": single["batch_id"] if single else None,
+            "canonical_batch_sha256": single["canonical_batch_sha256"] if single else None,
+            "batches": batch_summaries,
+            "cross_batch_comparison": {
+                "multiple_batches_supplied": len(batches) > 1,
+                "multiple_batches_selected": len({run["metadata"]["batch_id"] for run in runs}) > 1,
+                "implementation_sha256_values": implementation_hashes,
+                "implementation_sources_differ": len(implementation_hashes) > 1,
+                "method_equivalence_verified": False,
+                "manual_method_review_required": len(implementation_hashes) > 1,
+                "explanation": "Each run is bound to its own real batch; matching targets and protocol do not prove method equivalence. Review source/configuration changes before interpreting cross-implementation differences."},
             "training_seed": baseline["config"]["seed"],
             "selected_export_auc_comparison": {
                 "absolute_tolerance": SELECTED_EXPORT_ABS_TOL, "relative_tolerance": 0.0,
                 "delta_definition": "final_csv_auc_minus_recorded_selection_auc",
                 "scope": "Separate selection/export forwards only; same-CSV metric and copied-receipt checks remain strict.",
                 "predeclared_before_B003_terminal_results": True},
-            "batch_file": receipts.files[Path(batch_path).resolve()], "runs": summaries, "bootstrap": bootstrap,
+            "batch_file": single["batch_file"] if single else None, "runs": summaries, "bootstrap": bootstrap,
             "ece": {"bins": 15, "binning": "equal_width_[0,1]; left_closed_right_open_except_last", "threshold_accuracy": .5},
             "receipt_scope": {"saved_receipts_consistent": True, "weights_read_or_verified": False,
                               "direct_checkpoint_to_prediction_hash_binding_available": False,
@@ -457,7 +513,8 @@ def analyze(paths, batch_path, reference, *, replicates=500, seed=42):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--predictions", nargs="+", type=Path, required=True)
-    parser.add_argument("--batch", type=Path, required=True, help="Public batch manifest, not private approval")
+    parser.add_argument("--batch", type=Path, action="append", required=True,
+                        help="Public batch manifest, not private approval; repeat for multiple real batches")
     parser.add_argument("--reference", required=True, help="Exact run_id of the reference among the inputs")
     parser.add_argument("--bootstrap-replicates", type=int, default=500)
     parser.add_argument("--seed", type=int, default=42)

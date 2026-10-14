@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "check_id": "MOCKT-EVAL-TRAIN-001",
+  "purpose": "Synthetic regression for initial shared validation followed by MoC training after cache compatibility repair",
+  "implementation_sha256": "bf5fcd0f23645b31f76c9486f4a98b3a5f9667886f5f80d62efc596b9a610a1d",
+  "files": {
+    "src/ktlab/shared_adapters.py": "eed125ecb1973b952a56ae706809a353c4549d3d73007c2260397ebd5dac18d2",
+    "tests/test_mockt_eval_train_transition.py": "bfb6c4e67771ea0d980ac2a425bd731e1de30581b64a7567382a5fd4c7af7b2c",
+    "tests/test_shared_adapters.py": "827a354fc29f42ce56dd7caeee4438c55cf1c624b2b670be2d47cdb38e3cc2f4"
+  },
+  "device": "local_cuda_rocm",
+  "cpu_threads": 1,
+  "real_data_access": false,
+  "test_access": false,
+  "existing_weights_access": false,
+  "paid_services": false,
+  "limits": {
+    "backward_calls": 8,
+    "adam_steps": 4,
+    "expected_backward_calls": 2,
+    "expected_adam_steps": 2,
+    "soft_gpu_wall_seconds": 300,
+    "repair_test_random_model_instances": 4,
+    "max_simultaneous_repair_models": 2
+  },
+  "synthetic_model": {
+    "d_model": 16,
+    "n_blocks": 2,
+    "d_ff": 32,
+    "num_attn_heads": 2,
+    "final_fc_dim": 32,
+    "dropout": 0.0,
+    "seq_len": 200,
+    "emb_type": "qid_conv_ker_noexp",
+    "kernel_size": 4
+  },
+  "checks": [
+    "old inference-mode cache negative control and identical-state prediction equivalence",
+    "new model eval-train-eval-train with two finite backward/Adam updates",
+    "current/future answer isolation, multi-KC mean/chunk parity and legitimate-history positive control",
+    "existing shared-adapter synthetic forward-only regression for all supported models"
+  ],
+  "command": "KTLAB_RUN_MOCKT_TRANSITION_UPDATES=1 python -m pytest -q tests/test_mockt_eval_train_transition.py tests/test_shared_adapters.py -ra"
+}
