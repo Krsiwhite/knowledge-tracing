@@ -215,7 +215,7 @@ def summarize(repo_root, batch_path):
             directory = run_root / entry["run_id"]
             run = analysis._read_run(directory / "valid_predictions.csv", batch, batch_sha, receipts)
             comparison = analysis.comparison_identity(run["config"])
-            variant = comparison["model"], comparison["ukt_training_recipe"]
+            variant = comparison["model"], comparison["ukt_training_recipe"], comparison.get("ktst_interaction_recipe")
             require(variant not in variants, "Duplicate model/recipe for the same dataset/fold/seed")
             variants.add(variant)
             identities = {key: values[0] for key, values in run["rows"].items()}

@@ -75,9 +75,20 @@ def comparison_identity(config):
     model = config.get("model")
     require(isinstance(model, str) and bool(model.strip()), "Missing model identity")
     recipe = config.get("ukt_training_recipe")
+    interaction = config.get("ktst_interaction_recipe")
+    if interaction is not None:
+        require(model == "ktst_mean" and type(interaction) is str
+                and interaction in {"signed_response", "response_independent"},
+                "Unsupported KTST interaction recipe/model")
+        settings = config.get("model_config")
+        require(isinstance(settings, dict) and settings.get("aggregation") == "q_mean_c",
+                "KTST interaction recipe requires resolved mean aggregation")
     if model != "ukt":
         require(recipe is None, "UKT training recipe is only valid for model ukt")
-        return {"model": model, "ukt_training_recipe": None, "comparison_label": model}
+        identity = {"model": model, "ukt_training_recipe": None, "comparison_label": model}
+        if interaction is not None:
+            identity.update(ktst_interaction_recipe=interaction, comparison_label=f"{model} / {interaction}")
+        return identity
     require(isinstance(recipe, str) and recipe in UKT_RECIPES, "Missing or unsupported UKT training recipe")
     settings = config.get("model_config")
     require(isinstance(settings, dict), "UKT comparison requires resolved model_config")
@@ -193,6 +204,19 @@ def _read_run(path, batch, batch_sha, receipts):
                                  if k not in {"_batch_approved", "test_release_file"}})
     require(metadata.get("config_sha256") == config_sha, "Resolved configuration hash mismatch")
     comparison_identity(config)
+    interaction = config.get("ktst_interaction_recipe")
+    require(metadata.get("ktst_interaction_recipe") == interaction, "KTST interaction recipe receipt mismatch")
+    if interaction is not None:
+        source = metadata.get("ktst_model_source")
+        require(isinstance(source, dict) and set(source) == {
+            "schema_version", "model", "vendor_source_sha256", "adaptation_sha256", "ktst_interaction_recipe"},
+            "Missing KTST adaptation source identity")
+        require(source["schema_version"] == 1 and source["model"] == "ktst_mean"
+                and source["ktst_interaction_recipe"] == interaction and metadata.get("import_binding_only") is False,
+                "KTST adaptation source/recipe identity mismatch")
+        digest(source["vendor_source_sha256"], "KTST vendor source")
+        digest(source["adaptation_sha256"], "KTST adaptation source")
+        require(canonical_hash(source) == metadata.get("model_source_sha256"), "KTST adaptation source hash mismatch")
     require(metadata.get("implementation_sha256") == batch.get("source_sha256"), "Implementation receipt mismatch")
     require(metadata.get("dataset_manifest_sha256") == entry.get("dataset_manifest_sha256"),
             "Dataset manifest receipt mismatch")
@@ -399,9 +423,10 @@ def analyze(paths, batch_path, reference, *, replicates=500, seed=42):
         runs.append(run)
     require(len({r["run_id"] for r in runs}) == len(runs), "Duplicate input runs")
     comparisons = {r["run_id"]: comparison_identity(r["config"]) for r in runs}
-    variants = {(identity["model"], identity["ukt_training_recipe"]) for identity in comparisons.values()}
-    require(len(variants) >= 2, "At least two distinct models or UKT training recipes are required")
-    require(len(variants) == len(runs), "Duplicate model/UKT training recipe runs are not supported")
+    variants = {(identity["model"], identity["ukt_training_recipe"], identity.get("ktst_interaction_recipe"))
+                for identity in comparisons.values()}
+    require(len(variants) >= 2, "At least two distinct models or UKT training recipes / KTST interaction recipes are required")
+    require(len(variants) == len(runs), "Duplicate model/UKT training recipe / KTST interaction recipe runs are not supported")
     require(len({r["config"]["seed"] for r in runs}) == 1, "Models must use the same training seed")
     require(reference in {r["run_id"] for r in runs}, "Reference must identify an input run_id")
     baseline = next(r for r in runs if r["run_id"] == reference)

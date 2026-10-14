@@ -3,7 +3,9 @@
 Upstream uses absolute ``pkg.*`` imports. A module-local import function maps
 only those names to a private, source-path-specific package. It never installs
 ``pkg`` aliases, changes sys.path, or patches global import/PyTorch functions.
-The original Model.forward and its logits BCE are executed unchanged.
+The default path executes original Model.forward and its logits BCE unchanged.
+An explicit interaction_recipe selects a separately identified local history
+adaptation; it is never described as an import-only upstream model.
 
 This module creates no optimizer and performs no backward or parameter update.
 Callers retain responsibility for the project's batch-approval gate.
@@ -169,8 +171,9 @@ def load_ktst_reference(module: str = "pkg.data.pykt", *, vendor_root=None) -> M
 
 
 def build_ktst_model(name: str, data_config: dict, model_config: dict | None = None,
-                     device: str | torch.device = "cpu", *, vendor_root=None) -> nn.Module:
-    """Construct the original mean/MHSA model, without optimizers or updates.
+                     device: str | torch.device = "cpu", *, vendor_root=None,
+                     interaction_recipe: str | None = None) -> nn.Module:
+    """Construct mean/MHSA or an explicit local mean interaction variant.
 
     ``ktlab_model_config`` contains the complete resolved constructor arguments,
     so checkpoint reload can verify the data-derived dimensions as well.
@@ -178,6 +181,8 @@ def build_ktst_model(name: str, data_config: dict, model_config: dict | None = N
     """
     if name not in _AGGREGATIONS:
         raise ValueError(f"Unknown KTST model {name!r}; expected {tuple(_AGGREGATIONS)}")
+    from .ktst_interaction import validate_interaction_recipe
+    validate_interaction_recipe(name, interaction_recipe)
     dimensions = {"num_questions": max(1, int(data_config["num_q"])),
                   "num_concepts": int(data_config["num_c"]),
                   "max_concepts": int(data_config["max_concepts"]),
@@ -212,7 +217,11 @@ def build_ktst_model(name: str, data_config: dict, model_config: dict | None = N
         raise RuntimeError("CUDA/ROCm was requested but is not available")
     verified = verify_ktst_source(vendor_root)
     module = load_ktst_reference("pkg.model.KTST", vendor_root=vendor_root)
-    model = module.Model(**config).to(device)
+    if interaction_recipe is None:
+        model = module.Model(**config).to(device)
+    else:
+        from .ktst_interaction import interaction_model_class
+        model = interaction_model_class(module.Model)(interaction_recipe=interaction_recipe, **config).to(device)
     model.model_name = name
     model.ktlab_model_config = config
     model.ktlab_source_sha256 = verified["source_sha256"]
@@ -221,11 +230,16 @@ def build_ktst_model(name: str, data_config: dict, model_config: dict | None = N
     model.ktlab_import_namespace = module.__name__.rsplit(".model.KTST", 1)[0]
     model.ktlab_import_binding_only = True
     model.ktlab_dummy_question = int(data_config["num_q"]) == 0
+    if interaction_recipe is not None:
+        from .ktst_interaction import interaction_source_identity
+        model.ktlab_model_source_identity, model.ktlab_source_sha256 = interaction_source_identity(
+            verified["source_sha256"], interaction_recipe)
+        model.ktlab_import_binding_only = False
     return model
 
 
 def forward_ktst(model: nn.Module, batch: dict) -> tuple[torch.Tensor, torch.Tensor]:
-    """Return original probabilities and logits BCE; never late-fuse KC scores.
+    """Return the selected model probabilities and logits BCE; no KC late fusion.
 
     This intentionally respects the caller's grad mode. All preapproval tests
     must call it inside inference_mode/no_grad; authorized training can later

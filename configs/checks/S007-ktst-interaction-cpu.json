@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "check_id": "S007-ktst-interaction-cpu",
+  "purpose": "Bounded synthetic KC-response history residual/control acceptance, causality, gradients and explicit saved-result recipe identity",
+  "implementation_sha256": "3e6e65f50027bfe6ed9d396117d755b3c22506832b5599b22d55d71fdbf31180",
+  "files": {
+    "src/ktlab/ktst_interaction.py": "a3b0736df9bc4162f1ae3de29728b3103ac9f80402d1579d7c417a15a36cdde8",
+    "src/ktlab/ktst_model.py": "29ccda899e095fd8078304ec059926d803f4e98599fd06a8c57a9939caa854ae",
+    "src/ktlab/ktst_engine.py": "1116464241e27d95a5fd9a5cd17673362cdd99e76f048b631b42a75fc2915ab2",
+    "src/ktlab/engine.py": "62d991ff0256fd9fa062b31f4885ce0775d058bcf4133a46843f24964273951c",
+    "src/ktlab/shared_adapters.py": "838983f3ba0469ca4cf92b237a76ce87321fb3b7e9dafb021e730c639b14af27",
+    "src/ktlab/provenance.py": "7f732691614227eb84ead5c578f24c338153304d503c569fb55c59c7f6e12c2a",
+    "third_party/ktst/pkg/model/KTST.py": "5bcac1982b0d11ac625821298af148e45e9ec1b98d546cea9d2e76cc6c072b1b",
+    "scripts/analyze_shared_predictions.py": "a6f7290412280a9f26d2088c098175615bf92676e001ed8196c90325ddbed1bf",
+    "scripts/summarize_shared_batch.py": "52c5c010e8b9ab8c2bb6e17323a4745fa0d1d04ceaf5039ad3531437cb2df078",
+    "tests/test_ktst_interaction.py": "b495c2e08cdfe888e6ed5301c379718d94d7e39d7dedfa45c37379b7076c9648",
+    "tests/test_saved_prediction_analysis.py": "075382bca3b431c692e8723c07929a62951f90bd15278cce9cd308ac29d5a417",
+    "tests/test_shared_batch_summary.py": "c2272841b7309f11466b726a6d5331db5337c913df097c868f913f48832bda59",
+    ".cache/run_s007.py": "a65a37c98a4071c821088abf12f0b5adcfc1ef6a3f1c381afd6b93a7994f9d96"
+  },
+  "device": "cpu",
+  "cpu_threads": 1,
+  "seed": 42,
+  "real_data_access": false,
+  "test_access": false,
+  "existing_weights_access": false,
+  "paid_services": false,
+  "automatic_retry": false,
+  "limits": {
+    "model_instances": 12,
+    "expected_model_instances": 10,
+    "complete_forward_calls": 96,
+    "expected_complete_forward_calls": 52,
+    "autograd_grad_calls": 8,
+    "backward_calls": 0,
+    "optimizer_constructions": 0,
+    "optimizer_steps": 0,
+    "subprocess_wall_seconds": 300
+  },
+  "synthetic_model": {
+    "num_q": [
+      0,
+      5
+    ],
+    "num_c": 7,
+    "max_concepts": [
+      1,
+      3
+    ],
+    "d_model": 16,
+    "nhead_tf": 2,
+    "nhead_agg": 2,
+    "num_layers_tf_dec": 1,
+    "num_layers_tf_enc": 1,
+    "num_layers_agg": 1,
+    "dim_feedforward": 32,
+    "dim_classifier": 24,
+    "dropout": 0.1
+  },
+  "recipes": [
+    null,
+    "signed_response",
+    "response_independent"
+  ],
+  "checks": [
+    "common parameters and post-construction RNG identical with zero residual",
+    "zero-residual original probability and logits BCE equivalence with train/eval dropout modes",
+    "independent original-forward injection oracle: probability, BCE and all parameter gradients",
+    "valid KC means, raw all-padding zero residual, valid missing-KC rejection and KC permutation",
+    "current/future response isolation and permitted-history positive control",
+    "mixed right padding, singleton and actual shared-prediction routing",
+    "new parameter occurs exactly once in ordinary optimizer parameter groups without constructing an optimizer",
+    "explicit recipe across config/source/checkpoint/reload and saved prediction comparison identity",
+    "invalid recipe and sealed test rejection before model or optimizer construction"
+  ],
+  "tolerances": {
+    "zero_residual_atol": 0.0,
+    "zero_residual_rtol": 0.0,
+    "oracle_probability_loss_atol": 1e-07,
+    "oracle_probability_loss_rtol": 1e-06,
+    "gradient_atol": 2e-07,
+    "gradient_rtol": 2e-05,
+    "padding_permutation_atol": 1e-07,
+    "padding_permutation_rtol": 1e-06
+  },
+  "environment": {
+    "PYTHONPATH": "src",
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "CUDA_VISIBLE_DEVICES": "",
+    "HIP_VISIBLE_DEVICES": "",
+    "ROCR_VISIBLE_DEVICES": "",
+    "KTLAB_RUN_KTST_INTERACTION_CPU_ACCEPTANCE": "1"
+  },
+  "pytest_arguments": [
+    "-q",
+    "-s",
+    "tests/test_ktst_interaction.py",
+    "tests/test_saved_prediction_analysis.py",
+    "tests/test_shared_batch_summary.py",
+    "-ra"
+  ],
+  "static_review": "Root and independent frontier_audit reviewed the final executable changes before this record; no blocking finding remains.",
+  "limitations": [
+    "Synthetic CPU checks are not actual training or validation performance evidence.",
+    "The KC-response parameterization adapts an existing mechanism; no originality claim.",
+    "Original training window and event-representation differences remain.",
+    "Real training backbone and batch await B005 validation-based selection and a new concrete freeze.",
+    "Current frozen final-test evaluator does not yet accept local KTST interaction source identities."
+  ]
+}
