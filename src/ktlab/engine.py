@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from numbers import Integral
 from pathlib import Path
 import platform
 import random
@@ -23,18 +24,35 @@ from .evaluation import evaluate_loader
 from .provenance import config_fingerprint, git_revision, source_fingerprint, utc_now
 
 PROTOCOL = "ktlab-v1-causal-valid-full-precision-repeat-kc-train"
+SHARED_PROTOCOL = "ktlab-v2-shared-event-context-kc200-dev"
+SHARED_SELECTION = "epoch0_and_each_validation_boundary_strict_best_shared_valid_auc"
 
 
-def save_best_checkpoint(model, path: Path, auc: float, best: float, epoch: int, manifest_sha256: str) -> bool:
+def save_best_checkpoint(model, path: Path, auc: float, best: float, epoch: int, manifest_sha256: str,
+                         *, protocol: str = PROTOCOL, identity: dict | None = None,
+                         epoch_completed: bool | None = None) -> bool:
     """Persist every strict improvement, independently of early-stop min_delta."""
     if not math.isfinite(auc) or not 0 <= auc <= 1:
         raise ValueError("Checkpoint selection requires finite validation AUC in [0,1]")
     if auc <= best:
         return False
     temporary = path.with_suffix(".tmp")
+    if identity and set(identity) & {"state_dict", "model_config", "epoch", "valid_auc", "protocol", "dataset_manifest_sha256",
+                                     "checkpoint_stage", "epoch_completed"}:
+        raise ValueError("Checkpoint identity cannot override payload/protocol fields")
+    shared_fields = {}
+    if protocol == SHARED_PROTOCOL:
+        if epoch_completed is None:
+            epoch_completed = epoch > 0
+        if type(epoch_completed) is not bool or (epoch == 0 and epoch_completed):
+            raise ValueError("Shared checkpoint requires an explicit valid epoch completion state")
+        shared_fields = {"epoch_completed": epoch_completed,
+                         "checkpoint_stage": "initial_untrained" if epoch == 0 else
+                         ("after_training_epoch" if epoch_completed else "after_partial_training_epoch")}
     torch.save({"state_dict": model.state_dict(), "model_config": model.ktlab_model_config,
-                "epoch": epoch, "valid_auc": auc, "protocol": PROTOCOL,
-                "dataset_manifest_sha256": manifest_sha256}, temporary)
+                "epoch": epoch, "valid_auc": auc, "protocol": protocol,
+                "dataset_manifest_sha256": manifest_sha256, **(identity or {}),
+                **shared_fields}, temporary)
     temporary.replace(path)
     return True
 
@@ -119,6 +137,138 @@ def _seed(seed: int):
     torch.backends.cudnn.deterministic = True
 
 
+def _shared_config(config: dict) -> dict:
+    """Resolve only explicitly requested shared validation, never relabel v1."""
+    if config.get("protocol") != SHARED_PROTOCOL:
+        raise ValueError("Shared validation requires its explicit protocol")
+    if config.get("model") not in {"akt", "simplekt", "mockt", "ktst_mean", "ktst_mhsa"}:
+        raise ValueError("This model has no shared-context adapter")
+    if config.get("max_validation_batches") is not None:
+        raise ValueError("Shared validation forbids max_validation_batches; limit constructed targets explicitly")
+    if config.get("initial_validation", True) is not True:
+        raise ValueError("Shared checkpoint selection requires epoch0 initial_validation")
+    if float(config.get("early_stop_min_delta", 0.0)) != 0:
+        raise ValueError("Shared checkpoint selection uses every strict AUC improvement")
+    resolved = dict(config)
+    resolved.setdefault("validation_batch_size", 32)
+    resolved.setdefault("max_rows_per_forward", 32)
+    resolved["initial_validation"] = True
+    fold = resolved.get("fold", 0)
+    if isinstance(fold, bool) or not isinstance(fold, Integral) or not 0 <= fold <= 4:
+        raise ValueError("fold must be an integer in [0,4]")
+    for key in ("validation_batch_size", "max_rows_per_forward", "max_validation_targets"):
+        value = resolved.get(key)
+        if (key != "max_validation_targets" or value is not None) and (
+            isinstance(value, bool) or not isinstance(value, Integral) or value < 1
+        ):
+            raise ValueError(f"{key} must be a positive integer")
+    if resolved.get("max_validation_targets") is not None and resolved.get("debug_smoke") is not True:
+        raise ValueError("max_validation_targets requires debug_smoke=true")
+    return resolved
+
+
+def _shared_dataset(manifest: dict, config: dict):
+    from .shared_events import SharedEventDataset
+    return SharedEventDataset(manifest, config.get("fold", 0), split="valid",
+                              max_targets=config.get("max_validation_targets"))
+
+
+def _shared_identity(config: dict, model, dataset) -> dict:
+    if (dataset.audit.get("protocol") != SHARED_PROTOCOL or dataset.audit.get("split") != "valid"
+            or dataset.audit.get("fold") != config.get("fold", 0)):
+        raise ValueError("Checkpoint selection requires the configured shared validation fold")
+    return {"config_sha256": config_fingerprint(config), "implementation_sha256": source_fingerprint(),
+            "model_source_sha256": model.ktlab_source_sha256,
+            "validation_source_sha256": dataset.audit["source_sha256"],
+            "validation_target_sha256": dataset.audit["target_sha256"],
+            "validation_context_sha256": dataset.audit["context_sha256"],
+            "checkpoint_selection_policy": SHARED_SELECTION}
+
+
+def _shared_evaluate(model, dataset, device, config, identity, prediction_path=None, *, deadline=None):
+    from .shared_evaluation import evaluate_shared
+    current = _shared_identity(config, model, dataset)
+    if current != identity:
+        raise ValueError("Shared validation implementation/configuration/selection identity changed")
+    result = evaluate_shared(model, dataset, device, prediction_path,
+                             batch_size=config["validation_batch_size"],
+                             max_rows_per_forward=config["max_rows_per_forward"], deadline=deadline)
+    if result["implementation_sha256"] != identity["implementation_sha256"]:
+        raise ValueError("Shared validation implementation changed during evaluation")
+    result.update(partial_debug=config.get("max_validation_targets") is not None,
+                  checkpoint_selection_policy=SHARED_SELECTION)
+    return result
+
+
+def _selected_shared_checkpoint(path, metadata, identity, manifest_sha256, model_config, *, device="cpu"):
+    """Load exactly the weight artifact selected by the recorded validation."""
+    if metadata.get("checkpoint_sha256") != _sha(path):
+        raise ValueError("Shared checkpoint file changed since selection")
+    checkpoint = torch.load(path, map_location=device, weights_only=True)
+    expected = {"protocol": SHARED_PROTOCOL, "dataset_manifest_sha256": manifest_sha256, **identity}
+    for key, value in expected.items():
+        if checkpoint.get(key) != value or metadata.get(key) != value:
+            raise ValueError(f"Shared checkpoint/metadata {key} mismatch")
+    if checkpoint.get("model_config") != model_config:
+        raise ValueError("Shared checkpoint model configuration mismatch")
+    if (checkpoint.get("epoch") != metadata.get("best_epoch")
+            or checkpoint.get("valid_auc") != metadata.get("best_valid_auc")):
+        raise ValueError("Shared checkpoint differs from the recorded best validation candidate")
+    completed = checkpoint.get("epoch_completed")
+    if (type(completed) is not bool or metadata.get("best_epoch_completed") is not completed
+            or (checkpoint["epoch"] == 0 and completed)):
+        raise ValueError("Shared checkpoint epoch completion state mismatch")
+    stage = "initial_untrained" if checkpoint["epoch"] == 0 else (
+        "after_training_epoch" if completed else "after_partial_training_epoch")
+    if checkpoint.get("checkpoint_stage") != stage:
+        raise ValueError("Shared checkpoint stage mismatch")
+    return checkpoint
+
+
+def _evaluate_shared_run(run_dir: Path, config: dict, split: str) -> dict:
+    """Re-evaluate only checkpoints selected under this same shared contract."""
+    if split != "valid":
+        raise PermissionError("Shared final test is sealed and not implemented")
+    config = _shared_config(config)
+    manifest = read_manifest(config)
+    metadata = json.loads((run_dir / "metadata.json").read_text(encoding="utf-8"))
+    if metadata.get("checkpoint_sha256") != _sha(run_dir / "best.pt"):
+        raise ValueError("Shared checkpoint file changed since selection")
+    checkpoint = torch.load(run_dir / "best.pt", map_location="cpu", weights_only=True)
+    expected = {"protocol": SHARED_PROTOCOL, "dataset_manifest_sha256": manifest["_manifest_sha256"],
+                "config_sha256": config_fingerprint(config), "implementation_sha256": source_fingerprint(),
+                "checkpoint_selection_policy": SHARED_SELECTION}
+    for key, value in expected.items():
+        if checkpoint.get(key) != value or metadata.get(key) != value:
+            raise ValueError(f"Shared checkpoint/metadata {key} mismatch; no silent protocol migration")
+    if checkpoint.get("model_config") != config.get("model_config"):
+        raise ValueError("Shared checkpoint model configuration mismatch")
+    device = resolve_device(config.get("device", "auto"))
+    if config["model"].startswith("ktst_"):
+        from .ktst_model import build_ktst_model
+        model = build_ktst_model(config["model"], manifest["data_config"], checkpoint["model_config"], device)
+    else:
+        model = build_model(config["model"], manifest["data_config"], checkpoint["model_config"], device)
+    dataset = _shared_dataset(manifest, config)
+    try:
+        identity = _shared_identity(config, model, dataset)
+        for key, value in identity.items():
+            if checkpoint.get(key) != value or metadata.get(key) != value:
+                raise ValueError(f"Shared checkpoint/metadata {key} mismatch")
+        checkpoint = _selected_shared_checkpoint(run_dir / "best.pt", metadata, identity,
+                                                manifest["_manifest_sha256"], config["model_config"])
+        model.load_state_dict(checkpoint["state_dict"])
+        path = run_dir / "valid_predictions.csv"
+        if path.exists() or path.with_suffix(".csv.manifest.json").exists():
+            path = run_dir / "evaluations" / f"valid-{time.time_ns()}" / "predictions.csv"
+        result = _shared_evaluate(model, dataset, device, config, identity, path)
+        result["prediction_file"] = str(path)
+        _json(path.with_suffix(".metrics.json"), result)
+        return result
+    finally:
+        dataset.close()
+
+
 def train(config: dict, run_dir: Path) -> dict:
     """Execute only an explicitly batch-approved configuration.
 
@@ -130,6 +280,9 @@ def train(config: dict, run_dir: Path) -> dict:
     if config.get("model") in {"ktst_mean", "ktst_mhsa"}:
         from .ktst_engine import train_ktst
         return train_ktst(config, run_dir)
+    shared = config.get("protocol") == SHARED_PROTOCOL
+    if shared:
+        config = _shared_config(config)
     epochs, patience = int(config.get("epochs", 200)), int(config.get("patience", 10))
     max_steps = config.get("max_train_steps")
     max_validation_batches = config.get("max_validation_batches")
@@ -143,6 +296,8 @@ def train(config: dict, run_dir: Path) -> dict:
     run_dir = Path(run_dir)
     if (run_dir / "best.pt").exists() or (run_dir / "history.jsonl").exists():
         raise FileExistsError("Run already has training artifacts; use a new run directory")
+    if shared and (run_dir / "metadata.json").exists():
+        raise FileExistsError("Shared run already has artifacts; use a new run directory")
     config = {k: v for k, v in config.items() if k != "_batch_approved"}
     config["dataset_manifest"] = str(Path(config["dataset_manifest"]).resolve())
     manifest = read_manifest(config)
@@ -152,12 +307,14 @@ def train(config: dict, run_dir: Path) -> dict:
     _seed(int(config.get("seed", 42)))
     model = build_model(config["model"], manifest["data_config"], config.get("model_config"), device)
     training = dataset_for_split(manifest, int(config.get("fold", 0)), "train", model_name=config["model"])
-    validation = dataset_for_split(manifest, int(config.get("fold", 0)), "valid", model_name=config["model"])
-    train_loader, valid_loader = _loader(training, config, train=True), _loader(validation, config)
+    validation = (_shared_dataset(manifest, config) if shared else
+                  dataset_for_split(manifest, int(config.get("fold", 0)), "valid", model_name=config["model"]))
+    train_loader = _loader(training, config, train=True)
+    valid_loader = None if shared else _loader(validation, config)
     config["model_config"] = model.ktlab_model_config
     run_dir.mkdir(parents=True, exist_ok=True)
     _json(run_dir / "resolved_config.json", config)
-    metadata = {"protocol": PROTOCOL, "run_id": run_dir.name, "status": "running", "test_accessed": False,
+    metadata = {"protocol": SHARED_PROTOCOL if shared else PROTOCOL, "run_id": run_dir.name, "status": "running", "test_accessed": False,
                 "started_at": utc_now(), "git_commit": git_revision(), "implementation_sha256": source_fingerprint(),
                 "config_sha256": config_fingerprint(config), "batch_id": config.get("batch_id"),
                 "approved_batch_sha256": config.get("approved_batch_sha256"),
@@ -170,19 +327,44 @@ def train(config: dict, run_dir: Path) -> dict:
                 "train_rows": len(training), "valid_rows": len(validation), "optimizer_steps": 0,
                 "model_parameters": sum(p.numel() for p in model.parameters()), "seed": int(config.get("seed", 42)),
                 "gpu_name": torch.cuda.get_device_name(device) if device.type == "cuda" else None}
-    metadata["partial_debug"] = max_validation_batches is not None
+    identity = _shared_identity(config, model, validation) if shared else None
+    metadata["partial_debug"] = (config.get("max_validation_targets") is not None if shared else max_validation_batches is not None)
+    if shared:
+        metadata.update(identity, valid_event_audit=validation.audit,
+                        training_representation="original_pykt_repeated_kc", initial_validation=True,
+                        initial_checkpoint_untrained=True)
     _json(run_dir / "metadata.json", metadata)
-    optimizer = torch.optim.Adam(model.parameters(), lr=float(config.get("learning_rate", 1e-4)),
-                                 weight_decay=float(config.get("weight_decay", 0.0)))
+    optimizer = (None if shared else torch.optim.Adam(model.parameters(), lr=float(config.get("learning_rate", 1e-4)),
+                                                       weight_decay=float(config.get("weight_decay", 0.0))))
     best, stop_reference, stale, steps = -math.inf, -math.inf, 0, 0
     started = time.monotonic()
     deadline = started + float(wall_seconds) if wall_seconds is not None else None
     stop_reason = "epochs_completed"
     try:
+        if shared:
+            initial_started = time.monotonic()
+            initial = _shared_evaluate(model, validation, device, config, identity, deadline=deadline)
+            if initial["auc"] is None:
+                raise ValueError("Validation requires both response classes for AUC selection")
+            initial_seconds = time.monotonic() - initial_started
+            initial.update(candidate_epoch=0, optimizer_steps=0, training_started=False,
+                           epoch_completed=False, validation_seconds=initial_seconds)
+            best = stop_reference = initial["auc"]
+            save_best_checkpoint(model, run_dir / "best.pt", best, -math.inf, 0, manifest["_manifest_sha256"],
+                                 protocol=SHARED_PROTOCOL, identity=identity)
+            metadata.update(best_epoch=0, best_valid_auc=best, checkpoint_sha256=_sha(run_dir / "best.pt"),
+                            best_epoch_completed=False, initial_validation_seconds=initial_seconds)
+            _json(run_dir / "initial_valid_metrics.json", initial)
+            _json(run_dir / "metadata.json", metadata)
+            optimizer = torch.optim.Adam(model.parameters(), lr=float(config.get("learning_rate", 1e-4)),
+                                         weight_decay=float(config.get("weight_decay", 0.0)))
         for epoch in range(1, epochs + 1):
+            if shared:
+                epoch_train_started = time.monotonic()
             model.train()
             total_loss, batches = 0., 0
-            for cpu_batch in train_loader:
+            epoch_completed = True
+            for batch_index, cpu_batch in enumerate(train_loader):
                 if deadline is not None and time.monotonic() >= deadline:
                     raise TimeoutError("Run wall-clock budget exhausted")
                 batch = move_batch(cpu_batch, device)
@@ -202,22 +384,37 @@ def train(config: dict, run_dir: Path) -> dict:
                 batches += 1
                 total_loss += float(loss.detach())
                 if max_steps is not None and steps >= int(max_steps):
+                    epoch_completed = batch_index + 1 == len(train_loader)
                     break
             if batches == 0:
                 raise ValueError("No training targets selected")
-            valid = evaluate_loader(model, valid_loader, device, max_batches=max_validation_batches, deadline=deadline)
+            if shared:
+                train_seconds = time.monotonic() - epoch_train_started
+                validation_started = time.monotonic()
+            valid = (_shared_evaluate(model, validation, device, config, identity, deadline=deadline) if shared else
+                     evaluate_loader(model, valid_loader, device, max_batches=max_validation_batches, deadline=deadline))
+            if shared:
+                validation_seconds = time.monotonic() - validation_started
             auc = valid["auc"]
             if auc is None:
                 raise ValueError("Validation requires both response classes for AUC selection")
-            if save_best_checkpoint(model, run_dir / "best.pt", auc, best, epoch, manifest["_manifest_sha256"]):
+            if save_best_checkpoint(model, run_dir / "best.pt", auc, best, epoch, manifest["_manifest_sha256"],
+                                    protocol=SHARED_PROTOCOL if shared else PROTOCOL, identity=identity,
+                                    epoch_completed=epoch_completed if shared else None):
                 best = auc
                 metadata.update(best_epoch=epoch, best_valid_auc=auc)
+                if shared:
+                    metadata["checkpoint_sha256"] = _sha(run_dir / "best.pt")
+                    metadata["best_epoch_completed"] = epoch_completed
             if auc > stop_reference + float(config.get("early_stop_min_delta", 0.0)):
                 stop_reference, stale = auc, 0
             else:
                 stale += 1
             event = {"epoch": epoch, "optimizer_steps": steps, "train_loss": total_loss / batches,
                      "valid": valid, "elapsed_seconds": time.monotonic() - started}
+            if shared:
+                event.update(epoch_completed=epoch_completed, train_seconds=train_seconds,
+                             validation_seconds=validation_seconds)
             with (run_dir / "history.jsonl").open("a", encoding="utf-8") as stream:
                 stream.write(json.dumps(event, allow_nan=False) + "\n")
             print(json.dumps(event, allow_nan=False), flush=True)
@@ -226,10 +423,13 @@ def train(config: dict, run_dir: Path) -> dict:
             if stale >= patience or (max_steps is not None and steps >= int(max_steps)):
                 stop_reason = "early_stopping" if stale >= patience else "max_train_steps"
                 break
-        checkpoint = torch.load(run_dir / "best.pt", map_location=device, weights_only=True)
+        checkpoint = (_selected_shared_checkpoint(run_dir / "best.pt", metadata, identity,
+                                                  manifest["_manifest_sha256"], config["model_config"], device=device)
+                      if shared else torch.load(run_dir / "best.pt", map_location=device, weights_only=True))
         model.load_state_dict(checkpoint["state_dict"])
-        valid = evaluate_loader(model, valid_loader, device, run_dir / "valid_predictions.csv",
-                                max_batches=max_validation_batches, deadline=deadline)
+        valid = (_shared_evaluate(model, validation, device, config, identity, run_dir / "valid_predictions.csv", deadline=deadline)
+                 if shared else evaluate_loader(model, valid_loader, device, run_dir / "valid_predictions.csv",
+                                                max_batches=max_validation_batches, deadline=deadline))
         _json(run_dir / "valid_metrics.json", valid)
         metadata.update(status="completed", optimizer_steps=steps, elapsed_seconds=time.monotonic() - started,
                         checkpoint_sha256=_sha(run_dir / "best.pt"), stop_reason=stop_reason,
@@ -263,6 +463,8 @@ def evaluate_run(run_dir: Path, split: str = "valid", allow_test: bool = False) 
     if split == "test" and not allow_test:
         raise PermissionError("Test is sealed; explicit frozen-candidate test release is required")
     config = json.loads((run_dir / "resolved_config.json").read_text(encoding="utf-8"))
+    if config.get("protocol") == SHARED_PROTOCOL:
+        return _evaluate_shared_run(run_dir, config, split)
     if config.get("model") in {"ktst_mean", "ktst_mhsa"}:
         from .ktst_engine import evaluate_ktst_run
         return evaluate_ktst_run(run_dir, split=split)

@@ -89,8 +89,11 @@ def evaluate_ktst_loader(model, loader, device, prediction_path=None, *, max_bat
 
 
 def _check_config(config):
-    if config.get("protocol") != PROTOCOL:
+    from .engine import SHARED_PROTOCOL, _shared_config
+    if config.get("protocol") not in {PROTOCOL, SHARED_PROTOCOL}:
         raise ValueError(f"KTST requires explicit protocol={PROTOCOL}; scores cannot silently join ktlab v1")
+    if config.get("protocol") == SHARED_PROTOCOL:
+        _shared_config(config)
     if config.get("model") not in {"ktst_mean", "ktst_mhsa"}:
         raise ValueError("Unknown KTST model variant")
     if not config.get("shuffle", True) or not config.get("initial_validation", True):
@@ -117,9 +120,15 @@ def _check_config(config):
         raise ValueError("KTST reference early stopping uses every strict validation AUC improvement")
 
 
-def _save_checkpoint(model, path, auc, epoch, manifest_sha256, config=None):
+def _save_checkpoint(model, path, auc, epoch, manifest_sha256, config=None, *, protocol=PROTOCOL, identity=None,
+                     epoch_completed=None):
     if not math.isfinite(auc) or not 0 <= auc <= 1:
         raise ValueError("A finite validation AUC is required")
+    if protocol != PROTOCOL:
+        from .engine import save_best_checkpoint
+        save_best_checkpoint(model, path, auc, -math.inf, epoch, manifest_sha256,
+                             protocol=protocol, identity=identity, epoch_completed=epoch_completed)
+        return
     temporary = path.with_suffix(".tmp")
     torch.save({"state_dict": model.state_dict(), "model_config": model.ktlab_model_config,
                 "epoch": epoch, "valid_auc": auc, "protocol": PROTOCOL,
@@ -134,7 +143,12 @@ def train_ktst(config: dict, run_dir: Path) -> dict:
     if config.get("_batch_approved") is not True:
         raise PermissionError("KTST training requires explicit per-batch approval via the ktlab CLI")
     _check_config(config)
-    from .engine import _json, _seed, _sha, read_manifest
+    from .engine import (SHARED_PROTOCOL, _json, _seed, _sha, read_manifest,
+                         _shared_config, _shared_dataset, _shared_identity, _shared_evaluate,
+                         _selected_shared_checkpoint)
+    shared = config.get("protocol") == SHARED_PROTOCOL
+    if shared:
+        config = _shared_config(config)
     dataset_type, _, build_model, forward, parameter_groups = _components()
     run_dir = Path(run_dir)
     if (run_dir / "metadata.json").exists() or (run_dir / "best.pt").exists():
@@ -149,11 +163,12 @@ def train_ktst(config: dict, run_dir: Path) -> dict:
         torch.cuda.reset_peak_memory_stats(device)
     model = build_model(config["model"], manifest["data_config"], config.get("model_config"), device)
     training = dataset_type(manifest, int(config.get("fold", 0)), split="train")
-    validation = dataset_type(manifest, int(config.get("fold", 0)), split="valid")
+    validation = (_shared_dataset(manifest, config) if shared else
+                  dataset_type(manifest, int(config.get("fold", 0)), split="valid"))
     config["model_config"] = model.ktlab_model_config
     run_dir.mkdir(parents=True, exist_ok=True)
     _json(run_dir / "resolved_config.json", config)
-    metadata = {"protocol": PROTOCOL, "run_id": run_dir.name, "status": "running", "test_accessed": False,
+    metadata = {"protocol": SHARED_PROTOCOL if shared else PROTOCOL, "run_id": run_dir.name, "status": "running", "test_accessed": False,
                 "started_at": utc_now(), "git_commit": git_revision(), "implementation_sha256": source_fingerprint(),
                 "config_sha256": config_fingerprint(config), "batch_id": config.get("batch_id"),
                 "approved_batch_sha256": config.get("approved_batch_sha256"),
@@ -168,27 +183,57 @@ def train_ktst(config: dict, run_dir: Path) -> dict:
                 "model_parameters": sum(p.numel() for p in model.parameters()),
                 "seed": int(config.get("seed", 42)), "partial_debug": config.get("max_validation_batches") is not None,
                 "not_comparable_with_protocol": "ktlab-v1-causal-valid-full-precision-repeat-kc-train"}
+    identity = _shared_identity(config, model, validation) if shared else None
+    if shared:
+        metadata.update(identity, training_representation="original_ktst_set_dense",
+                        partial_debug=config.get("max_validation_targets") is not None,
+                        initial_validation=True, initial_checkpoint_untrained=True)
     _json(run_dir / "metadata.json", metadata)
     started, steps = time.monotonic(), 0
     deadline = started + float(config["max_wall_seconds"]) if config.get("max_wall_seconds") else None
     maximum = config.get("max_validation_batches")
+    valid_loader = None
+    def validate(prediction_path=None):
+        if shared:
+            return _shared_evaluate(model, validation, device, config, identity, prediction_path, deadline=deadline)
+        return evaluate_ktst_loader(model, valid_loader, device, prediction_path, max_batches=maximum, deadline=deadline)
     try:
+        if shared:
+            initial_started = time.monotonic()
+            initial = validate()
+            if initial["auc"] is None:
+                raise ValueError("Both response classes are required for validation AUC")
+            initial_seconds = time.monotonic() - initial_started
+            initial.update(candidate_epoch=0, optimizer_steps=0, training_started=False,
+                           epoch_completed=False, validation_seconds=initial_seconds)
+            best, stale = initial["auc"], 0
+            _save_checkpoint(model, run_dir / "best.pt", best, 0, manifest["_manifest_sha256"], config,
+                             protocol=SHARED_PROTOCOL, identity=identity)
+            metadata.update(best_epoch=0, best_valid_auc=best, checkpoint_sha256=_sha(run_dir / "best.pt"),
+                            best_epoch_completed=False, initial_validation_seconds=initial_seconds)
+            _json(run_dir / "initial_valid_metrics.json", initial)
+            _json(run_dir / "metadata.json", metadata)
         optimizer = torch.optim.Adam(parameter_groups(model, float(config["learning_rate"]),
                                                       float(config["theta_learning_rate"])),
                                      weight_decay=float(config.get("weight_decay", 0.0)))
-        train_loader, valid_loader = _loader(training, config, train=True), _loader(validation, config)
-        initial = evaluate_ktst_loader(model, valid_loader, device, max_batches=maximum, deadline=deadline)
-        if initial["auc"] is None:
-            raise ValueError("Both response classes are required for validation AUC")
-        best, stale = initial["auc"], 0
-        _save_checkpoint(model, run_dir / "best.pt", best, 0, manifest["_manifest_sha256"], config)
-        metadata.update(best_epoch=0, best_valid_auc=best)
-        _json(run_dir / "initial_valid_metrics.json", initial)
+        train_loader = _loader(training, config, train=True)
+        valid_loader = None if shared else _loader(validation, config)
+        if not shared:
+            initial = validate()
+            if initial["auc"] is None:
+                raise ValueError("Both response classes are required for validation AUC")
+            best, stale = initial["auc"], 0
+            _save_checkpoint(model, run_dir / "best.pt", best, 0, manifest["_manifest_sha256"], config)
+            metadata.update(best_epoch=0, best_valid_auc=best)
+            _json(run_dir / "initial_valid_metrics.json", initial)
         stop_reason = "epochs_completed"
         for epoch in range(1, int(config.get("epochs", 200)) + 1):
+            if shared:
+                epoch_train_started = time.monotonic()
             model.train()
             total_loss, batches = 0., 0
-            for cpu_batch in train_loader:
+            epoch_completed = True
+            for batch_index, cpu_batch in enumerate(train_loader):
                 if deadline is not None and time.monotonic() >= deadline:
                     raise TimeoutError("KTST wall-clock budget exhausted")
                 if not bool(cpu_batch["score_mask"].any()):
@@ -205,21 +250,35 @@ def train_ktst(config: dict, run_dir: Path) -> dict:
                 batches += 1
                 total_loss += float(loss.detach())
                 if config.get("max_train_steps") is not None and steps >= int(config["max_train_steps"]):
+                    epoch_completed = batch_index + 1 == len(train_loader)
                     break
             if batches == 0:
                 raise ValueError("No KTST training targets selected")
-            valid = evaluate_ktst_loader(model, valid_loader, device, max_batches=maximum, deadline=deadline)
+            if shared:
+                train_seconds = time.monotonic() - epoch_train_started
+                validation_started = time.monotonic()
+            valid = validate()
+            if shared:
+                validation_seconds = time.monotonic() - validation_started
             auc = valid["auc"]
             if auc is None:
                 raise ValueError("Both response classes are required for validation AUC")
             if auc > best:
                 best, stale = auc, 0
-                _save_checkpoint(model, run_dir / "best.pt", best, epoch, manifest["_manifest_sha256"], config)
+                _save_checkpoint(model, run_dir / "best.pt", best, epoch, manifest["_manifest_sha256"], config,
+                                 protocol=SHARED_PROTOCOL if shared else PROTOCOL, identity=identity,
+                                 epoch_completed=epoch_completed if shared else None)
                 metadata.update(best_epoch=epoch, best_valid_auc=best)
+                if shared:
+                    metadata["checkpoint_sha256"] = _sha(run_dir / "best.pt")
+                    metadata["best_epoch_completed"] = epoch_completed
             else:
                 stale += 1
             event = {"epoch": epoch, "optimizer_steps": steps, "train_loss": total_loss / batches,
                      "valid": valid, "elapsed_seconds": time.monotonic() - started}
+            if shared:
+                event.update(epoch_completed=epoch_completed, train_seconds=train_seconds,
+                             validation_seconds=validation_seconds)
             with (run_dir / "history.jsonl").open("a", encoding="utf-8") as stream:
                 stream.write(json.dumps(event, allow_nan=False) + "\n")
             print(json.dumps(event, allow_nan=False), flush=True)
@@ -231,10 +290,11 @@ def train_ktst(config: dict, run_dir: Path) -> dict:
             if config.get("max_train_steps") is not None and steps >= int(config["max_train_steps"]):
                 stop_reason = "max_train_steps"
                 break
-        checkpoint = torch.load(run_dir / "best.pt", map_location=device, weights_only=True)
+        checkpoint = (_selected_shared_checkpoint(run_dir / "best.pt", metadata, identity,
+                                                  manifest["_manifest_sha256"], config["model_config"], device=device)
+                      if shared else torch.load(run_dir / "best.pt", map_location=device, weights_only=True))
         model.load_state_dict(checkpoint["state_dict"])
-        valid = evaluate_ktst_loader(model, valid_loader, device, run_dir / "valid_predictions.csv",
-                                     max_batches=maximum, deadline=deadline)
+        valid = validate(run_dir / "valid_predictions.csv")
         _json(run_dir / "valid_metrics.json", valid)
         metadata.update(status="completed", stop_reason=stop_reason, checkpoint_sha256=_sha(run_dir / "best.pt"))
         return {"run_dir": str(run_dir), "metadata": metadata, "valid": valid}
@@ -259,6 +319,9 @@ def evaluate_ktst_run(run_dir, *, split="valid"):
     dataset_type, _, build_model, _, _ = _components()
     run_dir = Path(run_dir)
     config = json.loads((run_dir / "resolved_config.json").read_text(encoding="utf-8"))
+    from .engine import SHARED_PROTOCOL, _evaluate_shared_run
+    if config.get("protocol") == SHARED_PROTOCOL:
+        return _evaluate_shared_run(run_dir, config, split)
     _check_config(config)
     manifest = read_manifest(config)
     device = resolve_device(config.get("device", "auto"))

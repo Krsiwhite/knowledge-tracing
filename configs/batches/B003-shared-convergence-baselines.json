@@ -1,0 +1,661 @@
+{
+  "schema_version": 1,
+  "batch_id": "B003-shared-convergence-baselines",
+  "status": "proposed",
+  "purpose": "Fixed-configuration baseline convergence under shared development validation; not tuned SOTA reproduction or final test",
+  "source_sha256": "e865cf930845b50d12bcad4afbd02a39e18e67bbcf7dc57ad9dbc1038a9dc1cb",
+  "git_commit_at_preparation": "bbabd13dd416d4cf233453e9f5f42250eedb3dde",
+  "limits": {
+    "total_optimizer_steps_upper_bound": 536000,
+    "epochs_per_run": 200,
+    "per_run_wall_seconds": 28800,
+    "sum_run_wall_seconds": 230400,
+    "wall_limit_scope": "soft checks between batches after model/data setup; setup is additional",
+    "paid_services": false,
+    "automatic_retries": false,
+    "per_dataset_run_wall_seconds": {
+      "assist2009": 14400,
+      "assist2015": 14400,
+      "nips_task34": 28800
+    }
+  },
+  "test_access": false,
+  "stop_on_noncompleted_run": true,
+  "comparison_boundary": "Validation targets/histories and checkpoint selection are shared; original repeated-KC versus set-event training is retained; no paper-best or SOTA claim",
+  "runs": [
+    {
+      "run_id": "B003-akt-assist2009-f0-s42",
+      "dataset_manifest_sha256": "e2c939dfe4479327c223644bce6aee88c56bc362d1169164332ae9ca479fc703",
+      "train_sequence_rows": 3016,
+      "config": {
+        "dataset_manifest": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/assist2009/manifest.json",
+        "model": "akt",
+        "dataset": "assist2009",
+        "fold": 0,
+        "seed": 42,
+        "device": "cuda",
+        "batch_size": 32,
+        "epochs": 200,
+        "learning_rate": 0.001,
+        "weight_decay": 0.0,
+        "shuffle": true,
+        "grad_clip": 1.0,
+        "patience": 10,
+        "early_stop_min_delta": 0.0,
+        "max_train_steps": 19000,
+        "max_wall_seconds": 14400,
+        "debug_smoke": false,
+        "purpose": "fixed_configuration_convergence_anchor_shared_validation_not_sota",
+        "model_config": {
+          "d_model": 128,
+          "n_blocks": 2,
+          "dropout": 0.1,
+          "d_ff": 256,
+          "num_attn_heads": 8,
+          "final_fc_dim": 256
+        },
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "initial_validation": true,
+        "validation_batch_size": 32,
+        "max_rows_per_forward": 32
+      },
+      "shared_validation": {
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "selected_targets": 43295,
+        "source_sha256": "d590ba88d8d7ab630e635a89b56df55219f49a75b55caa0df571a1f3b460404e",
+        "target_sha256": "c4c432fca4c3a3308dd6e9dc9b852a7d9b3f6852caa2ee8074379b209f8b2190",
+        "context_sha256": "491600d611a2726d3ffb85b55c0b9e2e44fabde6e365e7faf89844a243a6da54",
+        "canonical_events": 43912,
+        "exclusion_counts": {
+          "target_over_budget": 0,
+          "no_history": 617
+        }
+      }
+    },
+    {
+      "run_id": "B003-simplekt-assist2009-f0-s42",
+      "dataset_manifest_sha256": "e2c939dfe4479327c223644bce6aee88c56bc362d1169164332ae9ca479fc703",
+      "train_sequence_rows": 3016,
+      "config": {
+        "dataset_manifest": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/assist2009/manifest.json",
+        "model": "simplekt",
+        "dataset": "assist2009",
+        "fold": 0,
+        "seed": 42,
+        "device": "cuda",
+        "batch_size": 32,
+        "epochs": 200,
+        "learning_rate": 0.001,
+        "weight_decay": 0.0,
+        "shuffle": true,
+        "grad_clip": 1.0,
+        "patience": 10,
+        "early_stop_min_delta": 0.0,
+        "max_train_steps": 19000,
+        "max_wall_seconds": 14400,
+        "debug_smoke": false,
+        "purpose": "fixed_configuration_convergence_anchor_shared_validation_not_sota",
+        "model_config": {
+          "d_model": 128,
+          "n_blocks": 2,
+          "dropout": 0.1,
+          "d_ff": 256,
+          "num_attn_heads": 8,
+          "final_fc_dim": 256
+        },
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "initial_validation": true,
+        "validation_batch_size": 32,
+        "max_rows_per_forward": 32
+      },
+      "shared_validation": {
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "selected_targets": 43295,
+        "source_sha256": "d590ba88d8d7ab630e635a89b56df55219f49a75b55caa0df571a1f3b460404e",
+        "target_sha256": "c4c432fca4c3a3308dd6e9dc9b852a7d9b3f6852caa2ee8074379b209f8b2190",
+        "context_sha256": "491600d611a2726d3ffb85b55c0b9e2e44fabde6e365e7faf89844a243a6da54",
+        "canonical_events": 43912,
+        "exclusion_counts": {
+          "target_over_budget": 0,
+          "no_history": 617
+        }
+      }
+    },
+    {
+      "run_id": "B003-mockt-assist2009-f0-s42",
+      "dataset_manifest_sha256": "e2c939dfe4479327c223644bce6aee88c56bc362d1169164332ae9ca479fc703",
+      "train_sequence_rows": 3016,
+      "config": {
+        "dataset_manifest": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/assist2009/manifest.json",
+        "model": "mockt",
+        "dataset": "assist2009",
+        "fold": 0,
+        "seed": 42,
+        "device": "cuda",
+        "batch_size": 32,
+        "epochs": 200,
+        "learning_rate": 0.001,
+        "weight_decay": 0.0,
+        "shuffle": true,
+        "grad_clip": 1.0,
+        "patience": 10,
+        "early_stop_min_delta": 0.0,
+        "max_train_steps": 19000,
+        "max_wall_seconds": 14400,
+        "debug_smoke": false,
+        "purpose": "fixed_configuration_convergence_anchor_shared_validation_not_sota",
+        "model_config": {
+          "d_model": 128,
+          "n_blocks": 2,
+          "dropout": 0.1,
+          "d_ff": 256,
+          "num_attn_heads": 8,
+          "final_fc_dim": 256,
+          "emb_type": "qid_conv_ker_noexp",
+          "kernel_size": 4
+        },
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "initial_validation": true,
+        "validation_batch_size": 32,
+        "max_rows_per_forward": 32
+      },
+      "shared_validation": {
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "selected_targets": 43295,
+        "source_sha256": "d590ba88d8d7ab630e635a89b56df55219f49a75b55caa0df571a1f3b460404e",
+        "target_sha256": "c4c432fca4c3a3308dd6e9dc9b852a7d9b3f6852caa2ee8074379b209f8b2190",
+        "context_sha256": "491600d611a2726d3ffb85b55c0b9e2e44fabde6e365e7faf89844a243a6da54",
+        "canonical_events": 43912,
+        "exclusion_counts": {
+          "target_over_budget": 0,
+          "no_history": 617
+        }
+      }
+    },
+    {
+      "run_id": "B003-ktst_mean-assist2009-f0-s42",
+      "dataset_manifest_sha256": "e2c939dfe4479327c223644bce6aee88c56bc362d1169164332ae9ca479fc703",
+      "train_sequence_rows": 3016,
+      "config": {
+        "dataset_manifest": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/assist2009/manifest.json",
+        "model": "ktst_mean",
+        "dataset": "assist2009",
+        "fold": 0,
+        "seed": 42,
+        "device": "cuda",
+        "batch_size": 32,
+        "epochs": 200,
+        "learning_rate": 0.0001,
+        "weight_decay": 5e-05,
+        "shuffle": true,
+        "grad_clip": 1.0,
+        "patience": 10,
+        "early_stop_min_delta": 0.0,
+        "max_train_steps": 19000,
+        "max_wall_seconds": 14400,
+        "debug_smoke": false,
+        "purpose": "fixed_configuration_convergence_anchor_shared_validation_not_sota",
+        "model_config": {
+          "d_model": 128,
+          "nhead_tf": 8,
+          "nhead_agg": 4,
+          "num_layers_tf_enc": 1,
+          "num_layers_tf_dec": 2,
+          "num_layers_agg": 1,
+          "dim_feedforward": 256,
+          "dim_classifier": 256,
+          "dropout": 0.1,
+          "aggregation": "q_mean_c",
+          "use_bias_emb": true,
+          "use_zero_init": true,
+          "use_decoder_only": false,
+          "attn_variant": "learnable_alibi_monotonic_q_k"
+        },
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "validation_batch_size": 32,
+        "theta_learning_rate": 0.0005,
+        "initial_validation": true,
+        "max_rows_per_forward": 32
+      },
+      "shared_validation": {
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "selected_targets": 43295,
+        "source_sha256": "d590ba88d8d7ab630e635a89b56df55219f49a75b55caa0df571a1f3b460404e",
+        "target_sha256": "c4c432fca4c3a3308dd6e9dc9b852a7d9b3f6852caa2ee8074379b209f8b2190",
+        "context_sha256": "491600d611a2726d3ffb85b55c0b9e2e44fabde6e365e7faf89844a243a6da54",
+        "canonical_events": 43912,
+        "exclusion_counts": {
+          "target_over_budget": 0,
+          "no_history": 617
+        }
+      }
+    },
+    {
+      "run_id": "B003-akt-assist2015-f0-s42",
+      "dataset_manifest_sha256": "698be4553033f3891757eea79bed34c9394e77eb4a90475d2ca24cc9905b6441",
+      "train_sequence_rows": 12344,
+      "config": {
+        "dataset_manifest": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/assist2015/manifest.json",
+        "model": "akt",
+        "dataset": "assist2015",
+        "fold": 0,
+        "seed": 42,
+        "device": "cuda",
+        "batch_size": 32,
+        "epochs": 200,
+        "learning_rate": 0.001,
+        "weight_decay": 0.0,
+        "shuffle": true,
+        "grad_clip": 1.0,
+        "patience": 10,
+        "early_stop_min_delta": 0.0,
+        "max_train_steps": 77200,
+        "max_wall_seconds": 14400,
+        "debug_smoke": false,
+        "purpose": "fixed_configuration_convergence_anchor_shared_validation_not_sota",
+        "model_config": {
+          "d_model": 128,
+          "n_blocks": 2,
+          "dropout": 0.1,
+          "d_ff": 256,
+          "num_attn_heads": 8,
+          "final_fc_dim": 256
+        },
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "initial_validation": true,
+        "validation_batch_size": 32,
+        "max_rows_per_forward": 32
+      },
+      "shared_validation": {
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "selected_targets": 102776,
+        "source_sha256": "83ff2090d1ddaa6295854984733b699b52fa3b656d7c814d6c9da56822964ac7",
+        "target_sha256": "6a038195100b0760c43ccba807989ce17c5c70e635340e8d34b688e3051caf0f",
+        "context_sha256": "c6587ae6ab2a9be6f42031484edc9aeabbeb7828143c59afc5a17d74d63f62c8",
+        "canonical_events": 105831,
+        "exclusion_counts": {
+          "target_over_budget": 0,
+          "no_history": 3055
+        }
+      }
+    },
+    {
+      "run_id": "B003-simplekt-assist2015-f0-s42",
+      "dataset_manifest_sha256": "698be4553033f3891757eea79bed34c9394e77eb4a90475d2ca24cc9905b6441",
+      "train_sequence_rows": 12344,
+      "config": {
+        "dataset_manifest": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/assist2015/manifest.json",
+        "model": "simplekt",
+        "dataset": "assist2015",
+        "fold": 0,
+        "seed": 42,
+        "device": "cuda",
+        "batch_size": 32,
+        "epochs": 200,
+        "learning_rate": 0.001,
+        "weight_decay": 0.0,
+        "shuffle": true,
+        "grad_clip": 1.0,
+        "patience": 10,
+        "early_stop_min_delta": 0.0,
+        "max_train_steps": 77200,
+        "max_wall_seconds": 14400,
+        "debug_smoke": false,
+        "purpose": "fixed_configuration_convergence_anchor_shared_validation_not_sota",
+        "model_config": {
+          "d_model": 128,
+          "n_blocks": 2,
+          "dropout": 0.1,
+          "d_ff": 256,
+          "num_attn_heads": 8,
+          "final_fc_dim": 256
+        },
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "initial_validation": true,
+        "validation_batch_size": 32,
+        "max_rows_per_forward": 32
+      },
+      "shared_validation": {
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "selected_targets": 102776,
+        "source_sha256": "83ff2090d1ddaa6295854984733b699b52fa3b656d7c814d6c9da56822964ac7",
+        "target_sha256": "6a038195100b0760c43ccba807989ce17c5c70e635340e8d34b688e3051caf0f",
+        "context_sha256": "c6587ae6ab2a9be6f42031484edc9aeabbeb7828143c59afc5a17d74d63f62c8",
+        "canonical_events": 105831,
+        "exclusion_counts": {
+          "target_over_budget": 0,
+          "no_history": 3055
+        }
+      }
+    },
+    {
+      "run_id": "B003-mockt-assist2015-f0-s42",
+      "dataset_manifest_sha256": "698be4553033f3891757eea79bed34c9394e77eb4a90475d2ca24cc9905b6441",
+      "train_sequence_rows": 12344,
+      "config": {
+        "dataset_manifest": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/assist2015/manifest.json",
+        "model": "mockt",
+        "dataset": "assist2015",
+        "fold": 0,
+        "seed": 42,
+        "device": "cuda",
+        "batch_size": 32,
+        "epochs": 200,
+        "learning_rate": 0.001,
+        "weight_decay": 0.0,
+        "shuffle": true,
+        "grad_clip": 1.0,
+        "patience": 10,
+        "early_stop_min_delta": 0.0,
+        "max_train_steps": 77200,
+        "max_wall_seconds": 14400,
+        "debug_smoke": false,
+        "purpose": "fixed_configuration_convergence_anchor_shared_validation_not_sota",
+        "model_config": {
+          "d_model": 128,
+          "n_blocks": 2,
+          "dropout": 0.1,
+          "d_ff": 256,
+          "num_attn_heads": 8,
+          "final_fc_dim": 256,
+          "emb_type": "qid_conv_ker_noexp",
+          "kernel_size": 4
+        },
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "initial_validation": true,
+        "validation_batch_size": 32,
+        "max_rows_per_forward": 32
+      },
+      "shared_validation": {
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "selected_targets": 102776,
+        "source_sha256": "83ff2090d1ddaa6295854984733b699b52fa3b656d7c814d6c9da56822964ac7",
+        "target_sha256": "6a038195100b0760c43ccba807989ce17c5c70e635340e8d34b688e3051caf0f",
+        "context_sha256": "c6587ae6ab2a9be6f42031484edc9aeabbeb7828143c59afc5a17d74d63f62c8",
+        "canonical_events": 105831,
+        "exclusion_counts": {
+          "target_over_budget": 0,
+          "no_history": 3055
+        }
+      }
+    },
+    {
+      "run_id": "B003-ktst_mean-assist2015-f0-s42",
+      "dataset_manifest_sha256": "698be4553033f3891757eea79bed34c9394e77eb4a90475d2ca24cc9905b6441",
+      "train_sequence_rows": 12344,
+      "config": {
+        "dataset_manifest": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/assist2015/manifest.json",
+        "model": "ktst_mean",
+        "dataset": "assist2015",
+        "fold": 0,
+        "seed": 42,
+        "device": "cuda",
+        "batch_size": 32,
+        "epochs": 200,
+        "learning_rate": 0.0001,
+        "weight_decay": 5e-05,
+        "shuffle": true,
+        "grad_clip": 1.0,
+        "patience": 10,
+        "early_stop_min_delta": 0.0,
+        "max_train_steps": 77200,
+        "max_wall_seconds": 14400,
+        "debug_smoke": false,
+        "purpose": "fixed_configuration_convergence_anchor_shared_validation_not_sota",
+        "model_config": {
+          "d_model": 128,
+          "nhead_tf": 8,
+          "nhead_agg": 4,
+          "num_layers_tf_enc": 1,
+          "num_layers_tf_dec": 2,
+          "num_layers_agg": 1,
+          "dim_feedforward": 256,
+          "dim_classifier": 256,
+          "dropout": 0.1,
+          "aggregation": "q_mean_c",
+          "use_bias_emb": true,
+          "use_zero_init": true,
+          "use_decoder_only": false,
+          "attn_variant": "learnable_alibi_monotonic_q_k"
+        },
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "validation_batch_size": 32,
+        "theta_learning_rate": 0.0005,
+        "initial_validation": true,
+        "max_rows_per_forward": 32
+      },
+      "shared_validation": {
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "selected_targets": 102776,
+        "source_sha256": "83ff2090d1ddaa6295854984733b699b52fa3b656d7c814d6c9da56822964ac7",
+        "target_sha256": "6a038195100b0760c43ccba807989ce17c5c70e635340e8d34b688e3051caf0f",
+        "context_sha256": "c6587ae6ab2a9be6f42031484edc9aeabbeb7828143c59afc5a17d74d63f62c8",
+        "canonical_events": 105831,
+        "exclusion_counts": {
+          "target_over_budget": 0,
+          "no_history": 3055
+        }
+      }
+    },
+    {
+      "run_id": "B003-akt-nips_task34-f0-s42",
+      "dataset_manifest_sha256": "db0795bfe4b5f8e88e11b51c95626fe5d8dc4e6dc5529a9ac179128cf0eb8398",
+      "train_sequence_rows": 6043,
+      "config": {
+        "dataset_manifest": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/nips_task34/manifest.json",
+        "model": "akt",
+        "dataset": "nips_task34",
+        "fold": 0,
+        "seed": 42,
+        "device": "cuda",
+        "batch_size": 32,
+        "epochs": 200,
+        "learning_rate": 0.001,
+        "weight_decay": 0.0,
+        "shuffle": true,
+        "grad_clip": 1.0,
+        "patience": 10,
+        "early_stop_min_delta": 0.0,
+        "max_train_steps": 37800,
+        "max_wall_seconds": 28800,
+        "debug_smoke": false,
+        "purpose": "fixed_configuration_convergence_anchor_shared_validation_not_sota",
+        "model_config": {
+          "d_model": 128,
+          "n_blocks": 2,
+          "dropout": 0.1,
+          "d_ff": 256,
+          "num_attn_heads": 8,
+          "final_fc_dim": 256
+        },
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "initial_validation": true,
+        "validation_batch_size": 32,
+        "max_rows_per_forward": 32
+      },
+      "shared_validation": {
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "selected_targets": 221348,
+        "source_sha256": "a75cdf0222d0d861a7861dc4dd7f52207ec987285ecd3f0e83b53f1fa54a3e65",
+        "target_sha256": "0e3b06512ca4fed4fa3fd2c4869b26f988c10b792af9f5e7d226c2c1121db2bf",
+        "context_sha256": "9a19f023d6a385cb18855d5e3238da01d3581560d26ed8d936cfe03a1330769a",
+        "canonical_events": 222135,
+        "exclusion_counts": {
+          "target_over_budget": 0,
+          "no_history": 787
+        }
+      }
+    },
+    {
+      "run_id": "B003-simplekt-nips_task34-f0-s42",
+      "dataset_manifest_sha256": "db0795bfe4b5f8e88e11b51c95626fe5d8dc4e6dc5529a9ac179128cf0eb8398",
+      "train_sequence_rows": 6043,
+      "config": {
+        "dataset_manifest": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/nips_task34/manifest.json",
+        "model": "simplekt",
+        "dataset": "nips_task34",
+        "fold": 0,
+        "seed": 42,
+        "device": "cuda",
+        "batch_size": 32,
+        "epochs": 200,
+        "learning_rate": 0.001,
+        "weight_decay": 0.0,
+        "shuffle": true,
+        "grad_clip": 1.0,
+        "patience": 10,
+        "early_stop_min_delta": 0.0,
+        "max_train_steps": 37800,
+        "max_wall_seconds": 28800,
+        "debug_smoke": false,
+        "purpose": "fixed_configuration_convergence_anchor_shared_validation_not_sota",
+        "model_config": {
+          "d_model": 128,
+          "n_blocks": 2,
+          "dropout": 0.1,
+          "d_ff": 256,
+          "num_attn_heads": 8,
+          "final_fc_dim": 256
+        },
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "initial_validation": true,
+        "validation_batch_size": 32,
+        "max_rows_per_forward": 32
+      },
+      "shared_validation": {
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "selected_targets": 221348,
+        "source_sha256": "a75cdf0222d0d861a7861dc4dd7f52207ec987285ecd3f0e83b53f1fa54a3e65",
+        "target_sha256": "0e3b06512ca4fed4fa3fd2c4869b26f988c10b792af9f5e7d226c2c1121db2bf",
+        "context_sha256": "9a19f023d6a385cb18855d5e3238da01d3581560d26ed8d936cfe03a1330769a",
+        "canonical_events": 222135,
+        "exclusion_counts": {
+          "target_over_budget": 0,
+          "no_history": 787
+        }
+      }
+    },
+    {
+      "run_id": "B003-mockt-nips_task34-f0-s42",
+      "dataset_manifest_sha256": "db0795bfe4b5f8e88e11b51c95626fe5d8dc4e6dc5529a9ac179128cf0eb8398",
+      "train_sequence_rows": 6043,
+      "config": {
+        "dataset_manifest": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/nips_task34/manifest.json",
+        "model": "mockt",
+        "dataset": "nips_task34",
+        "fold": 0,
+        "seed": 42,
+        "device": "cuda",
+        "batch_size": 32,
+        "epochs": 200,
+        "learning_rate": 0.001,
+        "weight_decay": 0.0,
+        "shuffle": true,
+        "grad_clip": 1.0,
+        "patience": 10,
+        "early_stop_min_delta": 0.0,
+        "max_train_steps": 37800,
+        "max_wall_seconds": 28800,
+        "debug_smoke": false,
+        "purpose": "fixed_configuration_convergence_anchor_shared_validation_not_sota",
+        "model_config": {
+          "d_model": 128,
+          "n_blocks": 2,
+          "dropout": 0.1,
+          "d_ff": 256,
+          "num_attn_heads": 8,
+          "final_fc_dim": 256,
+          "emb_type": "qid_conv_ker_noexp",
+          "kernel_size": 4
+        },
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "initial_validation": true,
+        "validation_batch_size": 32,
+        "max_rows_per_forward": 32
+      },
+      "shared_validation": {
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "selected_targets": 221348,
+        "source_sha256": "a75cdf0222d0d861a7861dc4dd7f52207ec987285ecd3f0e83b53f1fa54a3e65",
+        "target_sha256": "0e3b06512ca4fed4fa3fd2c4869b26f988c10b792af9f5e7d226c2c1121db2bf",
+        "context_sha256": "9a19f023d6a385cb18855d5e3238da01d3581560d26ed8d936cfe03a1330769a",
+        "canonical_events": 222135,
+        "exclusion_counts": {
+          "target_over_budget": 0,
+          "no_history": 787
+        }
+      }
+    },
+    {
+      "run_id": "B003-ktst_mean-nips_task34-f0-s42",
+      "dataset_manifest_sha256": "db0795bfe4b5f8e88e11b51c95626fe5d8dc4e6dc5529a9ac179128cf0eb8398",
+      "train_sequence_rows": 6043,
+      "config": {
+        "dataset_manifest": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/nips_task34/manifest.json",
+        "model": "ktst_mean",
+        "dataset": "nips_task34",
+        "fold": 0,
+        "seed": 42,
+        "device": "cuda",
+        "batch_size": 32,
+        "epochs": 200,
+        "learning_rate": 0.0001,
+        "weight_decay": 5e-05,
+        "shuffle": true,
+        "grad_clip": 1.0,
+        "patience": 10,
+        "early_stop_min_delta": 0.0,
+        "max_train_steps": 37800,
+        "max_wall_seconds": 28800,
+        "debug_smoke": false,
+        "purpose": "fixed_configuration_convergence_anchor_shared_validation_not_sota",
+        "model_config": {
+          "d_model": 128,
+          "nhead_tf": 8,
+          "nhead_agg": 4,
+          "num_layers_tf_enc": 1,
+          "num_layers_tf_dec": 2,
+          "num_layers_agg": 1,
+          "dim_feedforward": 256,
+          "dim_classifier": 256,
+          "dropout": 0.1,
+          "aggregation": "q_mean_c",
+          "use_bias_emb": true,
+          "use_zero_init": true,
+          "use_decoder_only": false,
+          "attn_variant": "learnable_alibi_monotonic_q_k"
+        },
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "validation_batch_size": 32,
+        "theta_learning_rate": 0.0005,
+        "initial_validation": true,
+        "max_rows_per_forward": 32
+      },
+      "shared_validation": {
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "selected_targets": 221348,
+        "source_sha256": "a75cdf0222d0d861a7861dc4dd7f52207ec987285ecd3f0e83b53f1fa54a3e65",
+        "target_sha256": "0e3b06512ca4fed4fa3fd2c4869b26f988c10b792af9f5e7d226c2c1121db2bf",
+        "context_sha256": "9a19f023d6a385cb18855d5e3238da01d3581560d26ed8d936cfe03a1330769a",
+        "canonical_events": 222135,
+        "exclusion_counts": {
+          "target_over_budget": 0,
+          "no_history": 787
+        }
+      }
+    }
+  ],
+  "base_batch_sha256": "d758e4028eea696941163065924c7ccb6c38285cb4466b89c32d5ce94e13ae4f",
+  "selection": {
+    "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+    "fold": 0,
+    "seed": 42,
+    "initial_validation": true,
+    "every_epoch_full_validation": true,
+    "strict_best_auc": true,
+    "patience": 10,
+    "ties_keep_earlier_checkpoint": true,
+    "final_best_checkpoint_reload_and_export": true,
+    "hyperparameter_search_trials_per_model_dataset": 1
+  }
+}

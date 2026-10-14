@@ -2,7 +2,7 @@
 
 版本：v0.1，2026-10-14。适用：ASSISTments2009、ASSISTments2015、NIPS34。
 
-本协议用于本项目内部的公平比较。它采用固定学生test、统一验证/测试语义和明确的checkpoint选择规则；结果中的协议标识固定为 **ktlab-v1-causal-valid-full-precision-repeat-kc-train**，与训练引擎一致，不能直接写成原论文精确复现或全领域SOTA。当前没有已完成的梯度训练或最终测试结果。
+本文件记录 v1：固定学生test、因果事件验证和明确的checkpoint选择规则，协议标识为 **ktlab-v1-causal-valid-full-precision-repeat-kc-train**。B001及B002的pyKT模型采用本版本，KTST采用独立参考轨，不能混排。后续共同开发比较使用[共享事件v2协议](SHARED_EVENT_PROTOCOL.md)，该版本只实现开发集并封锁test；历史v1结果不重标。当前已完成单轮校准，尚无收敛比较或最终测试结果。
 
 ## 1. 数据版本、划分和共同输入
 
@@ -65,7 +65,7 @@
 
 本地RX9070XT 16GB优先。付费API、云GPU、额外数据访问条款或需要改变资源安排时先对齐，不凭研究目标推定费用授权。
 
-首批 B001 已获用户明确批准并完成：AS2015 上 AKT/simpleKT 各5次 optimizer 更新，实际记录见[批次报告](../reports/B001_RESULTS_AND_B002_PLAN_2026-10-14.md)。只验证训练链路和部分验证/checkpoint机制，不接触最终test；下一批 B002 仍需独立确认。
+首批 B001 已按批准完成，B002 也已独立获批并完成12次运行、2680次更新；实际记录见[B002报告](../reports/B002_RESULTS_AND_B003_PLAN_2026-10-14.md)。两批均属运行校准，不接触最终test；后续共享协议训练另行申请。
 
 ## 6. 必须通过的检查
 
