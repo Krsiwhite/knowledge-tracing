@@ -1,6 +1,6 @@
 # Knowledge Tracing Research
 
-基于固定版本 pyKT 的独立知识追踪研究项目。目标是提出有明确研究问题和证据支持的原创改进，并在可比协议下超越强基线。**B001/B002 已完成运行校准；截至2026-10-15首份阶段记录，B003已完成首组AKT/ASSIST2009（12轮早停、最佳第9轮、验证AUC 0.779116），其余组仍在推进。** [首组完成记录](reports/B003_FIRST_COMPLETED_RUN_2026-10-15.json)只覆盖1/12，尚无整批比较、最终测试或 SOTA 结论。
+基于固定版本 pyKT 的独立知识追踪研究项目。目标是提出有明确研究问题和证据支持的原创改进，并在可比协议下超越强基线。**B001/B002 已完成运行校准；截至2026-10-15第二份阶段记录，B003已完成ASSIST2009的AKT和simpleKT（验证AUC分别0.779116、0.764001），MoC-KT已开始运行。** [首两组比较](reports/B003_FIRST_TWO_BASELINES_2026-10-15.md)只覆盖2/12，尚无整批比较、最终测试或 SOTA 结论。
 
 首期数据集为 ASSIST2009、ASSIST2015、NIPS34；以 2026-10-29 为首轮结果汇报节点，提前验证完成就提前交付。困难场景主线只在验证阶段决定，不能看过最终测试再选择有利指标。
 
@@ -62,6 +62,7 @@ B001、[B002](configs/batches/B002-one-epoch-calibration.json) 已在各自冻�
 - [B001 结果与 B002 方案](reports/B001_RESULTS_AND_B002_PLAN_2026-10-14.md)：已完成训练的证据及下一批具体预算。
 - [B002 结果与下一批方案](reports/B002_RESULTS_AND_B003_PLAN_2026-10-14.md)：12次已完成运行、成本与证据边界。
 - [B003 首个模型的误差分层](reports/B003_AKT_ASSIST2009_ERROR_STRATA_2026-10-15.md)：AKT/ASSIST2009 的固定历史、训练题频及可见支持分层；稀疏题值得后续核对，尚不据此确定原创模型。
+- [B003 首两组基线比较](reports/B003_FIRST_TWO_BASELINES_2026-10-15.md)：AKT与simpleKT相同验证事件的配对结果、学生抽样区间与固定误差分层。
 - [共享事件开发协议](docs/SHARED_EVENT_PROTOCOL.md)：不同模型使用同一目标事件和允许历史的验证规则。
 - [已保存验证预测的离线分析](docs/SAVED_PREDICTION_ANALYSIS.md)：收据核对、单/多KC分层、按学生配对重采样；仅探索性验证，不加载模型或解封test。
 - [KTST 接入审计](docs/KTST_INTEGRATION.md)：官方实现、题级集合表示和协议差异。
