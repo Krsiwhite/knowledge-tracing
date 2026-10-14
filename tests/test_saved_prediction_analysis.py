@@ -163,6 +163,62 @@ def ukt_config(recipe, use_cl, augmentation):
                              "use_uncertainty_aug": augmentation, "cl_weight": .02}}
 
 
+def mockt_config(recipe=None):
+    config = {"model": "mockt", "model_config": {"d_model": 128, "emb_type": "qid_conv_ker_noexp",
+                                               "kernel_size": 4, "seq_len": 200}}
+    if recipe is not None:
+        config["mockt_training_recipe"] = recipe
+    return config
+
+
+@pytest.mark.parametrize("recipes", [
+    (None, "mockt-target-prefix-branches-v1"),
+    ("mockt-target-prefix-branches-v1", "mockt-three-pass-ground-seq-control-v1")])
+def test_mockt_saved_recipe_pairing_retains_model_and_explicit_labels(artifacts, recipes):
+    update_model_receipts(artifacts, [mockt_config(recipe) for recipe in recipes])
+    report = analyze(artifacts)
+    assert [run["model"] for run in report["runs"]] == ["mockt", "mockt"]
+    assert [run["mockt_training_recipe"] for run in report["runs"]] == list(recipes)
+    assert [run["comparison_label"] for run in report["runs"]] == [
+        f"mockt / {recipe}" if recipe else "mockt" for recipe in recipes]
+    assert len({ANALYSIS.comparison_key(ANALYSIS.comparison_identity(config))
+                for config in [dict(mockt_config(recipe), protocol=ANALYSIS.PROTOCOL) for recipe in recipes]}) == 2
+    assert report["model_forward_calls"] == 0
+
+
+@pytest.mark.parametrize("recipe", [None, *sorted(ANALYSIS.MOCKT_RECIPES)])
+def test_mockt_duplicate_cannot_be_bypassed_by_name_or_architecture(artifacts, recipe):
+    first, second = mockt_config(recipe), mockt_config(recipe)
+    first["comparison_label"], second["comparison_label"] = "first", "second"
+    second["model_config"]["d_model"] = 256
+    update_model_receipts(artifacts, [first, second])
+    with pytest.raises(ValueError, match="distinct models"):
+        analyze(artifacts)
+
+
+@pytest.mark.parametrize("change", [
+    {"model": "akt"}, {"mockt_training_recipe": "mockt-renamed"},
+    {"model_config": {"emb_type": "qid"}}, {"model_config": {"kernel_size": 5}},
+    {"model_config": {"seq_len": 199}}, {"model_config": {"sequence1": 49}},
+    {"model_config": {"sequence2": 150.0}}, {"model_config": None}])
+def test_mockt_inconsistent_recipe_rejected_even_with_coherent_receipts(artifacts, change):
+    candidate = mockt_config("mockt-target-prefix-branches-v1")
+    candidate.update(change)
+    update_model_receipts(artifacts, [{}, candidate])
+    with pytest.raises(ValueError, match="MoC"):
+        analyze(artifacts)
+
+
+def test_mockt_recipe_config_tamper_is_not_a_new_variant(artifacts):
+    update_model_receipts(artifacts, [mockt_config(), mockt_config("mockt-target-prefix-branches-v1")])
+    path = artifacts[0][1].parent / "resolved_config.json"
+    config = load_json(path)
+    config["mockt_training_recipe"] = "mockt-three-pass-ground-seq-control-v1"
+    write_json(path, config)
+    with pytest.raises(ValueError, match="[Cc]onfig"):
+        analyze(artifacts)
+
+
 @pytest.fixture
 def ukt_artifacts(artifacts):
     update_model_receipts(artifacts, [ukt_config("ukt-no-cl", False, True),

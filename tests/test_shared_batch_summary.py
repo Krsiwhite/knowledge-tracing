@@ -319,13 +319,19 @@ def test_cli_writes_once_and_refuses_overwrite(artifacts):
 
 
 @pytest.mark.parametrize("duplicate", [False, True])
-def test_ukt_recipes_keep_distinct_bound_identities(artifacts, duplicate):
+@pytest.mark.parametrize("model", ["ukt", "mockt"])
+def test_training_recipes_keep_distinct_bound_identities(artifacts, duplicate, model):
     _, batch_path, directories = artifacts
     batch = read_json(batch_path)
     for index, entry in enumerate(batch["runs"]):
         use_cl = index == 0 or duplicate
-        entry["config"].update(model="ukt", ukt_training_recipe=A.UKT_AUTHOR_AUGMENTATION if use_cl else "ukt-no-cl",
-                               model_config={"d_model": 16, "use_CL": use_cl, "use_uncertainty_aug": True})
+        if model == "ukt":
+            entry["config"].update(model=model, ukt_training_recipe=A.UKT_AUTHOR_AUGMENTATION if use_cl else "ukt-no-cl",
+                                   model_config={"d_model": 16, "use_CL": use_cl, "use_uncertainty_aug": True})
+        else:
+            entry["config"].update(model=model, mockt_training_recipe=("mockt-target-prefix-branches-v1" if use_cl else
+                                   "mockt-three-pass-ground-seq-control-v1"),
+                                   model_config={"d_model": 16, "emb_type": "qid_conv_ker_noexp", "kernel_size": 4, "seq_len": 200})
     write_json(batch_path, batch)
     batch_sha = A.canonical_hash(batch)
     for entry, directory in zip(batch["runs"], directories):
@@ -333,21 +339,24 @@ def test_ukt_recipes_keep_distinct_bound_identities(artifacts, duplicate):
         write_json(directory / "resolved_config.json", config)
         change_json(directory / "metadata.json", approved_batch_sha256=batch_sha, config_sha256=A.canonical_hash(config))
         for name in ("initial_valid_metrics.json", "valid_metrics.json"):
-            change_json(directory / name, model="ukt")
+            change_json(directory / name, model=model)
         sidecar_path = directory / "valid_predictions.csv.manifest.json"
         sidecar = read_json(sidecar_path)
-        sidecar["result"]["model"] = "ukt"
+        sidecar["result"]["model"] = model
         write_json(sidecar_path, sidecar)
         history = read_history(directory)
         for row in history:
-            row["valid"]["model"] = "ukt"
+            row["valid"]["model"] = model
         write_history(directory, history)
     if duplicate:
         with pytest.raises(ValueError, match="Duplicate model/recipe"):
             summary(artifacts)
     else:
         report = summary(artifacts)
-        assert {run["ukt_training_recipe"] for run in report["runs"]} == {A.UKT_AUTHOR_AUGMENTATION, "ukt-no-cl"}
+        if model == "ukt":
+            assert {run["ukt_training_recipe"] for run in report["runs"]} == {A.UKT_AUTHOR_AUGMENTATION, "ukt-no-cl"}
+        else:
+            assert {run["mockt_training_recipe"] for run in report["runs"]} == A.MOCKT_RECIPES
         assert len({run["comparison_label"] for run in report["runs"]}) == 2
         assert len({run["run_id"] for run in report["runs"]}) == 2
 

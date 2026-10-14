@@ -1,0 +1,399 @@
+{
+  "schema_version": 1,
+  "batch_id": "B006-mockt-prefix-training-shared",
+  "status": "prepared",
+  "purpose": "Controlled MoC training length-routing adaptation under unchanged shared development validation",
+  "source_sha256": "0e9eb36f2ef023f51400ee74ff7bc3ae699aac0b52fbe1568bc73389b4cf07f0",
+  "git_commit_at_preparation": "1bc4111a8284d9478dcd242da09fee74716f7de1",
+  "base_batch_sha256": "c2c4dbc0ffcfee1bb591948e6dffac26366b723bd13d7c8e484ebff886c15bd3",
+  "base_batch_source_sha256": "bf5fcd0f23645b31f76c9486f4a98b3a5f9667886f5f80d62efc596b9a610a1d",
+  "test_access": false,
+  "stop_on_noncompleted_run": true,
+  "execution_predecessors": [
+    {
+      "batch_id": "B003-R1-shared-convergence-baselines",
+      "canonical_batch_sha256": "c2c4dbc0ffcfee1bb591948e6dffac26366b723bd13d7c8e484ebff886c15bd3",
+      "source_sha256": "bf5fcd0f23645b31f76c9486f4a98b3a5f9667886f5f80d62efc596b9a610a1d",
+      "required_terminal_status": "all_runs_completed"
+    },
+    {
+      "batch_id": "B004-ukt-shared-objectives",
+      "canonical_batch_sha256": "8d4f71eeada8c15576d0aaa6bdcca374e47eacc81e9996745f613c722dcadc6b",
+      "source_sha256": "7bbfc8ed9b60a6759fac2f1c2f0b5752e014cd89ed169dcb0bff57409dcd6b78",
+      "required_terminal_status": "all_runs_completed"
+    },
+    {
+      "batch_id": "B005-ktst-author-configs-shared",
+      "canonical_batch_sha256": "01c3e0b042af462a0307727868a50997d6ff4ceca57f356f6700b2468d6d55bd",
+      "source_sha256": "7bbfc8ed9b60a6759fac2f1c2f0b5752e014cd89ed169dcb0bff57409dcd6b78",
+      "required_terminal_status": "all_runs_completed"
+    }
+  ],
+  "original_B003_carry_forward": {
+    "canonical_batch_sha256": "765c4d0183fd0b4332d50f6b6f7a206c845e007fb06fa87a640bf286e5e80d44",
+    "run_ids": [
+      "B003-akt-assist2009-f0-s42",
+      "B003-simplekt-assist2009-f0-s42"
+    ],
+    "rerun": false
+  },
+  "execution_dependencies": [
+    "All B003-R1, B004 and B005 runs must have successful completed terminal receipts; unresolved failure or budget exhaustion blocks the queue",
+    "Carry forward the two original completed B003 AS09 results with their original receipts, without rerunning them",
+    "Confirm actual preceding worker/child processes have ended and local GPU is idle before launch",
+    "Recheck this exact manifest, executable source, S006 bound files, dataset manifests and development inputs before launch",
+    "Record execution against the 2026-10-14 standing local-project authorization; no new user confirmation is required",
+    "Stop the whole batch on failed or budget_exhausted status; no automatic retries or silent parameter reductions"
+  ],
+  "comparison_boundary": "Training adaptation, not a new mechanism or complete-event training. Prefix vs three-pass ground-seq control tests the routing change within the three-call recipe; vs original MoC measures overall adaptation effect including three-pass/dropout/compute differences. The control matches call structure, not exact random masks, FLOPs, memory or wall time: original branch groups use different convolution kernels. Single fold/seed development evidence only.",
+  "candidate_gate": "Improving original MoC alone does not complete the project objective. Compare candidates against the strongest completed matching-protocol baseline, currently AS09 KTST mean AUC 0.7921645709548386, and later UKT/B005 results if stronger. No gain is promised on any dataset.",
+  "limits": {
+    "total_optimizer_steps_upper_bound": 67000,
+    "epochs_per_run": 50,
+    "per_run_wall_seconds": 28800,
+    "sum_run_wall_seconds": 115200,
+    "wall_limit_scope": "soft checks between batches after model/data setup; setup is additional",
+    "paid_services": false,
+    "automatic_retries": false,
+    "per_dataset_run_wall_seconds": {
+      "assist2009": 14400,
+      "assist2015": 14400,
+      "nips_task34": 28800
+    }
+  },
+  "selection": {
+    "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+    "fold": 0,
+    "seed": 42,
+    "initial_validation": true,
+    "every_epoch_full_validation": true,
+    "strict_best_auc": true,
+    "patience": 3,
+    "ties_keep_earlier_checkpoint": true,
+    "final_best_checkpoint_reload_and_export": true,
+    "hyperparameter_search_trials_per_model_dataset": 1
+  },
+  "predeclared_recipe_count_per_dataset": 2,
+  "input_receipts": {
+    "S006_acceptance": {
+      "sha256": "0cd247aefdffaeed44f7347f735cb887ba52eefcd13cb7f0c6df1c5023fe4bd4",
+      "bytes": 7648
+    },
+    "S006_manifest_canonical_sha256": "f04a5126293b635e00a53ab3d25faba04797a8efc39ad219dcbeb12393a70ea7",
+    "training_input_audit_canonical_sha256": "da4ae33c9c4711617ac811c6700726e4e05db011d2116d4409f437916f4a5fdf"
+  },
+  "runs": [
+    {
+      "run_id": "B006-mockt-control-assist2009-f0-s42",
+      "dataset_manifest_sha256": "e2c939dfe4479327c223644bce6aee88c56bc362d1169164332ae9ca479fc703",
+      "train_sequence_rows": 3016,
+      "config": {
+        "dataset_manifest": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/assist2009/manifest.json",
+        "model": "mockt",
+        "dataset": "assist2009",
+        "fold": 0,
+        "seed": 42,
+        "device": "cuda",
+        "batch_size": 32,
+        "epochs": 50,
+        "learning_rate": 0.001,
+        "weight_decay": 0.0,
+        "shuffle": true,
+        "grad_clip": 1.0,
+        "patience": 3,
+        "early_stop_min_delta": 0.0,
+        "max_train_steps": 4750,
+        "max_wall_seconds": 14400,
+        "debug_smoke": false,
+        "purpose": "fixed_configuration_convergence_anchor_shared_validation_not_sota",
+        "model_config": {
+          "d_model": 128,
+          "n_blocks": 2,
+          "dropout": 0.1,
+          "d_ff": 256,
+          "num_attn_heads": 8,
+          "final_fc_dim": 256,
+          "emb_type": "qid_conv_ker_noexp",
+          "kernel_size": 4
+        },
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "initial_validation": true,
+        "validation_batch_size": 32,
+        "max_rows_per_forward": 32,
+        "mockt_training_recipe": "mockt-three-pass-ground-seq-control-v1"
+      },
+      "shared_validation": {
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "selected_targets": 43295,
+        "source_sha256": "d590ba88d8d7ab630e635a89b56df55219f49a75b55caa0df571a1f3b460404e",
+        "target_sha256": "c4c432fca4c3a3308dd6e9dc9b852a7d9b3f6852caa2ee8074379b209f8b2190",
+        "context_sha256": "491600d611a2726d3ffb85b55c0b9e2e44fabde6e365e7faf89844a243a6da54",
+        "canonical_events": 43912,
+        "exclusion_counts": {
+          "target_over_budget": 0,
+          "no_history": 617
+        }
+      }
+    },
+    {
+      "run_id": "B006-mockt-prefix-assist2009-f0-s42",
+      "dataset_manifest_sha256": "e2c939dfe4479327c223644bce6aee88c56bc362d1169164332ae9ca479fc703",
+      "train_sequence_rows": 3016,
+      "config": {
+        "dataset_manifest": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/assist2009/manifest.json",
+        "model": "mockt",
+        "dataset": "assist2009",
+        "fold": 0,
+        "seed": 42,
+        "device": "cuda",
+        "batch_size": 32,
+        "epochs": 50,
+        "learning_rate": 0.001,
+        "weight_decay": 0.0,
+        "shuffle": true,
+        "grad_clip": 1.0,
+        "patience": 3,
+        "early_stop_min_delta": 0.0,
+        "max_train_steps": 4750,
+        "max_wall_seconds": 14400,
+        "debug_smoke": false,
+        "purpose": "fixed_configuration_convergence_anchor_shared_validation_not_sota",
+        "model_config": {
+          "d_model": 128,
+          "n_blocks": 2,
+          "dropout": 0.1,
+          "d_ff": 256,
+          "num_attn_heads": 8,
+          "final_fc_dim": 256,
+          "emb_type": "qid_conv_ker_noexp",
+          "kernel_size": 4
+        },
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "initial_validation": true,
+        "validation_batch_size": 32,
+        "max_rows_per_forward": 32,
+        "mockt_training_recipe": "mockt-target-prefix-branches-v1"
+      },
+      "shared_validation": {
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "selected_targets": 43295,
+        "source_sha256": "d590ba88d8d7ab630e635a89b56df55219f49a75b55caa0df571a1f3b460404e",
+        "target_sha256": "c4c432fca4c3a3308dd6e9dc9b852a7d9b3f6852caa2ee8074379b209f8b2190",
+        "context_sha256": "491600d611a2726d3ffb85b55c0b9e2e44fabde6e365e7faf89844a243a6da54",
+        "canonical_events": 43912,
+        "exclusion_counts": {
+          "target_over_budget": 0,
+          "no_history": 617
+        }
+      }
+    },
+    {
+      "run_id": "B006-mockt-control-assist2015-f0-s42",
+      "dataset_manifest_sha256": "698be4553033f3891757eea79bed34c9394e77eb4a90475d2ca24cc9905b6441",
+      "train_sequence_rows": 12344,
+      "config": {
+        "dataset_manifest": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/assist2015/manifest.json",
+        "model": "mockt",
+        "dataset": "assist2015",
+        "fold": 0,
+        "seed": 42,
+        "device": "cuda",
+        "batch_size": 32,
+        "epochs": 50,
+        "learning_rate": 0.001,
+        "weight_decay": 0.0,
+        "shuffle": true,
+        "grad_clip": 1.0,
+        "patience": 3,
+        "early_stop_min_delta": 0.0,
+        "max_train_steps": 19300,
+        "max_wall_seconds": 14400,
+        "debug_smoke": false,
+        "purpose": "fixed_configuration_convergence_anchor_shared_validation_not_sota",
+        "model_config": {
+          "d_model": 128,
+          "n_blocks": 2,
+          "dropout": 0.1,
+          "d_ff": 256,
+          "num_attn_heads": 8,
+          "final_fc_dim": 256,
+          "emb_type": "qid_conv_ker_noexp",
+          "kernel_size": 4
+        },
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "initial_validation": true,
+        "validation_batch_size": 32,
+        "max_rows_per_forward": 32,
+        "mockt_training_recipe": "mockt-three-pass-ground-seq-control-v1"
+      },
+      "shared_validation": {
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "selected_targets": 102776,
+        "source_sha256": "83ff2090d1ddaa6295854984733b699b52fa3b656d7c814d6c9da56822964ac7",
+        "target_sha256": "6a038195100b0760c43ccba807989ce17c5c70e635340e8d34b688e3051caf0f",
+        "context_sha256": "c6587ae6ab2a9be6f42031484edc9aeabbeb7828143c59afc5a17d74d63f62c8",
+        "canonical_events": 105831,
+        "exclusion_counts": {
+          "target_over_budget": 0,
+          "no_history": 3055
+        }
+      }
+    },
+    {
+      "run_id": "B006-mockt-prefix-assist2015-f0-s42",
+      "dataset_manifest_sha256": "698be4553033f3891757eea79bed34c9394e77eb4a90475d2ca24cc9905b6441",
+      "train_sequence_rows": 12344,
+      "config": {
+        "dataset_manifest": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/assist2015/manifest.json",
+        "model": "mockt",
+        "dataset": "assist2015",
+        "fold": 0,
+        "seed": 42,
+        "device": "cuda",
+        "batch_size": 32,
+        "epochs": 50,
+        "learning_rate": 0.001,
+        "weight_decay": 0.0,
+        "shuffle": true,
+        "grad_clip": 1.0,
+        "patience": 3,
+        "early_stop_min_delta": 0.0,
+        "max_train_steps": 19300,
+        "max_wall_seconds": 14400,
+        "debug_smoke": false,
+        "purpose": "fixed_configuration_convergence_anchor_shared_validation_not_sota",
+        "model_config": {
+          "d_model": 128,
+          "n_blocks": 2,
+          "dropout": 0.1,
+          "d_ff": 256,
+          "num_attn_heads": 8,
+          "final_fc_dim": 256,
+          "emb_type": "qid_conv_ker_noexp",
+          "kernel_size": 4
+        },
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "initial_validation": true,
+        "validation_batch_size": 32,
+        "max_rows_per_forward": 32,
+        "mockt_training_recipe": "mockt-target-prefix-branches-v1"
+      },
+      "shared_validation": {
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "selected_targets": 102776,
+        "source_sha256": "83ff2090d1ddaa6295854984733b699b52fa3b656d7c814d6c9da56822964ac7",
+        "target_sha256": "6a038195100b0760c43ccba807989ce17c5c70e635340e8d34b688e3051caf0f",
+        "context_sha256": "c6587ae6ab2a9be6f42031484edc9aeabbeb7828143c59afc5a17d74d63f62c8",
+        "canonical_events": 105831,
+        "exclusion_counts": {
+          "target_over_budget": 0,
+          "no_history": 3055
+        }
+      }
+    },
+    {
+      "run_id": "B006-mockt-control-nips_task34-f0-s42",
+      "dataset_manifest_sha256": "db0795bfe4b5f8e88e11b51c95626fe5d8dc4e6dc5529a9ac179128cf0eb8398",
+      "train_sequence_rows": 6043,
+      "config": {
+        "dataset_manifest": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/nips_task34/manifest.json",
+        "model": "mockt",
+        "dataset": "nips_task34",
+        "fold": 0,
+        "seed": 42,
+        "device": "cuda",
+        "batch_size": 32,
+        "epochs": 50,
+        "learning_rate": 0.001,
+        "weight_decay": 0.0,
+        "shuffle": true,
+        "grad_clip": 1.0,
+        "patience": 3,
+        "early_stop_min_delta": 0.0,
+        "max_train_steps": 9450,
+        "max_wall_seconds": 28800,
+        "debug_smoke": false,
+        "purpose": "fixed_configuration_convergence_anchor_shared_validation_not_sota",
+        "model_config": {
+          "d_model": 128,
+          "n_blocks": 2,
+          "dropout": 0.1,
+          "d_ff": 256,
+          "num_attn_heads": 8,
+          "final_fc_dim": 256,
+          "emb_type": "qid_conv_ker_noexp",
+          "kernel_size": 4
+        },
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "initial_validation": true,
+        "validation_batch_size": 32,
+        "max_rows_per_forward": 32,
+        "mockt_training_recipe": "mockt-three-pass-ground-seq-control-v1"
+      },
+      "shared_validation": {
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "selected_targets": 221348,
+        "source_sha256": "a75cdf0222d0d861a7861dc4dd7f52207ec987285ecd3f0e83b53f1fa54a3e65",
+        "target_sha256": "0e3b06512ca4fed4fa3fd2c4869b26f988c10b792af9f5e7d226c2c1121db2bf",
+        "context_sha256": "9a19f023d6a385cb18855d5e3238da01d3581560d26ed8d936cfe03a1330769a",
+        "canonical_events": 222135,
+        "exclusion_counts": {
+          "target_over_budget": 0,
+          "no_history": 787
+        }
+      }
+    },
+    {
+      "run_id": "B006-mockt-prefix-nips_task34-f0-s42",
+      "dataset_manifest_sha256": "db0795bfe4b5f8e88e11b51c95626fe5d8dc4e6dc5529a9ac179128cf0eb8398",
+      "train_sequence_rows": 6043,
+      "config": {
+        "dataset_manifest": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/nips_task34/manifest.json",
+        "model": "mockt",
+        "dataset": "nips_task34",
+        "fold": 0,
+        "seed": 42,
+        "device": "cuda",
+        "batch_size": 32,
+        "epochs": 50,
+        "learning_rate": 0.001,
+        "weight_decay": 0.0,
+        "shuffle": true,
+        "grad_clip": 1.0,
+        "patience": 3,
+        "early_stop_min_delta": 0.0,
+        "max_train_steps": 9450,
+        "max_wall_seconds": 28800,
+        "debug_smoke": false,
+        "purpose": "fixed_configuration_convergence_anchor_shared_validation_not_sota",
+        "model_config": {
+          "d_model": 128,
+          "n_blocks": 2,
+          "dropout": 0.1,
+          "d_ff": 256,
+          "num_attn_heads": 8,
+          "final_fc_dim": 256,
+          "emb_type": "qid_conv_ker_noexp",
+          "kernel_size": 4
+        },
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "initial_validation": true,
+        "validation_batch_size": 32,
+        "max_rows_per_forward": 32,
+        "mockt_training_recipe": "mockt-target-prefix-branches-v1"
+      },
+      "shared_validation": {
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "selected_targets": 221348,
+        "source_sha256": "a75cdf0222d0d861a7861dc4dd7f52207ec987285ecd3f0e83b53f1fa54a3e65",
+        "target_sha256": "0e3b06512ca4fed4fa3fd2c4869b26f988c10b792af9f5e7d226c2c1121db2bf",
+        "context_sha256": "9a19f023d6a385cb18855d5e3238da01d3581560d26ed8d936cfe03a1330769a",
+        "canonical_events": 222135,
+        "exclusion_counts": {
+          "target_over_budget": 0,
+          "no_history": 787
+        }
+      }
+    }
+  ]
+}
