@@ -90,6 +90,8 @@ def evaluate_ktst_loader(model, loader, device, prediction_path=None, *, max_bat
 
 def _check_config(config):
     from .engine import SHARED_PROTOCOL, _shared_config
+    from .shared_prefix_groups import check_execution
+    check_execution(config)
     if config.get("protocol") not in {PROTOCOL, SHARED_PROTOCOL}:
         raise ValueError(f"KTST requires explicit protocol={PROTOCOL}; scores cannot silently join ktlab v1")
     if config.get("protocol") == SHARED_PROTOCOL:
@@ -157,6 +159,8 @@ def train_ktst(config: dict, run_dir: Path) -> dict:
     config.update(shuffle=True, initial_validation=True, grad_clip=float(config.get("grad_clip", 1.0)))
     config["dataset_manifest"] = str(Path(config["dataset_manifest"]).resolve())
     manifest = read_manifest(config)
+    from .shared_prefix_groups import check_execution
+    check_execution(config, manifest)
     device = resolve_device(config.get("device", "auto"))
     _seed(int(config.get("seed", 42)))
     if device.type == "cuda":
@@ -319,6 +323,8 @@ def evaluate_ktst_run(run_dir, *, split="valid"):
     dataset_type, _, build_model, _, _ = _components()
     run_dir = Path(run_dir)
     config = json.loads((run_dir / "resolved_config.json").read_text(encoding="utf-8"))
+    from .shared_prefix_groups import check_execution
+    check_execution(config)
     from .engine import SHARED_PROTOCOL, _evaluate_shared_run
     if config.get("protocol") == SHARED_PROTOCOL:
         return _evaluate_shared_run(run_dir, config, split)

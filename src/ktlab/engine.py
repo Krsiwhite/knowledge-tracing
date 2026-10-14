@@ -139,6 +139,8 @@ def _seed(seed: int):
 
 def _shared_config(config: dict) -> dict:
     """Resolve only explicitly requested shared validation, never relabel v1."""
+    from .shared_prefix_groups import check_execution
+    check_execution(config)
     if config.get("protocol") != SHARED_PROTOCOL:
         raise ValueError("Shared validation requires its explicit protocol")
     if config.get("model") not in {"akt", "simplekt", "mockt", "ukt", "ktst_mean", "ktst_mhsa"}:
@@ -169,15 +171,22 @@ def _shared_config(config: dict) -> dict:
 
 def _shared_dataset(manifest: dict, config: dict):
     from .shared_events import SharedEventDataset
+    from .shared_prefix_groups import check_execution
+    check_execution(config, manifest)
     return SharedEventDataset(manifest, config.get("fold", 0), split="valid",
                               max_targets=config.get("max_validation_targets"))
 
 
 def _shared_identity(config: dict, model, dataset) -> dict:
+    from .shared_prefix_groups import check_execution, check_dataset
+    execution = check_execution(config)
+    if execution:
+        check_dataset(dataset, model.model_name)
     if (dataset.audit.get("protocol") != SHARED_PROTOCOL or dataset.audit.get("split") != "valid"
             or dataset.audit.get("fold") != config.get("fold", 0)):
         raise ValueError("Checkpoint selection requires the configured shared validation fold")
-    return {"config_sha256": config_fingerprint(config), "implementation_sha256": source_fingerprint(),
+    return {**({"shared_validation_execution": execution} if execution else {}),
+            "config_sha256": config_fingerprint(config), "implementation_sha256": source_fingerprint(),
             "model_source_sha256": model.ktlab_source_sha256,
             "validation_source_sha256": dataset.audit["source_sha256"],
             "validation_target_sha256": dataset.audit["target_sha256"],
@@ -192,7 +201,9 @@ def _shared_evaluate(model, dataset, device, config, identity, prediction_path=N
         raise ValueError("Shared validation implementation/configuration/selection identity changed")
     result = evaluate_shared(model, dataset, device, prediction_path,
                              batch_size=config["validation_batch_size"],
-                             max_rows_per_forward=config["max_rows_per_forward"], deadline=deadline)
+                             max_rows_per_forward=config["max_rows_per_forward"], deadline=deadline,
+                             **({"shared_validation_execution": config["shared_validation_execution"]}
+                                if "shared_validation_execution" in config else {}))
     if result["implementation_sha256"] != identity["implementation_sha256"]:
         raise ValueError("Shared validation implementation changed during evaluation")
     result.update(partial_debug=config.get("max_validation_targets") is not None,
@@ -231,13 +242,16 @@ def _evaluate_shared_run(run_dir: Path, config: dict, split: str) -> dict:
         raise PermissionError("Shared final test is sealed and not implemented")
     config = _shared_config(config)
     manifest = read_manifest(config)
+    from .shared_prefix_groups import check_execution
+    execution = check_execution(config, manifest)
     metadata = json.loads((run_dir / "metadata.json").read_text(encoding="utf-8"))
     if metadata.get("checkpoint_sha256") != _sha(run_dir / "best.pt"):
         raise ValueError("Shared checkpoint file changed since selection")
     checkpoint = torch.load(run_dir / "best.pt", map_location="cpu", weights_only=True)
     expected = {"protocol": SHARED_PROTOCOL, "dataset_manifest_sha256": manifest["_manifest_sha256"],
                 "config_sha256": config_fingerprint(config), "implementation_sha256": source_fingerprint(),
-                "checkpoint_selection_policy": SHARED_SELECTION}
+                "checkpoint_selection_policy": SHARED_SELECTION,
+                **({"shared_validation_execution": execution} if execution else {})}
     for key, value in expected.items():
         if checkpoint.get(key) != value or metadata.get(key) != value:
             raise ValueError(f"Shared checkpoint/metadata {key} mismatch; no silent protocol migration")
@@ -277,6 +291,8 @@ def train(config: dict, run_dir: Path) -> dict:
     """
     if config.get("_batch_approved") is not True:
         raise PermissionError("Training requires explicit per-batch approval via the ktlab CLI")
+    from .shared_prefix_groups import check_execution
+    check_execution(config)
     if config.get("model") in {"ktst_mean", "ktst_mhsa"}:
         from .ktst_engine import train_ktst
         return train_ktst(config, run_dir)
@@ -301,6 +317,7 @@ def train(config: dict, run_dir: Path) -> dict:
     config = {k: v for k, v in config.items() if k != "_batch_approved"}
     config["dataset_manifest"] = str(Path(config["dataset_manifest"]).resolve())
     manifest = read_manifest(config)
+    check_execution(config, manifest)
     device = resolve_device(config.get("device", "auto"))
     if device.type == "cuda":
         torch.cuda.reset_peak_memory_stats(device)
@@ -469,6 +486,8 @@ def evaluate_run(run_dir: Path, split: str = "valid", allow_test: bool = False) 
     if split == "test" and not allow_test:
         raise PermissionError("Test is sealed; explicit frozen-candidate test release is required")
     config = json.loads((run_dir / "resolved_config.json").read_text(encoding="utf-8"))
+    from .shared_prefix_groups import check_execution
+    check_execution(config)
     if config.get("protocol") == SHARED_PROTOCOL:
         return _evaluate_shared_run(run_dir, config, split)
     if config.get("model") in {"ktst_mean", "ktst_mhsa"}:
