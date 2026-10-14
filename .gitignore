@@ -1,7 +1,7 @@
 .cache/
 .runtime/
 .venv/
-data/
+/data/
 artifacts/
 runs/
 approvals/
