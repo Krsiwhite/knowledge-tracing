@@ -130,6 +130,46 @@ def analyze(artifacts, **kwargs):
     return ANALYSIS.analyze(paths, batch, reference, replicates=40, seed=42, **kwargs)
 
 
+def update_model_receipts(artifacts, updates):
+    """Keep synthetic receipts coherent so variant checks, not stale hashes, fail."""
+    paths, batch_path, _ = artifacts
+    batch = load_json(batch_path)
+    for entry, update in zip(batch["runs"], updates):
+        entry["config"].update(copy.deepcopy(update))
+    write_json(batch_path, batch)
+    batch_sha = ANALYSIS.canonical_hash(batch)
+    for path, update in zip(paths, updates):
+        config_path = path.parent / "resolved_config.json"
+        config = load_json(config_path)
+        config.update(copy.deepcopy(update), approved_batch_sha256=batch_sha)
+        write_json(config_path, config)
+        metadata_path = path.parent / "metadata.json"
+        metadata = load_json(metadata_path)
+        metadata.update(approved_batch_sha256=batch_sha, config_sha256=ANALYSIS.canonical_hash(config))
+        write_json(metadata_path, metadata)
+        sidecar_path = path.with_suffix(".csv.manifest.json")
+        sidecar = load_json(sidecar_path)
+        sidecar["result"]["model"] = config["model"]
+        write_json(sidecar_path, sidecar)
+        metrics_path = path.parent / "valid_metrics.json"
+        metrics = load_json(metrics_path)
+        metrics["model"] = config["model"]
+        write_json(metrics_path, metrics)
+
+
+def ukt_config(recipe, use_cl, augmentation):
+    return {"model": "ukt", "ukt_training_recipe": recipe,
+            "model_config": {"d_model": 128, "use_CL": use_cl,
+                             "use_uncertainty_aug": augmentation, "cl_weight": .02}}
+
+
+@pytest.fixture
+def ukt_artifacts(artifacts):
+    update_model_receipts(artifacts, [ukt_config("ukt-no-cl", False, True),
+                                    ukt_config(ANALYSIS.UKT_AUTHOR_AUGMENTATION, True, True)])
+    return artifacts
+
+
 def test_full_artifacts_metrics_and_privacy_without_source_or_weights(artifacts, monkeypatch):
     paths, batch, _ = artifacts
     allowed = {batch.resolve()}
@@ -150,6 +190,8 @@ def test_full_artifacts_metrics_and_privacy_without_source_or_weights(artifacts,
     assert report["runs"][0]["by_query_kc_count"]["single_kc"]["n"] == 4
     assert report["runs"][0]["by_query_kc_count"]["multiple_kc"]["auc"] is None  # all negatives
     assert report["receipt_scope"]["training_identity_fully_proven"] is False
+    assert [(r["model"], r["ukt_training_recipe"], r["comparison_label"]) for r in report["runs"]] == [
+        ("akt", None, "akt"), ("ktst_mean", None, "ktst_mean")]
     assert not report["test_accessed"] and report["model_forward_calls"] == 0
     encoded = json.dumps(report, allow_nan=False)
     assert "PRIVATE-STUDENT" not in encoded and "event-0" not in encoded and "/NOT-READ" not in encoded
@@ -271,6 +313,61 @@ def test_saved_metrics_must_match_probabilities(artifacts):
         analyze(artifacts)
 
 
+def test_selected_export_drift_is_accepted_and_reported_without_rounding(artifacts):
+    path = artifacts[0][0].parent / "metadata.json"
+    metadata = load_json(path)
+    selected = metadata["best_valid_auc"] - ANALYSIS.SELECTED_EXPORT_ABS_TOL / 2
+    metadata["best_valid_auc"] = selected
+    write_json(path, metadata)
+    report = analyze(artifacts)
+    run = report["runs"][0]
+    assert run["selected_valid_auc_recorded"] == selected
+    assert run["overall"]["auc"] == 1.0
+    assert run["export_minus_selected_auc"] == 1.0 - selected > 0
+    assert report["runs"][1]["export_minus_selected_auc"] == 0
+    policy = report["selected_export_auc_comparison"]
+    assert policy["absolute_tolerance"] == 1e-6
+    assert policy["relative_tolerance"] == 0
+    assert policy["predeclared_before_B003_terminal_results"] is True
+
+
+def test_selected_export_drift_above_predeclared_tolerance_is_rejected(artifacts):
+    path = artifacts[0][0].parent / "metadata.json"
+    metadata = load_json(path)
+    metadata["best_valid_auc"] -= 2 * ANALYSIS.SELECTED_EXPORT_ABS_TOL
+    write_json(path, metadata)
+    with pytest.raises(ValueError, match="Exported auc.*absolute tolerance"):
+        analyze(artifacts)
+
+
+@pytest.mark.parametrize("selected,exported", [(0.0, 1e-6), (.75, .7500005), (.75, .7499995)])
+def test_selected_export_helper_preserves_signed_delta(selected, exported):
+    assert ANALYSIS.selected_export_delta(selected, exported) == exported - selected
+
+
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf"), None, True, ".75"])
+def test_selected_export_helper_rejects_nonfinite_or_nonnumeric_values(value):
+    for selected, exported in ((value, .75), (.75, value)):
+        with pytest.raises(ValueError, match="selected/exported auc"):
+            ANALYSIS.selected_export_delta(selected, exported)
+
+
+@pytest.mark.parametrize("also_change_sidecar", [False, True])
+def test_export_tolerance_does_not_relax_copied_receipts_or_same_csv_metrics(artifacts, also_change_sidecar):
+    path = artifacts[0][0]
+    metrics_path = path.parent / "valid_metrics.json"
+    metrics = load_json(metrics_path)
+    metrics["auc"] -= ANALYSIS.SELECTED_EXPORT_ABS_TOL / 2
+    write_json(metrics_path, metrics)
+    if also_change_sidecar:
+        sidecar_path = path.with_suffix(".csv.manifest.json")
+        sidecar = load_json(sidecar_path)
+        sidecar["result"]["auc"] = metrics["auc"]
+        write_json(sidecar_path, sidecar)
+    with pytest.raises(ValueError, match="Saved auc" if also_change_sidecar else "Final metrics disagree"):
+        analyze(artifacts)
+
+
 def test_reference_and_minimum_inputs(artifacts):
     paths, batch, reference = artifacts
     for inputs, ref in ((paths[:1], reference), (paths, "unknown"), ([paths[0]] * 2, reference)):
@@ -309,6 +406,110 @@ def test_otherwise_consistent_different_seeds_or_duplicate_models_rejected(artif
             write_json(metrics_path, metrics)
     with pytest.raises(ValueError, match=expected):
         analyze(artifacts)
+
+
+def test_ukt_recipes_pair_without_relabelling_model_or_read_run_interface(ukt_artifacts):
+    paths, batch_path, reference = ukt_artifacts
+    batch = load_json(batch_path)
+    run = ANALYSIS._read_run(paths[0], batch, ANALYSIS.canonical_hash(batch), ANALYSIS.Receipts())
+    assert set(run) == {"run_id", "config", "metadata", "metrics", "identity", "rows", "stage", "input_receipts"}
+    report = analyze(ukt_artifacts)
+    assert [r["model"] for r in report["runs"]] == ["ukt", "ukt"]
+    assert [r["ukt_training_recipe"] for r in report["runs"]] == [
+        "ukt-no-cl", ANALYSIS.UKT_AUTHOR_AUGMENTATION]
+    assert report["runs"][1]["comparison_label"] == f"ukt / {ANALYSIS.UKT_AUTHOR_AUGMENTATION}"
+    assert report["reference_run_id"] == reference
+    assert set(report["bootstrap"]["comparisons"]) == {paths[1].parent.name}
+    assert report["bootstrap"]["comparisons"][paths[1].parent.name]["auc"]["delta"] == 0
+
+
+def test_ukt_same_response_cl_is_a_distinct_legal_recipe(ukt_artifacts):
+    update_model_receipts(ukt_artifacts, [{}, ukt_config("ukt-cl-same-responses", 1, 0)])
+    report = analyze(ukt_artifacts)
+    assert report["runs"][1]["ukt_training_recipe"] == "ukt-cl-same-responses"
+
+
+def test_ukt_epoch_zero_best_is_preserved(ukt_artifacts):
+    path = ukt_artifacts[0][0].parent / "metadata.json"
+    metadata = load_json(path)
+    metadata.update(best_epoch=0, best_epoch_completed=False)
+    write_json(path, metadata)
+    assert analyze(ukt_artifacts)["runs"][0]["selected_checkpoint_stage"] == "initial_untrained"
+
+
+@pytest.mark.parametrize("recipe,use_cl,augmentation", [
+    ("ukt-no-cl", False, False), ("ukt-no-cl", 0, True),
+    ("ukt-cl-same-responses", True, False),
+    (ANALYSIS.UKT_AUTHOR_AUGMENTATION, 1, 1)])
+def test_duplicate_ukt_recipe_not_bypassed_by_names_or_other_parameters(ukt_artifacts, recipe, use_cl, augmentation):
+    first, second = ukt_config(recipe, use_cl, augmentation), ukt_config(recipe, use_cl, augmentation)
+    second["model_config"]["d_model"] = 256
+    first["comparison_label"], second["comparison_label"] = "custom-first", "custom-second"
+    update_model_receipts(ukt_artifacts, [first, second])
+    with pytest.raises(ValueError, match="distinct models or UKT training recipes"):
+        analyze(ukt_artifacts)
+
+
+@pytest.mark.parametrize("recipe,use_cl,augmentation", [
+    (None, True, True), ("ukt-renamed-version", True, True),
+    ("ukt-no-cl", True, True), (ANALYSIS.UKT_AUTHOR_AUGMENTATION, False, True),
+    (ANALYSIS.UKT_AUTHOR_AUGMENTATION, True, False),
+    ("ukt-cl-same-responses", True, True), ("ukt-cl-same-responses", False, False),
+    (ANALYSIS.UKT_AUTHOR_AUGMENTATION, "true", True),
+    (ANALYSIS.UKT_AUTHOR_AUGMENTATION, 1.0, True),
+    (ANALYSIS.UKT_AUTHOR_AUGMENTATION, True, 2),
+    ("ukt-no-cl", False, None)])
+def test_invalid_ukt_variant_is_rejected_with_consistent_hashes(ukt_artifacts, recipe, use_cl, augmentation):
+    update_model_receipts(ukt_artifacts, [{}, ukt_config(recipe, use_cl, augmentation)])
+    with pytest.raises(ValueError, match="UKT"):
+        analyze(ukt_artifacts)
+
+
+@pytest.mark.parametrize("missing", ["ukt_training_recipe", "model_config", "use_CL", "use_uncertainty_aug"])
+def test_ukt_identity_requires_explicit_recipe_and_switches(missing):
+    config = ukt_config(ANALYSIS.UKT_AUTHOR_AUGMENTATION, True, True)
+    (config if missing in config else config["model_config"]).pop(missing)
+    with pytest.raises(ValueError, match="UKT"):
+        ANALYSIS.comparison_identity(config)
+
+
+def test_recipe_on_an_ordinary_model_cannot_create_a_new_variant(artifacts):
+    update_model_receipts(artifacts, [{}, {"model": "akt", "ukt_training_recipe": "ukt-no-cl"}])
+    with pytest.raises(ValueError, match="only valid for model ukt"):
+        analyze(artifacts)
+
+
+def test_display_names_do_not_bypass_ordinary_model_uniqueness(artifacts):
+    update_model_receipts(artifacts, [{"comparison_label": "first"},
+                                    {"model": "akt", "comparison_label": "second"}])
+    with pytest.raises(ValueError, match="distinct models"):
+        analyze(artifacts)
+
+
+def test_ukt_recipe_remains_bound_to_config_hash(ukt_artifacts):
+    paths, batch_path, _ = ukt_artifacts
+    batch = load_json(batch_path)
+    # The batch may omit recipe because the engine resolves it before hashing.
+    batch["runs"][1]["config"].pop("ukt_training_recipe")
+    write_json(batch_path, batch)
+    batch_sha = ANALYSIS.canonical_hash(batch)
+    for prediction in paths:
+        config_path = prediction.parent / "resolved_config.json"
+        config = load_json(config_path)
+        config["approved_batch_sha256"] = batch_sha
+        write_json(config_path, config)
+        metadata_path = prediction.parent / "metadata.json"
+        metadata = load_json(metadata_path)
+        metadata.update(approved_batch_sha256=batch_sha, config_sha256=ANALYSIS.canonical_hash(config))
+        write_json(metadata_path, metadata)
+    assert len(analyze(ukt_artifacts)["runs"]) == 2
+    path = paths[1].parent / "resolved_config.json"
+    config = load_json(path)
+    # Keep the switches unchanged: even a valid-looking recipe edit is tampering.
+    config["ukt_training_recipe"] = "ukt-cl-same-responses"
+    write_json(path, config)
+    with pytest.raises(ValueError, match="configuration hash"):
+        analyze(ukt_artifacts)
 
 
 def test_known_metrics_and_probability_endpoints():

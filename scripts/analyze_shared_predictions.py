@@ -25,6 +25,10 @@ FIELDS = ["uid", "event_id", "question_id", "label", "probability", "kc_count",
 IDENTITY = ("protocol", "dataset", "split", "fold", "source_sha256", "target_sha256",
             "context_sha256", "selected_targets")
 MAX_BOOTSTRAP_EVENT_VISITS = 500_000_000
+# Fixed before inspecting B003 terminal results; only for separate forwards.
+SELECTED_EXPORT_ABS_TOL = 1e-6
+UKT_AUTHOR_AUGMENTATION = "ukt-author-first-two-from-last-86ad9d8-v1"
+UKT_RECIPES = {"ukt-no-cl", "ukt-cl-same-responses", UKT_AUTHOR_AUGMENTATION}
 
 
 def require(condition, message):
@@ -45,6 +49,48 @@ def digest(value, name):
 def integer(value, name, minimum=0):
     require(type(value) is int and value >= minimum, f"Invalid {name} integer")
     return value
+
+
+def selected_export_delta(selected, exported, *, metric="auc"):
+    """Check a separate export forward against selection; return signed drift.
+
+    Do not use this tolerance for metrics recomputed from the same CSV or for
+    copied receipt values. No relative tolerance or silent rounding is applied.
+    """
+    require(all(type(value) in (int, float) and math.isfinite(value) for value in (selected, exported)),
+            f"Nonfinite or nonnumeric selected/exported {metric}")
+    delta = float(exported - selected)
+    require(abs(delta) <= SELECTED_EXPORT_ABS_TOL,
+            f"Exported {metric} differs from selected value beyond absolute tolerance {SELECTED_EXPORT_ABS_TOL}")
+    return delta
+
+
+def comparison_identity(config):
+    """Derive a display/duplicate identity from a receipt-checked configuration.
+
+    This is not a receipt verifier: callers must first bind config bytes to the
+    run/batch hashes. Never trust a supplied display name or import model code.
+    """
+    model = config.get("model")
+    require(isinstance(model, str) and bool(model.strip()), "Missing model identity")
+    recipe = config.get("ukt_training_recipe")
+    if model != "ukt":
+        require(recipe is None, "UKT training recipe is only valid for model ukt")
+        return {"model": model, "ukt_training_recipe": None, "comparison_label": model}
+    require(isinstance(recipe, str) and recipe in UKT_RECIPES, "Missing or unsupported UKT training recipe")
+    settings = config.get("model_config")
+    require(isinstance(settings, dict), "UKT comparison requires resolved model_config")
+    flags = {}
+    for key in ("use_CL", "use_uncertainty_aug"):
+        value = settings.get(key)
+        require(type(value) is bool or (type(value) is int and value in (0, 1)),
+                f"UKT {key} must be explicit boolean or integer 0/1")
+        flags[key] = bool(value)
+    expected = ("ukt-no-cl" if not flags["use_CL"] else
+                UKT_AUTHOR_AUGMENTATION if flags["use_uncertainty_aug"] else "ukt-cl-same-responses")
+    require(recipe == expected, "UKT training recipe conflicts with resolved model switches")
+    return {"model": model, "ukt_training_recipe": recipe,
+            "comparison_label": f"{model} / {recipe}"}
 
 
 def _unique_object(pairs):
@@ -145,6 +191,7 @@ def _read_run(path, batch, batch_sha, receipts):
     config_sha = canonical_hash({k: v for k, v in config.items()
                                  if k not in {"_batch_approved", "test_release_file"}})
     require(metadata.get("config_sha256") == config_sha, "Resolved configuration hash mismatch")
+    comparison_identity(config)
     require(metadata.get("implementation_sha256") == batch.get("source_sha256"), "Implementation receipt mismatch")
     require(metadata.get("dataset_manifest_sha256") == entry.get("dataset_manifest_sha256"),
             "Dataset manifest receipt mismatch")
@@ -314,8 +361,10 @@ def analyze(paths, batch_path, reference, *, replicates=500, seed=42):
     require(all(isinstance(x, str) and x for x in ids) and len(ids) == len(set(ids)), "Duplicate/missing batch run IDs")
     runs = [_read_run(path, batch, batch_sha, receipts) for path in paths]
     require(len({r["run_id"] for r in runs}) == len(runs), "Duplicate input runs")
-    require(len({r["config"]["model"] for r in runs}) >= 2, "At least two distinct models are required")
-    require(len({r["config"]["model"] for r in runs}) == len(runs), "Duplicate model runs are not supported")
+    comparisons = {r["run_id"]: comparison_identity(r["config"]) for r in runs}
+    variants = {(identity["model"], identity["ukt_training_recipe"]) for identity in comparisons.values()}
+    require(len(variants) >= 2, "At least two distinct models or UKT training recipes are required")
+    require(len(variants) == len(runs), "Duplicate model/UKT training recipe runs are not supported")
     require(len({r["config"]["seed"] for r in runs}) == 1, "Models must use the same training seed")
     require(reference in {r["run_id"] for r in runs}, "Reference must identify an input run_id")
     baseline = next(r for r in runs if r["run_id"] == reference)
@@ -359,15 +408,15 @@ def analyze(paths, batch_path, reference, *, replicates=500, seed=42):
             require(type(value) in (int, float) and math.isfinite(value) and overall[key] is not None
                     and math.isclose(value, overall[key], rel_tol=1e-10, abs_tol=1e-12),
                     f"Saved {key} does not match the bound CSV")
-        require(type(run["metadata"].get("best_valid_auc")) in (int, float)
-                and math.isclose(run["metadata"]["best_valid_auc"], overall["auc"], rel_tol=1e-10, abs_tol=1e-12),
-                "Final prediction AUC does not match recorded selected checkpoint AUC")
+        auc_drift = selected_export_delta(run["metadata"].get("best_valid_auc"), overall["auc"])
         strata = {}
         for name, mask in (("single_kc", kcs == 1), ("multiple_kc", kcs > 1)):
             strata[name] = dict(metrics_for(labels[mask], p[mask]), students=int(np.unique(student_index[mask]).size))
         m = run["metadata"]
-        summaries.append({"run_id": run["run_id"], "model": run["config"]["model"],
+        summaries.append({"run_id": run["run_id"], **comparisons[run["run_id"]],
                           "seed": run["config"]["seed"], "fold": run["config"]["fold"],
+                           "selected_valid_auc_recorded": m["best_valid_auc"],
+                           "export_minus_selected_auc": auc_drift,
                           "optimizer_steps_recorded": m["optimizer_steps"], "best_epoch": m["best_epoch"],
                           "best_epoch_completed": m["best_epoch_completed"], "selected_checkpoint_stage": run["stage"],
                           "checkpoint_sha256_recorded": m["checkpoint_sha256"], "config_sha256": m["config_sha256"],
@@ -385,6 +434,11 @@ def analyze(paths, batch_path, reference, *, replicates=500, seed=42):
             "labels_sha256": labels_hasher.hexdigest(), "students": len(students), "events": len(keys),
             "reference_run_id": reference, "batch_id": batch["batch_id"], "canonical_batch_sha256": batch_sha,
             "training_seed": baseline["config"]["seed"],
+            "selected_export_auc_comparison": {
+                "absolute_tolerance": SELECTED_EXPORT_ABS_TOL, "relative_tolerance": 0.0,
+                "delta_definition": "final_csv_auc_minus_recorded_selection_auc",
+                "scope": "Separate selection/export forwards only; same-CSV metric and copied-receipt checks remain strict.",
+                "predeclared_before_B003_terminal_results": True},
             "batch_file": receipts.files[Path(batch_path).resolve()], "runs": summaries, "bootstrap": bootstrap,
             "ece": {"bins": 15, "binning": "equal_width_[0,1]; left_closed_right_open_except_last", "threshold_accuracy": .5},
             "receipt_scope": {"saved_receipts_consistent": True, "weights_read_or_verified": False,

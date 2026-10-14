@@ -30,4 +30,6 @@
 
 相关旧路径的 CPU 回归为 **45 passed、2 skipped，79.51s**（`test_engine.py`、`test_shared_engine.py`、`test_shared_adapters.py`）；运行器禁止梯度、优化器构造与 GPU 初始化。两项跳过均为必须使用 GPU 的原 MoC-KT 检查，未将跳过记作通过。
 
-这些结果证明指定人工条件下的训练接入行为。尚未进行 UKT 的真实数据训练、GPU 训练兼容性与完整数据覆盖验收；没有模型质量或 SOTA 结论。真实批次需登记配置、数据摘要与预算，继续遵守最多50轮、连续3轮无严格验证 AUC 提升早停。
+随后对 fold0 对应的全部训练序列做了不导入 torch 的[输入域检查](../reports/UKT_TRAINING_INPUT_AUDIT_2026-10-15.json)：AS09/AS15/NIPS34 分别3016/12344/6043行均满足连续前缀、二元响应、padding与ID范围；有效 shifted 监督位置没有0排除标记，因此这批训练数据上的作者/项目监督掩码一致。AS15全部行使用无独立题号的接口占位。该检查只统计训练fold，不执行模型；脚本为 `scripts/audit_ukt_training_inputs.py`。
+
+这些结果证明指定人工条件下的接入行为与当前训练文件的输入域。尚未进行 UKT 的真实数据训练或 GPU 训练兼容性验收，没有模型质量或 SOTA 结论。下一步为[已准备的 B004](../reports/B004_UKT_PLAN_2026-10-15.md)，继续遵守最多50轮、连续3轮无严格验证 AUC 提升早停。

@@ -1,0 +1,115 @@
+{
+  "audit": "ukt-training-input-domain-v1",
+  "created_at": "2026-10-14T16:24:14.867954+00:00",
+  "held_out_fold": 0,
+  "scope": "training folds only within development sequence files",
+  "torch_imported": false,
+  "model_executed": false,
+  "optimizer_steps": 0,
+  "test_accessed": false,
+  "limits": "Checks source input eligibility, not a GPU forward, training quality, or author protocol reproduction.",
+  "datasets": [
+    {
+      "dataset": "assist2009",
+      "held_out_fold": 0,
+      "training_folds": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "dataset_manifest_sha256": "e2c939dfe4479327c223644bce6aee88c56bc362d1169164332ae9ca479fc703",
+      "training_sequence_sha256": "4b3b6ab7c97aaab6554cbbc869b70b63f1017f5b59bc0ac0c3ab4cbd7152c232",
+      "train_rows": 3016,
+      "train_students": 2465,
+      "rows_by_fold": {
+        "1": 741,
+        "2": 750,
+        "3": 778,
+        "4": 747
+      },
+      "sequence_width": 200,
+      "valid_positions_min": 3,
+      "valid_positions_max": 200,
+      "supervised_shifted_targets": 218025,
+      "zero_selection_shifted_positions": 0,
+      "author_supervision_mask_equals_project_on_all_training_rows": true,
+      "rows_with_question_placeholder": 0,
+      "nonempty_left_prefix_binary_response_domain_passed": true,
+      "batches_per_epoch": {
+        "32": 95,
+        "64": 48
+      },
+      "num_c": 123,
+      "num_q": 17737
+    },
+    {
+      "dataset": "assist2015",
+      "held_out_fold": 0,
+      "training_folds": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "dataset_manifest_sha256": "698be4553033f3891757eea79bed34c9394e77eb4a90475d2ca24cc9905b6441",
+      "training_sequence_sha256": "86a384290579e3b6719c5bf38d78468b478331fee677d1ee4a2895b38fd2752f",
+      "train_rows": 12344,
+      "train_students": 12220,
+      "rows_by_fold": {
+        "1": 3080,
+        "2": 3073,
+        "3": 3092,
+        "4": 3099
+      },
+      "sequence_width": 200,
+      "valid_positions_min": 3,
+      "valid_positions_max": 200,
+      "supervised_shifted_targets": 426156,
+      "zero_selection_shifted_positions": 0,
+      "author_supervision_mask_equals_project_on_all_training_rows": true,
+      "rows_with_question_placeholder": 12344,
+      "nonempty_left_prefix_binary_response_domain_passed": true,
+      "batches_per_epoch": {
+        "32": 386,
+        "64": 193
+      },
+      "num_c": 100,
+      "num_q": 0
+    },
+    {
+      "dataset": "nips_task34",
+      "held_out_fold": 0,
+      "training_folds": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "dataset_manifest_sha256": "db0795bfe4b5f8e88e11b51c95626fe5d8dc4e6dc5529a9ac179128cf0eb8398",
+      "training_sequence_sha256": "94909112f7f5f3dc88ffbf1c52537fc306a81dec174e559b5a86153f79b4a52a",
+      "train_rows": 6043,
+      "train_students": 3148,
+      "rows_by_fold": {
+        "1": 1537,
+        "2": 1481,
+        "3": 1497,
+        "4": 1528
+      },
+      "sequence_width": 200,
+      "valid_positions_min": 3,
+      "valid_positions_max": 200,
+      "supervised_shifted_targets": 892456,
+      "zero_selection_shifted_positions": 0,
+      "author_supervision_mask_equals_project_on_all_training_rows": true,
+      "rows_with_question_placeholder": 0,
+      "nonempty_left_prefix_binary_response_domain_passed": true,
+      "batches_per_epoch": {
+        "32": 189,
+        "64": 95
+      },
+      "num_c": 57,
+      "num_q": 948
+    }
+  ]
+}
