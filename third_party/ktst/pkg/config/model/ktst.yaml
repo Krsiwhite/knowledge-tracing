@@ -1,0 +1,22 @@
+# @package _global_
+
+model:
+    _target_: pkg.model.KTST.Model
+    _recursive_: false
+    d_model: 128
+    nhead_tf: 4
+    nhead_agg: 1
+    num_layers_tf_dec: 4
+    num_layers_tf_enc: 4
+    num_layers_agg: 4
+    dim_feedforward: 256
+    dropout: 0.1
+    dim_classifier: 256
+    aggregation: q_mean_c
+    use_bias_emb: true
+    use_zero_init: true
+    use_decoder_only: false
+    attn_variant: learnable_alibi_monotonic_q_k
+
+data:
+    format: set_dense

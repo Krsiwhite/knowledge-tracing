@@ -8,5 +8,6 @@
 - Do not silently change datasets, split protocol, model dependencies, information available to baselines, or the meaning of a reported SOTA claim.
 - Store data/checkpoints/cache outside Git. Do not copy credentials or old private config files.
 - Preserve third_party/pykt source bytes. Compatibility code belongs in ktlab and must be documented and checked.
+- Preserve third_party/ktst bytes and its hash lock. Its reference development track cannot share a v1 leaderboard without target/history equivalence evidence.
 - Local AMD/ROCm first. Cloud spending requires separate user authorization.
 - Deliver as soon as verified; 2026-10-29 is a phase-report deadline, not a reason to wait.

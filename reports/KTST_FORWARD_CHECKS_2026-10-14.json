@@ -1,0 +1,456 @@
+{
+  "checked_at": "2026-10-14T10:38:07.488341+00:00",
+  "source_sha256": "1b0541000882ecb894ffded20b3700118519e189507b347b85310b9bc7369557",
+  "ktst_source": {
+    "repository": "https://github.com/kainbr/kt_set_transformers",
+    "commit": "e6331a6f45e597f286d1272fbb96e7bb67bcaa52",
+    "upstream_default_branch": "development",
+    "license": "MIT",
+    "vendor_path": "third_party/ktst",
+    "source_bytes_unmodified": true,
+    "files": {
+      "LICENSE": {
+        "bytes": 1059,
+        "git_blob_sha1": "374899b49ec9eb6e4f8f4ab91008bf14a059d703",
+        "sha256": "2320ceaf6e98366485ccf122d94fb5f66895339f7f787d9f6d4209e4b091c8e6"
+      },
+      "README.md": {
+        "bytes": 6053,
+        "git_blob_sha1": "586f79810baa9223d35848f593f5cb01318a76d9",
+        "sha256": "ab57642684893ad8226dc1abb3291c364136e52ebc83854345935f28f1fee23f"
+      },
+      "env.yaml": {
+        "bytes": 548,
+        "git_blob_sha1": "516e785d857698b72976095f44bf77d7c7965d8f",
+        "sha256": "f0d37e2d018074baffd30c330d3b79ad25863dc0e6ac46997663f63bd8bed5d4"
+      },
+      "pkg/__init__.py": {
+        "bytes": 0,
+        "git_blob_sha1": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "pkg/config/model/ktst.yaml": {
+        "bytes": 452,
+        "git_blob_sha1": "af1fb0d36487c8527b2b761ef0c17efa6c031ba7",
+        "sha256": "a81665817f6687e5dbc6fe5100aeaea5d5d4e15123d568803e6d37eb68f5af85"
+      },
+      "pkg/config/reproduce/ktst/benchmark/reproduce_15.yaml": {
+        "bytes": 959,
+        "git_blob_sha1": "4794b3486063e9c06d7742c03a88b4d49c29fa24",
+        "sha256": "302d896c48cb400a9366268339eb28edc2c6cb7eda61ef966548ac9c3d622be9"
+      },
+      "pkg/config/reproduce/ktst/benchmark/reproduce_50.yaml": {
+        "bytes": 960,
+        "git_blob_sha1": "48d024e4fc7e1fdcb2bcbb05d34eba4c64b3d96c",
+        "sha256": "27de1eefcb9b889a0e128087556cf7a3ffe61b4686bd00241e366aedcfd4737d"
+      },
+      "pkg/config/reproduce/ktst/benchmark/reproduce_65.yaml": {
+        "bytes": 920,
+        "git_blob_sha1": "c8c9a9b3636e3c8b0130d128b3c24e9aea67f8d7",
+        "sha256": "8cafb286f141b6f0f1bd14876d32e3b728382b576a87a9304f7b78356dd7870a"
+      },
+      "pkg/data/__init__.py": {
+        "bytes": 475,
+        "git_blob_sha1": "a1f52653af8b5752ca8b2204fba165e1ca605e6a",
+        "sha256": "c089b1e7362d717e3d8384432e0184f26f09593b13ffc50f507a8d6e558b1fff"
+      },
+      "pkg/data/pykt/__init__.py": {
+        "bytes": 15714,
+        "git_blob_sha1": "6aa099b5e6fc4532961dc418584688a3b0c85bb9",
+        "sha256": "334b913954d144d2d013d87b88687b12608fc7352a25a24dc3a6c5d7179a52d1"
+      },
+      "pkg/data/pykt/eval_dataset_format_set_dense.py": {
+        "bytes": 4835,
+        "git_blob_sha1": "979d89e476a18e398606483f503f709e44fd2e22",
+        "sha256": "df0d90b73bb9911f0dee8cb17f86fcb9e757ad7a971c0e98052aa9d6ef078092"
+      },
+      "pkg/model/KTST.py": {
+        "bytes": 18620,
+        "git_blob_sha1": "db2fe1ece1a40adb7a53f95b656aaaddbccdedc6",
+        "sha256": "5bcac1982b0d11ac625821298af148e45e9ec1b98d546cea9d2e76cc6c072b1b"
+      },
+      "pkg/model/__init__.py": {
+        "bytes": 1042,
+        "git_blob_sha1": "3ac51dd688f0d2be0892943a23cdf9b2eb91581b",
+        "sha256": "1b47863250cc9f1033adf28fe148641fdf471709cfcee09ef74a5c3aca76ffaa"
+      },
+      "pkg/model/utils/PositionalEncoding.py": {
+        "bytes": 2049,
+        "git_blob_sha1": "02b485a5987252a89bca0f24391f8142a9721535",
+        "sha256": "2f5b0ff62f3ccd0b03146f7d6d1971f42e048bdeda03f46e502dfe0a01d7acf2"
+      },
+      "pkg/model/utils/__init__.py": {
+        "bytes": 0,
+        "git_blob_sha1": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "pkg/model/utils/attentions/AKTMonotonicAttention.py": {
+        "bytes": 1899,
+        "git_blob_sha1": "5721cf78ea3d2d91b97b308225ba9a2980208b61",
+        "sha256": "f1f5c0260ce42e9525f31d7d3534ce10ba4e89780d9a3e0b56b3d5d2d3c2eff0"
+      },
+      "pkg/model/utils/attentions/ALiBiMonotonicAttention.py": {
+        "bytes": 2809,
+        "git_blob_sha1": "7d288dc374b3c326995064da5f433088c89ee8f6",
+        "sha256": "98779d1711795c1b688a7473fdfbff70f37efd18364c73ac18b1bf977a63bef9"
+      },
+      "pkg/model/utils/attentions/LearnableALiBiMonotonicAttention.py": {
+        "bytes": 3339,
+        "git_blob_sha1": "05536f5b53e61e224cdb78fbe99adcc5a2f64ba0",
+        "sha256": "423eb5c7981b66cfb64f9d254a5b66b497c6c9101acd0caf0fddaf9adad24c7c"
+      },
+      "pkg/model/utils/attentions/__init__.py": {
+        "bytes": 11526,
+        "git_blob_sha1": "9ae8300c94648697fa93617823b6f6b4c03175d1",
+        "sha256": "89ced977f0158cac4b6058cb0979132e9aa90db59d82bacc5f05589943c86020"
+      },
+      "pkg/utils/__init__.py": {
+        "bytes": 0,
+        "git_blob_sha1": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "pkg/utils/logging.py": {
+        "bytes": 2760,
+        "git_blob_sha1": "0a2e55e8ceeb768c9d2690699160e447a6816b2d",
+        "sha256": "21d0b7c251649860986c505f2d4cb28ba5c5add6c30ee0b041c90ccc6d949091"
+      },
+      "preprocess.py": {
+        "bytes": 10501,
+        "git_blob_sha1": "b8a6b77f358fab5ea66c7b1e4c0e02e92ef0768d",
+        "sha256": "2562841d569006493fa49dbc6ddd9ba7da3dc420ecc5cb2fc37deb399387b60a"
+      },
+      "train.py": {
+        "bytes": 2704,
+        "git_blob_sha1": "a6762d8ca752a4883219b28d72be2a204db25128",
+        "sha256": "0644fea1bf06aed375a671285162c05fa2ff99cc4336ed308990d78db01aa12c"
+      }
+    },
+    "vendor_root": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing-ktst/third_party/ktst",
+    "lock_path": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing-ktst/third_party/ktst.lock.json",
+    "source_sha256": "5b5dc24948a7d227003b5cd285227a20989811cc170809480c0ae80e611345b9"
+  },
+  "device": "AMD Radeon RX 9070 XT",
+  "optimizer_steps": 0,
+  "test_accessed": false,
+  "quality_metrics_computed": false,
+  "checks": [
+    {
+      "dataset": "assist2009",
+      "model": "ktst_mean",
+      "input_shape": [
+        32,
+        200,
+        6
+      ],
+      "output_shape": [
+        32,
+        200
+      ],
+      "selected_targets": 1533,
+      "finite_probabilities_and_loss": true,
+      "forward_seconds": 1.3394140499999878,
+      "peak_gpu_allocated_bytes": 215078912,
+      "dataset_manifest_sha256": "e2c939dfe4479327c223644bce6aee88c56bc362d1169164332ae9ca479fc703",
+      "data_audit": {
+        "protocol": "ktlab-ktst-reference-dev-v1",
+        "split": "valid",
+        "validation_fold": 0,
+        "dataset": "assist2009",
+        "source_path": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/assist2009/train_valid_sequences.csv",
+        "original_path": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/assist2009/train_valid.csv",
+        "source_sha256": "4b3b6ab7c97aaab6554cbbc869b70b63f1017f5b59bc0ac0c3ab4cbd7152c232",
+        "original_sha256": "d590ba88d8d7ab630e635a89b56df55219f49a75b55caa0df571a1f3b460404e",
+        "kc_budget": 200,
+        "max_concepts": 4,
+        "students": 31,
+        "rows_limited": true,
+        "max_rows": 32,
+        "unconsumed_kc_positions": 763,
+        "alignment_scope": "selected_rows",
+        "id_scheme": "dataset:uid:student_event_ordinal",
+        "qidx_scheme": "derived global event index in full train_valid.csv row order; not v1 validation qidx",
+        "concept_order": "official list(set(integer_concepts))",
+        "python": "3.12.3",
+        "test_access": false,
+        "v1_common_target_history_equivalence": "not_established",
+        "all_dataset_tensors_materialized": false,
+        "rows": 32,
+        "kc_positions": 1828,
+        "event_fragments": 1565,
+        "scored_event_fragments": 1533,
+        "partial_start_chunks": 0,
+        "partial_end_chunks": 0,
+        "incomplete_event_fragments": 0,
+        "omitted_kc_positions_in_fragments": 0,
+        "omitted_unique_concepts_in_fragments": 0,
+        "deduplicated_kc_positions": 0,
+        "zero_score_chunks": 0
+      }
+    },
+    {
+      "dataset": "assist2009",
+      "model": "ktst_mhsa",
+      "input_shape": [
+        32,
+        200,
+        6
+      ],
+      "output_shape": [
+        32,
+        200
+      ],
+      "selected_targets": 1533,
+      "finite_probabilities_and_loss": true,
+      "forward_seconds": 0.0414052420000246,
+      "peak_gpu_allocated_bytes": 214163456,
+      "dataset_manifest_sha256": "e2c939dfe4479327c223644bce6aee88c56bc362d1169164332ae9ca479fc703",
+      "data_audit": {
+        "protocol": "ktlab-ktst-reference-dev-v1",
+        "split": "valid",
+        "validation_fold": 0,
+        "dataset": "assist2009",
+        "source_path": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/assist2009/train_valid_sequences.csv",
+        "original_path": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/assist2009/train_valid.csv",
+        "source_sha256": "4b3b6ab7c97aaab6554cbbc869b70b63f1017f5b59bc0ac0c3ab4cbd7152c232",
+        "original_sha256": "d590ba88d8d7ab630e635a89b56df55219f49a75b55caa0df571a1f3b460404e",
+        "kc_budget": 200,
+        "max_concepts": 4,
+        "students": 31,
+        "rows_limited": true,
+        "max_rows": 32,
+        "unconsumed_kc_positions": 763,
+        "alignment_scope": "selected_rows",
+        "id_scheme": "dataset:uid:student_event_ordinal",
+        "qidx_scheme": "derived global event index in full train_valid.csv row order; not v1 validation qidx",
+        "concept_order": "official list(set(integer_concepts))",
+        "python": "3.12.3",
+        "test_access": false,
+        "v1_common_target_history_equivalence": "not_established",
+        "all_dataset_tensors_materialized": false,
+        "rows": 32,
+        "kc_positions": 1828,
+        "event_fragments": 1565,
+        "scored_event_fragments": 1533,
+        "partial_start_chunks": 0,
+        "partial_end_chunks": 0,
+        "incomplete_event_fragments": 0,
+        "omitted_kc_positions_in_fragments": 0,
+        "omitted_unique_concepts_in_fragments": 0,
+        "deduplicated_kc_positions": 0,
+        "zero_score_chunks": 0
+      }
+    },
+    {
+      "dataset": "assist2015",
+      "model": "ktst_mean",
+      "input_shape": [
+        32,
+        200,
+        3
+      ],
+      "output_shape": [
+        32,
+        200
+      ],
+      "selected_targets": 855,
+      "finite_probabilities_and_loss": true,
+      "forward_seconds": 0.015999913000001698,
+      "peak_gpu_allocated_bytes": 205168128,
+      "dataset_manifest_sha256": "698be4553033f3891757eea79bed34c9394e77eb4a90475d2ca24cc9905b6441",
+      "data_audit": {
+        "protocol": "ktlab-ktst-reference-dev-v1",
+        "split": "valid",
+        "validation_fold": 0,
+        "dataset": "assist2015",
+        "source_path": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/assist2015/train_valid_sequences.csv",
+        "original_path": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/assist2015/train_valid.csv",
+        "source_sha256": "86a384290579e3b6719c5bf38d78468b478331fee677d1ee4a2895b38fd2752f",
+        "original_sha256": "83ff2090d1ddaa6295854984733b699b52fa3b656d7c814d6c9da56822964ac7",
+        "kc_budget": 200,
+        "max_concepts": 1,
+        "students": 31,
+        "rows_limited": true,
+        "max_rows": 32,
+        "unconsumed_kc_positions": 0,
+        "alignment_scope": "selected_rows",
+        "id_scheme": "dataset:uid:student_event_ordinal",
+        "qidx_scheme": "derived global event index in full train_valid.csv row order; not v1 validation qidx",
+        "concept_order": "official list(set(integer_concepts))",
+        "python": "3.12.3",
+        "test_access": false,
+        "v1_common_target_history_equivalence": "not_established",
+        "all_dataset_tensors_materialized": false,
+        "rows": 32,
+        "kc_positions": 887,
+        "event_fragments": 887,
+        "scored_event_fragments": 855,
+        "partial_start_chunks": 0,
+        "partial_end_chunks": 0,
+        "incomplete_event_fragments": 0,
+        "omitted_kc_positions_in_fragments": 0,
+        "omitted_unique_concepts_in_fragments": 0,
+        "deduplicated_kc_positions": 0,
+        "zero_score_chunks": 0
+      }
+    },
+    {
+      "dataset": "assist2015",
+      "model": "ktst_mhsa",
+      "input_shape": [
+        32,
+        200,
+        3
+      ],
+      "output_shape": [
+        32,
+        200
+      ],
+      "selected_targets": 855,
+      "finite_probabilities_and_loss": true,
+      "forward_seconds": 0.019011748999986366,
+      "peak_gpu_allocated_bytes": 205235712,
+      "dataset_manifest_sha256": "698be4553033f3891757eea79bed34c9394e77eb4a90475d2ca24cc9905b6441",
+      "data_audit": {
+        "protocol": "ktlab-ktst-reference-dev-v1",
+        "split": "valid",
+        "validation_fold": 0,
+        "dataset": "assist2015",
+        "source_path": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/assist2015/train_valid_sequences.csv",
+        "original_path": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/assist2015/train_valid.csv",
+        "source_sha256": "86a384290579e3b6719c5bf38d78468b478331fee677d1ee4a2895b38fd2752f",
+        "original_sha256": "83ff2090d1ddaa6295854984733b699b52fa3b656d7c814d6c9da56822964ac7",
+        "kc_budget": 200,
+        "max_concepts": 1,
+        "students": 31,
+        "rows_limited": true,
+        "max_rows": 32,
+        "unconsumed_kc_positions": 0,
+        "alignment_scope": "selected_rows",
+        "id_scheme": "dataset:uid:student_event_ordinal",
+        "qidx_scheme": "derived global event index in full train_valid.csv row order; not v1 validation qidx",
+        "concept_order": "official list(set(integer_concepts))",
+        "python": "3.12.3",
+        "test_access": false,
+        "v1_common_target_history_equivalence": "not_established",
+        "all_dataset_tensors_materialized": false,
+        "rows": 32,
+        "kc_positions": 887,
+        "event_fragments": 887,
+        "scored_event_fragments": 855,
+        "partial_start_chunks": 0,
+        "partial_end_chunks": 0,
+        "incomplete_event_fragments": 0,
+        "omitted_kc_positions_in_fragments": 0,
+        "omitted_unique_concepts_in_fragments": 0,
+        "deduplicated_kc_positions": 0,
+        "zero_score_chunks": 0
+      }
+    },
+    {
+      "dataset": "nips_task34",
+      "model": "ktst_mean",
+      "input_shape": [
+        32,
+        200,
+        4
+      ],
+      "output_shape": [
+        32,
+        200
+      ],
+      "selected_targets": 4554,
+      "finite_probabilities_and_loss": true,
+      "forward_seconds": 0.015024350999993885,
+      "peak_gpu_allocated_bytes": 207339520,
+      "dataset_manifest_sha256": "db0795bfe4b5f8e88e11b51c95626fe5d8dc4e6dc5529a9ac179128cf0eb8398",
+      "data_audit": {
+        "protocol": "ktlab-ktst-reference-dev-v1",
+        "split": "valid",
+        "validation_fold": 0,
+        "dataset": "nips_task34",
+        "source_path": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/nips_task34/train_valid_sequences.csv",
+        "original_path": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/nips_task34/train_valid.csv",
+        "source_sha256": "94909112f7f5f3dc88ffbf1c52537fc306a81dec174e559b5a86153f79b4a52a",
+        "original_sha256": "a75cdf0222d0d861a7861dc4dd7f52207ec987285ecd3f0e83b53f1fa54a3e65",
+        "kc_budget": 200,
+        "max_concepts": 2,
+        "students": 16,
+        "rows_limited": true,
+        "max_rows": 32,
+        "unconsumed_kc_positions": 129,
+        "alignment_scope": "selected_rows",
+        "id_scheme": "dataset:uid:student_event_ordinal",
+        "qidx_scheme": "derived global event index in full train_valid.csv row order; not v1 validation qidx",
+        "concept_order": "official list(set(integer_concepts))",
+        "python": "3.12.3",
+        "test_access": false,
+        "v1_common_target_history_equivalence": "not_established",
+        "all_dataset_tensors_materialized": false,
+        "rows": 32,
+        "kc_positions": 4643,
+        "event_fragments": 4586,
+        "scored_event_fragments": 4554,
+        "partial_start_chunks": 1,
+        "partial_end_chunks": 1,
+        "incomplete_event_fragments": 2,
+        "omitted_kc_positions_in_fragments": 2,
+        "omitted_unique_concepts_in_fragments": 2,
+        "deduplicated_kc_positions": 0,
+        "zero_score_chunks": 0
+      }
+    },
+    {
+      "dataset": "nips_task34",
+      "model": "ktst_mhsa",
+      "input_shape": [
+        32,
+        200,
+        4
+      ],
+      "output_shape": [
+        32,
+        200
+      ],
+      "selected_targets": 4554,
+      "finite_probabilities_and_loss": true,
+      "forward_seconds": 0.02082964900000661,
+      "peak_gpu_allocated_bytes": 207407104,
+      "dataset_manifest_sha256": "db0795bfe4b5f8e88e11b51c95626fe5d8dc4e6dc5529a9ac179128cf0eb8398",
+      "data_audit": {
+        "protocol": "ktlab-ktst-reference-dev-v1",
+        "split": "valid",
+        "validation_fold": 0,
+        "dataset": "nips_task34",
+        "source_path": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/nips_task34/train_valid_sequences.csv",
+        "original_path": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/nips_task34/train_valid.csv",
+        "source_sha256": "94909112f7f5f3dc88ffbf1c52537fc306a81dec174e559b5a86153f79b4a52a",
+        "original_sha256": "a75cdf0222d0d861a7861dc4dd7f52207ec987285ecd3f0e83b53f1fa54a3e65",
+        "kc_budget": 200,
+        "max_concepts": 2,
+        "students": 16,
+        "rows_limited": true,
+        "max_rows": 32,
+        "unconsumed_kc_positions": 129,
+        "alignment_scope": "selected_rows",
+        "id_scheme": "dataset:uid:student_event_ordinal",
+        "qidx_scheme": "derived global event index in full train_valid.csv row order; not v1 validation qidx",
+        "concept_order": "official list(set(integer_concepts))",
+        "python": "3.12.3",
+        "test_access": false,
+        "v1_common_target_history_equivalence": "not_established",
+        "all_dataset_tensors_materialized": false,
+        "rows": 32,
+        "kc_positions": 4643,
+        "event_fragments": 4586,
+        "scored_event_fragments": 4554,
+        "partial_start_chunks": 1,
+        "partial_end_chunks": 1,
+        "incomplete_event_fragments": 2,
+        "omitted_kc_positions_in_fragments": 2,
+        "omitted_unique_concepts_in_fragments": 2,
+        "deduplicated_kc_positions": 0,
+        "zero_score_chunks": 0
+      }
+    }
+  ]
+}

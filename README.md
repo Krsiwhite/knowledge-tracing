@@ -1,6 +1,6 @@
 # Knowledge Tracing Research
 
-基于固定版本 pyKT 的独立知识追踪研究项目。目标是提出有明确研究问题和证据支持的原创改进，并在可比协议下超越强基线。**三个首期数据集已准备并核验，69 项自动检查和 9 次真实数据 GPU 前向检查通过；首批训练待确认，尚无训练结果或 SOTA 声明。**
+基于固定版本 pyKT 的独立知识追踪研究项目。目标是提出有明确研究问题和证据支持的原创改进，并在可比协议下超越强基线。**三数据集已核验，首批 B001 已按批准完成 AKT/simpleKT 各5次更新；KTST 已接入独立开发集协议。104 项自动检查及累计15次真实数据 GPU 前向检查通过，尚无收敛实验或 SOTA 结论。**
 
 首期数据集为 ASSIST2009、ASSIST2015、NIPS34；以 2026-10-29 为首轮结果汇报节点，提前验证完成就提前交付。困难场景主线只在验证阶段决定，不能看过最终测试再选择有利指标。
 
@@ -45,7 +45,7 @@ python -m ktlab train --batch configs/batches/B001-smoke.json --approval approva
 python -m ktlab report
 ```
 
-第一批 proposal 只涉及 ASSIST2015 的 AKT/simpleKT 各 5 次优化更新；目的是验证完整训练管线，不评价模型质量。运行时间上限与具体配置以生成的清单为准。源码或数据清单改变会使旧审批失效。
+B001 已在冻结版本上完成，原审批仅覆盖该批次。不要用当前代码重跑历史清单：源码或数据清单改变会使旧审批失效。下一批 [B002](configs/batches/B002-one-epoch-calibration.json) 拟在三个数据集运行四个模型各一轮、完整验证；仍待用户确认，目的是计时与显存校准，不是模型排名。
 
 ## 评测与研究记录
 
@@ -53,13 +53,15 @@ python -m ktlab report
 - [前沿研究证据表](docs/RESEARCH_LEDGER.md)：论文状态、作者报告、可复现代码、输入与协议限制。
 - [候选研究方向](docs/RESEARCH_DIRECTION.md)：待验证假设、最近邻方法和否证条件，不冒充已证实创新。
 - [初始化交付](reports/INITIALIZATION_2026-10-14.md)：实际完成项、验证范围及首批训练申请。
+- [B001 结果与 B002 方案](reports/B001_RESULTS_AND_B002_PLAN_2026-10-14.md)：已完成训练的证据及下一批具体预算。
 - [KTST 接入审计](docs/KTST_INTEGRATION.md)：官方实现、题级集合表示和协议差异。
+- [KTST 协议复核](docs/KTST_PROTOCOL_REVIEW.md)：独立参考流程与未来统一比较的要求。
 - `reports/`：只记录已经执行并验证的阶段事实。`runs/` 存本机运行证据。
 
 主实验采用统一题目级验证和测试、完整精度概率及真实最佳验证检查点。它与上游默认的重复 KC 验证、四位概率舍入及检查点阈值存在明确差异，不能无标记地与论文最高 AUC 直接排名。
 
-AKT/simpleKT 为基础对照；MoC-KT、FA-KT、KTST 等作为近期对照候选。模型可用性、输入条件、实现审计和本机验证结论以研究表和实际检查报告为准。没有运行的模型不会被标记为已复现。
+AKT/simpleKT 为基础对照；MoC-KT、KTST 已通过前向验收，FA-KT 的完整依赖仍待解决。KTST 使用 `ktlab-ktst-reference-dev-v1`，保留事件原生表示、官方 logits loss、theta 学习率组及初始 checkpoint 候选；其验证目标/历史与 v1 不同，因此暂不混排 AUC，官方修正滑窗测试尚未接通且持续关闭。前向通过不等于已复现论文结果。
 
 ## 许可
 
-本项目代码使用 MIT 许可证。固定上游源码保留 [pyKT MIT 许可证](third_party/pykt/LICENSE)。数据集有独立使用条件，仓库代码许可证不授予数据再分发权。
+本项目代码使用 MIT 许可证。固定上游源码保留 [pyKT MIT 许可证](third_party/pykt/LICENSE)与 [KTST MIT 许可证](third_party/ktst/LICENSE)。数据集有独立使用条件，仓库代码许可证不授予数据再分发权。

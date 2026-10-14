@@ -8,8 +8,9 @@
 | simpleKT | 已验证前向 | 已验证前向及 CPU/GPU 数值一致性 | 同上；序列长度不能超过配置的位置编码长度 |
 | MoC-KT (`mockt`) | 上游原版不支持 | 已验证前向及固定长度下的答案扰动检查 | 构造器硬编码 `.cuda()`；使用序列总长度选择卷积分支 |
 | FA-KT (`fa_kt`) | 原版完整 MoE 未验证 | 原版完整 MoE 未验证 | 默认专家包含 Mamba，本环境缺少 `mamba_ssm`；还需要真实时间戳 |
+| KTST mean/MHSA | 已验证前向与原loss | 三数据集前向、CPU/GPU一致性、因果/排列/padding/重载通过 | 独立reference-dev协议；完整测试适配尚未实现，未训练 |
 
-这里的“已验证”均为随机初始化模型的前向检查。没有执行反向传播、优化器更新或训练批次，也没有计算测试集预测。不能据此判断模型精度或 SOTA。
+表中“已验证”描述随机初始化模型的前向检查。另有用户批准的 B001：AKT/simpleKT 在 ASSIST2015 各完成5次更新，见[批次报告](../reports/B001_RESULTS_AND_B002_PLAN_2026-10-14.md)。MoC-KT 与 KTST 尚无优化更新，所有模型均未计算测试集预测；这些检查不能支持精度或 SOTA 声明。
 
 ## 原样加载与设备适配
 
@@ -41,7 +42,7 @@ FA-KT 默认的 MoE 包含 CNN、LSTM、attention、Mamba。缺少 Mamba 时，�
 
 官方 question-level 测试的同题 KC 隔离来自 `expand_question`：每个 KC 共享当前题之前的历史，而不是通过 late fusion 事后消除答案泄漏。历史题仍按多个 KC 重复表示；当前训练流程也没有改成每题只更新一次。
 
-`tests/test_engine.py` 的 14 项测试已在专用 WSL 环境通过，涵盖：
+`tests/test_engine.py` 的检查已在专用 WSL 环境通过，涵盖：
 
 - AKT/simpleKT 当前及未来答案扰动、尾部 padding 不变性。
 - AKT/simpleKT checkpoint 重载精确一致，CPU/GPU 前向容差 `rtol=2e-4, atol=2e-5`。

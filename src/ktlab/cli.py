@@ -96,7 +96,11 @@ def main(argv: list[str] | None = None) -> int:
             for entry in approved["runs"]:
                 p.validate_batch_approval(args.batch, args.approval)
                 config = dict(entry["config"], _batch_approved=True, batch_id=approved["batch_id"], approved_batch_sha256=p.canonical_hash(approved))
-                _emit(train(config, root / "runs" / entry["run_id"]))
+                result = train(config, root / "runs" / entry["run_id"])
+                _emit(result)
+                if approved.get("stop_on_noncompleted_run") and result.get("metadata", {}).get("status") != "completed":
+                    print("kt: Stopping this batch after a non-completed run; no automatic retry.", file=sys.stderr)
+                    return 2
         elif args.command == "evaluate":
             from .engine import evaluate_run
             _emit(evaluate_run(args.run, split=args.split, allow_test=args.allow_test))

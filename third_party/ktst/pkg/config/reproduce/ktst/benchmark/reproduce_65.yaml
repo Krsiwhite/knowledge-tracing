@@ -1,0 +1,46 @@
+# @package _global_
+
+trainer:
+  _target_: pkg.logic.trainer.Trainer
+  _recursive_: false
+  num_epochs: 200
+  early_stopping_tolerance: 10
+  gradnorm_clipping_value: 1.0
+  log_after_num_iterations: 1
+  eval_modes:
+    - val
+  dry_run: false
+model:
+  _target_: pkg.model.KTST.Model
+  _recursive_: false
+  d_model: 128
+  nhead_tf: 8
+  nhead_agg: 4
+  num_layers_tf_dec: 6
+  num_layers_tf_enc: 2
+  num_layers_agg: 2
+  dim_feedforward: 512
+  dropout: 0.05
+  dim_classifier: 256
+  aggregation: q_mean_c
+  use_bias_emb: true
+  use_zero_init: true
+  use_decoder_only: false
+  attn_variant: learnable_alibi_monotonic_q_k
+data:
+  format: set_dense
+  _target_: pkg.data.pykt.Data
+  _recursive_: false
+  dataset: assist2009
+  batch_size: 128
+  batch_size_val: 64
+  val_fold_idx: 0
+optimizer:
+  _target_: torch.optim.Adam
+  _recursive_: false
+  lr: 5.0e-05
+  weight_decay: 5.0e-05
+  theta_lr: 0.001
+debug: false
+seed: 33
+device: cuda

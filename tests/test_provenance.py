@@ -11,6 +11,16 @@ def test_canonical_hash_is_order_independent_but_value_sensitive():
     assert p.canonical_hash({"a": 1}) != p.canonical_hash({"a": 2})
 
 
+def test_source_fingerprint_covers_ktst_upstream_bytes(tmp_path):
+    vendor = tmp_path / "third_party/ktst/pkg/model"
+    vendor.mkdir(parents=True)
+    source = vendor / "fixture.py"
+    source.write_text("fixture = 1\n")
+    before = p.source_fingerprint(tmp_path)
+    source.write_text("fixture = 2\n")
+    assert p.source_fingerprint(tmp_path) != before
+
+
 def test_batch_is_sealed_until_specific_user_confirmation(tmp_path, monkeypatch):
     manifest = tmp_path / "manifest.json"
     data = tmp_path / "fixture.txt"

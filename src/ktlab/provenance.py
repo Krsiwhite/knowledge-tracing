@@ -51,9 +51,10 @@ def source_fingerprint(root: Path | None = None) -> str:
     """Hash actual implementation bytes, even before the first Git commit."""
     root = root or project_root()
     paths = []
-    for folder in (root / "src", root / "third_party" / "pykt" / "pykt"):
+    for folder in (root / "src", root / "third_party" / "pykt" / "pykt", root / "third_party" / "ktst"):
         paths.extend(folder.rglob("*.py"))
     paths.append(root / "pyproject.toml")
+    paths.extend((root / "third_party").glob("*.lock.json"))
     inventory = {p.relative_to(root).as_posix(): sha256_file(p) for p in sorted(paths) if p.is_file()}
     return canonical_hash(inventory)
 

@@ -1,0 +1,125 @@
+{
+  "repository": "https://github.com/kainbr/kt_set_transformers",
+  "commit": "e6331a6f45e597f286d1272fbb96e7bb67bcaa52",
+  "upstream_default_branch": "development",
+  "license": "MIT",
+  "vendor_path": "third_party/ktst",
+  "source_bytes_unmodified": true,
+  "files": {
+    "LICENSE": {
+      "bytes": 1059,
+      "git_blob_sha1": "374899b49ec9eb6e4f8f4ab91008bf14a059d703",
+      "sha256": "2320ceaf6e98366485ccf122d94fb5f66895339f7f787d9f6d4209e4b091c8e6"
+    },
+    "README.md": {
+      "bytes": 6053,
+      "git_blob_sha1": "586f79810baa9223d35848f593f5cb01318a76d9",
+      "sha256": "ab57642684893ad8226dc1abb3291c364136e52ebc83854345935f28f1fee23f"
+    },
+    "env.yaml": {
+      "bytes": 548,
+      "git_blob_sha1": "516e785d857698b72976095f44bf77d7c7965d8f",
+      "sha256": "f0d37e2d018074baffd30c330d3b79ad25863dc0e6ac46997663f63bd8bed5d4"
+    },
+    "pkg/__init__.py": {
+      "bytes": 0,
+      "git_blob_sha1": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "pkg/config/model/ktst.yaml": {
+      "bytes": 452,
+      "git_blob_sha1": "af1fb0d36487c8527b2b761ef0c17efa6c031ba7",
+      "sha256": "a81665817f6687e5dbc6fe5100aeaea5d5d4e15123d568803e6d37eb68f5af85"
+    },
+    "pkg/config/reproduce/ktst/benchmark/reproduce_15.yaml": {
+      "bytes": 959,
+      "git_blob_sha1": "4794b3486063e9c06d7742c03a88b4d49c29fa24",
+      "sha256": "302d896c48cb400a9366268339eb28edc2c6cb7eda61ef966548ac9c3d622be9"
+    },
+    "pkg/config/reproduce/ktst/benchmark/reproduce_50.yaml": {
+      "bytes": 960,
+      "git_blob_sha1": "48d024e4fc7e1fdcb2bcbb05d34eba4c64b3d96c",
+      "sha256": "27de1eefcb9b889a0e128087556cf7a3ffe61b4686bd00241e366aedcfd4737d"
+    },
+    "pkg/config/reproduce/ktst/benchmark/reproduce_65.yaml": {
+      "bytes": 920,
+      "git_blob_sha1": "c8c9a9b3636e3c8b0130d128b3c24e9aea67f8d7",
+      "sha256": "8cafb286f141b6f0f1bd14876d32e3b728382b576a87a9304f7b78356dd7870a"
+    },
+    "pkg/data/__init__.py": {
+      "bytes": 475,
+      "git_blob_sha1": "a1f52653af8b5752ca8b2204fba165e1ca605e6a",
+      "sha256": "c089b1e7362d717e3d8384432e0184f26f09593b13ffc50f507a8d6e558b1fff"
+    },
+    "pkg/data/pykt/__init__.py": {
+      "bytes": 15714,
+      "git_blob_sha1": "6aa099b5e6fc4532961dc418584688a3b0c85bb9",
+      "sha256": "334b913954d144d2d013d87b88687b12608fc7352a25a24dc3a6c5d7179a52d1"
+    },
+    "pkg/data/pykt/eval_dataset_format_set_dense.py": {
+      "bytes": 4835,
+      "git_blob_sha1": "979d89e476a18e398606483f503f709e44fd2e22",
+      "sha256": "df0d90b73bb9911f0dee8cb17f86fcb9e757ad7a971c0e98052aa9d6ef078092"
+    },
+    "pkg/model/KTST.py": {
+      "bytes": 18620,
+      "git_blob_sha1": "db2fe1ece1a40adb7a53f95b656aaaddbccdedc6",
+      "sha256": "5bcac1982b0d11ac625821298af148e45e9ec1b98d546cea9d2e76cc6c072b1b"
+    },
+    "pkg/model/__init__.py": {
+      "bytes": 1042,
+      "git_blob_sha1": "3ac51dd688f0d2be0892943a23cdf9b2eb91581b",
+      "sha256": "1b47863250cc9f1033adf28fe148641fdf471709cfcee09ef74a5c3aca76ffaa"
+    },
+    "pkg/model/utils/PositionalEncoding.py": {
+      "bytes": 2049,
+      "git_blob_sha1": "02b485a5987252a89bca0f24391f8142a9721535",
+      "sha256": "2f5b0ff62f3ccd0b03146f7d6d1971f42e048bdeda03f46e502dfe0a01d7acf2"
+    },
+    "pkg/model/utils/__init__.py": {
+      "bytes": 0,
+      "git_blob_sha1": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "pkg/model/utils/attentions/AKTMonotonicAttention.py": {
+      "bytes": 1899,
+      "git_blob_sha1": "5721cf78ea3d2d91b97b308225ba9a2980208b61",
+      "sha256": "f1f5c0260ce42e9525f31d7d3534ce10ba4e89780d9a3e0b56b3d5d2d3c2eff0"
+    },
+    "pkg/model/utils/attentions/ALiBiMonotonicAttention.py": {
+      "bytes": 2809,
+      "git_blob_sha1": "7d288dc374b3c326995064da5f433088c89ee8f6",
+      "sha256": "98779d1711795c1b688a7473fdfbff70f37efd18364c73ac18b1bf977a63bef9"
+    },
+    "pkg/model/utils/attentions/LearnableALiBiMonotonicAttention.py": {
+      "bytes": 3339,
+      "git_blob_sha1": "05536f5b53e61e224cdb78fbe99adcc5a2f64ba0",
+      "sha256": "423eb5c7981b66cfb64f9d254a5b66b497c6c9101acd0caf0fddaf9adad24c7c"
+    },
+    "pkg/model/utils/attentions/__init__.py": {
+      "bytes": 11526,
+      "git_blob_sha1": "9ae8300c94648697fa93617823b6f6b4c03175d1",
+      "sha256": "89ced977f0158cac4b6058cb0979132e9aa90db59d82bacc5f05589943c86020"
+    },
+    "pkg/utils/__init__.py": {
+      "bytes": 0,
+      "git_blob_sha1": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "pkg/utils/logging.py": {
+      "bytes": 2760,
+      "git_blob_sha1": "0a2e55e8ceeb768c9d2690699160e447a6816b2d",
+      "sha256": "21d0b7c251649860986c505f2d4cb28ba5c5add6c30ee0b041c90ccc6d949091"
+    },
+    "preprocess.py": {
+      "bytes": 10501,
+      "git_blob_sha1": "b8a6b77f358fab5ea66c7b1e4c0e02e92ef0768d",
+      "sha256": "2562841d569006493fa49dbc6ddd9ba7da3dc420ecc5cb2fc37deb399387b60a"
+    },
+    "train.py": {
+      "bytes": 2704,
+      "git_blob_sha1": "a6762d8ca752a4883219b28d72be2a204db25128",
+      "sha256": "0644fea1bf06aed375a671285162c05fa2ff99cc4336ed308990d78db01aa12c"
+    }
+  }
+}

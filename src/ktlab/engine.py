@@ -127,6 +127,9 @@ def train(config: dict, run_dir: Path) -> dict:
     """
     if config.get("_batch_approved") is not True:
         raise PermissionError("Training requires explicit per-batch approval via the ktlab CLI")
+    if config.get("model") in {"ktst_mean", "ktst_mhsa"}:
+        from .ktst_engine import train_ktst
+        return train_ktst(config, run_dir)
     epochs, patience = int(config.get("epochs", 200)), int(config.get("patience", 10))
     max_steps = config.get("max_train_steps")
     max_validation_batches = config.get("max_validation_batches")
@@ -260,6 +263,9 @@ def evaluate_run(run_dir: Path, split: str = "valid", allow_test: bool = False) 
     if split == "test" and not allow_test:
         raise PermissionError("Test is sealed; explicit frozen-candidate test release is required")
     config = json.loads((run_dir / "resolved_config.json").read_text(encoding="utf-8"))
+    if config.get("model") in {"ktst_mean", "ktst_mhsa"}:
+        from .ktst_engine import evaluate_ktst_run
+        return evaluate_ktst_run(run_dir, split=split)
     if split == "test":
         from .provenance import validate_test_release
         release = Path(config.get("test_release_file", run_dir.parent / "test-release.json"))

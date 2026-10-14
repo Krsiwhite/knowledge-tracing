@@ -65,7 +65,7 @@
 
 本地RX9070XT 16GB优先。付费API、云GPU、额外数据访问条款或需要改变资源安排时先对齐，不凭研究目标推定费用授权。
 
-首批拟申请的训练烟测：AS2015上的AKT和simpleKT各5次optimizer更新，总预算上限30分钟，只验证训练链路和validation/checkpoint机制，不接触最终test。此处是待批准方案，**不表示已获批准或已有训练结果**。
+首批 B001 已获用户明确批准并完成：AS2015 上 AKT/simpleKT 各5次 optimizer 更新，实际记录见[批次报告](../reports/B001_RESULTS_AND_B002_PLAN_2026-10-14.md)。只验证训练链路和部分验证/checkpoint机制，不接触最终test；下一批 B002 仍需独立确认。
 
 ## 6. 必须通过的检查
 
