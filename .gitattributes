@@ -3,3 +3,5 @@ third_party/pykt/** -text -whitespace
 third_party/ktst/** -text -whitespace
 *.png binary
 *.jpg binary
+# Preserve the exact pre-execution bytes bound by the completed B008 data preflight.
+configs/checks/B008-history-data-preflight.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
