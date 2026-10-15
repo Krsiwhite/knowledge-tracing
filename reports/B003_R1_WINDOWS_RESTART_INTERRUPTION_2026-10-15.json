@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "batch_id": "B003-R1-shared-convergence-baselines",
+  "status": "interrupted",
+  "detected_at": "2026-10-15T01:07:05.461055+00:00",
+  "report_date_hong_kong": "2026-10-15",
+  "canonical_batch_sha256": "c2c4dbc0ffcfee1bb591948e6dffac26366b723bd13d7c8e484ebff886c15bd3",
+  "source_sha256": "bf5fcd0f23645b31f76c9486f4a98b3a5f9667886f5f80d62efc596b9a610a1d",
+  "worker_pid": 374,
+  "child_pid": 375,
+  "both_processes_absent": true,
+  "prior_job_state_sha256": "5ce97f72a055e1b92bcfab77666f30672653d78a922814b02893f8ae0d8fdb25",
+  "os_evidence_sha256": "530b83f21358825f1a21f9396e837f8ce59bf571a3cfd8ab4a517be8c942853e",
+  "os_evidence": [
+    {
+      "hong_kong_time": "2026-10-15 05:15:07",
+      "event_id": 1074,
+      "process": "MoUsoCoreWorker.exe",
+      "reason": "Operating system Service Pack planned restart"
+    },
+    {
+      "hong_kong_time": "2026-10-15 05:18:53",
+      "event_id": 41,
+      "reason": "Kernel-Power reports restart without clean shutdown"
+    },
+    {
+      "hong_kong_time": "2026-10-15 05:20:09",
+      "event_id": 1074,
+      "process": "TrustedInstaller.exe",
+      "reason": "Operating system upgrade planned restart"
+    },
+    {
+      "hong_kong_time": "2026-10-15 05:28:00",
+      "event_id": 41,
+      "reason": "Kernel-Power reports restart without clean shutdown"
+    }
+  ],
+  "diagnosis": "Windows update initiated restarts terminated the WSL training session; exact termination instant and exit code are unavailable.",
+  "completed_runs_preserved": [
+    {
+      "run_id": "B003-akt-assist2009-f0-s42",
+      "best_epoch": 9,
+      "best_valid_auc": 0.7791159915501122,
+      "optimizer_steps": 1140,
+      "metadata_sha256": "6720d033f38691f6067ee9b9d5ad7a174a7096f19bbac3d4991c4b95fde6d220"
+    },
+    {
+      "run_id": "B003-simplekt-assist2009-f0-s42",
+      "best_epoch": 5,
+      "best_valid_auc": 0.7640014501810941,
+      "optimizer_steps": 760,
+      "metadata_sha256": "690b2cf87cca608d50ca263f4cb4482665bbc3cd6a24732fae576cd5bddfa0fe"
+    },
+    {
+      "run_id": "B003-R1-mockt-assist2009-f0-s42",
+      "best_epoch": 9,
+      "best_valid_auc": 0.7736683877174166,
+      "optimizer_steps": 1140,
+      "metadata_sha256": "bc1982632174e5fdca578657cf4ff04f2405e364f5ea9a78c285ea6dedbd0caa"
+    },
+    {
+      "run_id": "B003-R1-ktst_mean-assist2009-f0-s42",
+      "best_epoch": 23,
+      "best_valid_auc": 0.7921645709548386,
+      "optimizer_steps": 2470,
+      "metadata_sha256": "4389d45971e53a5844d07ab59abf3ded026e9267a8c3fafebacbdf11a07bde96"
+    },
+    {
+      "run_id": "B003-R1-akt-assist2015-f0-s42",
+      "best_epoch": 12,
+      "best_valid_auc": 0.7318764960895497,
+      "optimizer_steps": 5790,
+      "metadata_sha256": "b17a63add521b89484504daed291a9350aa0187909d3e84bfcdceb6e27ca64ad"
+    },
+    {
+      "run_id": "B003-R1-simplekt-assist2015-f0-s42",
+      "best_epoch": 3,
+      "best_valid_auc": 0.72669115197576,
+      "optimizer_steps": 2316,
+      "metadata_sha256": "58aadf1d5d0065677ac273939bcc70bb7ea6608bed07c19822cc291e98c95fd1"
+    }
+  ],
+  "incomplete_run": {
+    "run_id": "B003-R1-mockt-assist2015-f0-s42",
+    "last_persisted_epoch": 8,
+    "persisted_optimizer_steps_lower_bound": 3088,
+    "additional_unpersisted_steps_unknown": true,
+    "best_persisted_epoch": 7,
+    "best_persisted_valid_auc": 0.7279371050006148,
+    "completion_not_claimed": true,
+    "final_predictions_absent": true,
+    "files_sha256": {
+      "best.pt": "01375f97e481e17a6deff140d8c1275d16b4eaa8465a8d14d2cbd9cfc8529d02",
+      "history.jsonl": "c76e57bc04fc4a77a3df723627d1c0ab2b5827d275ea27de6c092e4e2816f95d",
+      "initial_valid_metrics.json": "cb106c080b807bcda96a91e5665c34fa76c6b32ce169c383987758a023d2042e",
+      "metadata.json": "747e7806aaaed01a4c90cbf4660f9108b28341966fa8ca41b16c75a305056e80",
+      "resolved_config.json": "6a6fcb3d5de55a55de559bd9b82f46015a005ad1b022182d74bff3bc5f514968"
+    },
+    "original_metadata_preserved_unchanged": true
+  },
+  "resume_capability": "Only best model weights are saved. No optimizer/RNG/loader state or exact resume entry exists.",
+  "priority_update": "Direct user request prioritizes own-model experiments; remaining B003 baselines are deferred, not completed or cancelled.",
+  "next_action": "Prepare a separately frozen KTST interaction ASSIST2009 pilot using standing authorization; no blind rerun of B003-R1.",
+  "new_optimizer_steps": 0,
+  "model_loads": 0,
+  "model_forward_calls": 0,
+  "test_accessed": false
+}

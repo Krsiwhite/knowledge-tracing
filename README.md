@@ -1,6 +1,6 @@
 # Knowledge Tracing Research
 
-基于固定版本 pyKT 的独立知识追踪研究项目。目标是构建有研究证据支持的模型改进，并在可比协议下超越强基线。**B001/B002 已完成运行校准；B003及其独立恢复批次现已完成5/12组。ASSIST2009四模型中KTST mean验证AUC为0.792165，当前最强；AKT/ASSIST2015已在第15轮早停，最佳第12轮AUC为0.731876，队列接续simpleKT/ASSIST2015。** [四模型比较](reports/B003_FIRST_FOUR_BASELINES_2026-10-15.md)与[ASSIST2015首个基线](reports/B003_ASSIST2015_FIRST_BASELINE_2026-10-15.md)保留阶段结果；[故障与剩余实验恢复](reports/B003_FAILURE_AND_RECOVERY_2026-10-15.md)保留原MoC零更新失败和修复记录。尚无整批比较、最终测试或 SOTA 结论。
+基于固定版本 pyKT 的独立知识追踪研究项目。目标是构建有研究证据支持的模型改进，并在可比协议下超越强基线。**B001/B002 已完成运行校准；B003已完成6/12组，随后因 Windows 更新重启中断。按用户最新要求，优先开展自有模型实验：B007 的 KTST 历史 KC×回答交互版与等参数对照已在独立研究分支启动，剩余基线暂后排。** [当前进度与中断记录](reports/B003_INTERRUPTION_AND_B007_PRIORITY_2026-10-15.md)保留6项完成结果和中断成本；[B007具体实验](https://github.com/Krsiwhite/knowledge-tracing/blob/research/ktst-response-interaction/reports/B007_KTST_INTERACTION_PILOT_2026-10-15.md)复用已有原KTST基线，不重训或复测。尚无自有变体完成成绩、最终测试或 SOTA 结论。
 
 首期数据集为 ASSIST2009、ASSIST2015、NIPS34；以 2026-10-29 为首轮结果汇报节点，提前验证完成就提前交付。困难场景主线只在验证阶段决定，不能看过最终测试再选择有利指标。
 
@@ -41,7 +41,7 @@ python -m pytest -q
 
 ```bash
 python -m ktlab batch inspect configs/batches/B003-R1-shared-convergence-baselines.json
-# B003-R1 已由后台作业启动；此处只检查状态，不重复启动。
+# B003-R1 已因系统重启中断；禁止重复启动原清单覆盖旧产物。
 python -m ktlab report
 ```
 
