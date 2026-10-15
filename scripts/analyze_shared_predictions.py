@@ -76,6 +76,20 @@ def comparison_identity(config):
     require(isinstance(model, str) and bool(model.strip()), "Missing model identity")
     recipe = config.get("ukt_training_recipe")
     interaction = config.get("ktst_interaction_recipe")
+    history = config.get("ktst_history_training_recipe")
+    if history is None:
+        require("ktst_history_samples_per_chunk" not in config and "ktst_history_training_source_sha256" not in config,
+                "History sample count/source identity requires a history recipe")
+    else:
+        require(model == "ktst_mean" and type(history) is str and history in {
+            "sampled_chunk_prefix_v1", "sampled_complete_suffix_v1"}, "Unsupported KTST history recipe/model")
+        k = config.get("ktst_history_samples_per_chunk")
+        require(type(k) is int and 1 <= k <= 8, "KTST history K must be an integer from 1 to 8")
+        require(config.get("protocol") == PROTOCOL and type(config.get("fold")) is int and config["fold"] == 0
+                and type(config.get("batch_size")) is int and config["batch_size"] == 32,
+                "KTST history recipe requires shared fold0 with batches of 32 chunks")
+        require(isinstance(config.get("model_config"), dict) and config["model_config"].get("aggregation") == "q_mean_c",
+                "KTST history recipe requires resolved mean aggregation")
     if interaction is not None:
         require(model == "ktst_mean" and type(interaction) is str
                 and interaction in {"signed_response", "response_independent"},
@@ -88,6 +102,9 @@ def comparison_identity(config):
         identity = {"model": model, "ukt_training_recipe": None, "comparison_label": model}
         if interaction is not None:
             identity.update(ktst_interaction_recipe=interaction, comparison_label=f"{model} / {interaction}")
+        if history is not None:
+            identity.update(ktst_history_training_recipe=history, ktst_history_samples_per_chunk=k,
+                            comparison_label=identity["comparison_label"] + f" / {history} / K={k}")
         return identity
     require(isinstance(recipe, str) and recipe in UKT_RECIPES, "Missing or unsupported UKT training recipe")
     settings = config.get("model_config")
@@ -204,6 +221,17 @@ def _read_run(path, batch, batch_sha, receipts):
                                  if k not in {"_batch_approved", "test_release_file"}})
     require(metadata.get("config_sha256") == config_sha, "Resolved configuration hash mismatch")
     comparison_identity(config)
+    history = config.get("ktst_history_training_recipe")
+    for key in ("ktst_history_training_recipe", "ktst_history_samples_per_chunk"):
+        require(metadata.get(key) == config.get(key), "KTST history training receipt mismatch")
+    if history is not None:
+        digest(metadata.get("ktst_history_training_source_sha256"), "KTST history training source")
+        require(metadata.get("ktst_history_training_source_sha256") == config.get("ktst_history_training_source_sha256"),
+                "Resolved history training source differs from metadata")
+        require(metadata.get("training_representation") == "sampled_complete_event_target_only"
+                and metadata.get("loss") == "weighted_sampled_target_BCEWithLogits_global_chunk_batch_denominator"
+                and metadata.get("training_batch_unit") == "eligible_original_chunks",
+                "KTST sampled training representation/loss receipt mismatch")
     interaction = config.get("ktst_interaction_recipe")
     require(metadata.get("ktst_interaction_recipe") == interaction, "KTST interaction recipe receipt mismatch")
     if interaction is not None:
@@ -257,6 +285,9 @@ def _read_run(path, batch, batch_sha, receipts):
             require(saved.get(key) == audit[key], "Saved metrics selection mismatch")
         for key in ("implementation_sha256", "model_source_sha256"):
             require(saved.get(key) == metadata[key], "Saved metrics implementation mismatch")
+        if history is not None:
+            for key in ("ktst_history_training_recipe", "ktst_history_samples_per_chunk", "ktst_history_training_source_sha256"):
+                require(saved.get(key) == metadata[key], "Saved history-training identity mismatch")
     require(result.get("model_training_and_checkpoint_selection_not_verified") is True,
             "Unexpected standalone sidecar provenance schema")
     require(all(k in metrics and metrics[k] == v for k, v in result.items()),
@@ -423,10 +454,11 @@ def analyze(paths, batch_path, reference, *, replicates=500, seed=42):
         runs.append(run)
     require(len({r["run_id"] for r in runs}) == len(runs), "Duplicate input runs")
     comparisons = {r["run_id"]: comparison_identity(r["config"]) for r in runs}
-    variants = {(identity["model"], identity["ukt_training_recipe"], identity.get("ktst_interaction_recipe"))
+    variants = {(identity["model"], identity["ukt_training_recipe"], identity.get("ktst_interaction_recipe"),
+                 identity.get("ktst_history_training_recipe"), identity.get("ktst_history_samples_per_chunk"))
                 for identity in comparisons.values()}
-    require(len(variants) >= 2, "At least two distinct models or UKT training recipes / KTST interaction recipes are required")
-    require(len(variants) == len(runs), "Duplicate model/UKT training recipe / KTST interaction recipe runs are not supported")
+    require(len(variants) >= 2, "At least two distinct models or UKT training recipes / KTST interaction recipes / KTST history recipe-K pairs are required")
+    require(len(variants) == len(runs), "Duplicate model/UKT training recipe / KTST interaction recipe or history recipe/K runs are not supported")
     require(len({r["config"]["seed"] for r in runs}) == 1, "Models must use the same training seed")
     require(reference in {r["run_id"] for r in runs}, "Reference must identify an input run_id")
     baseline = next(r for r in runs if r["run_id"] == reference)

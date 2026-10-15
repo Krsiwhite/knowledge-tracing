@@ -893,3 +893,69 @@ def test_cli_accepts_repeated_batch_flags(cross_batch_artifacts, tmp_path):
     assert ANALYSIS.main(arguments) == 0
     report = load_json(output)
     assert len(report["batches"]) == 2 and report["cross_batch_comparison"]["manual_method_review_required"]
+
+
+def ktst_history_receipts(artifacts, pairs):
+    updates = [{"model": "ktst_mean", "batch_size": 32,
+                "model_config": {"d_model": 16, "aggregation": "q_mean_c"},
+                "ktst_history_training_recipe": recipe, "ktst_history_samples_per_chunk": k,
+                "ktst_history_training_source_sha256": sha("unread history adaptation")}
+               for recipe, k in pairs]
+    update_model_receipts(artifacts, updates)
+    for path, update in zip(artifacts[0], updates):
+        identity = {key: update[key] for key in ("ktst_history_training_recipe", "ktst_history_samples_per_chunk",
+                                                "ktst_history_training_source_sha256")}
+        metadata_path = path.parent / "metadata.json"
+        metadata = load_json(metadata_path)
+        metadata.update(identity, training_representation="sampled_complete_event_target_only",
+                        loss="weighted_sampled_target_BCEWithLogits_global_chunk_batch_denominator",
+                        training_batch_unit="eligible_original_chunks")
+        write_json(metadata_path, metadata)
+        metric_path = path.parent / "valid_metrics.json"
+        metrics = load_json(metric_path)
+        metrics.update(identity)
+        write_json(metric_path, metrics)
+        sidecar_path = path.with_suffix(".csv.manifest.json")
+        sidecar = load_json(sidecar_path)
+        sidecar["result"].update(identity)
+        write_json(sidecar_path, sidecar)
+
+
+@pytest.mark.parametrize("pairs", [
+    [("sampled_chunk_prefix_v1", 1), ("sampled_complete_suffix_v1", 1)],
+    [("sampled_chunk_prefix_v1", 1), ("sampled_chunk_prefix_v1", 2)],
+])
+def test_history_recipe_and_sample_count_are_distinct_comparisons(artifacts, pairs):
+    ktst_history_receipts(artifacts, pairs)
+    report = analyze(artifacts)
+    assert [(run["ktst_history_training_recipe"], run["ktst_history_samples_per_chunk"])
+            for run in report["runs"]] == pairs
+    assert len({run["comparison_label"] for run in report["runs"]}) == 2
+
+
+def test_duplicate_history_recipe_and_k_is_rejected(artifacts):
+    ktst_history_receipts(artifacts, [("sampled_chunk_prefix_v1", 2)] * 2)
+    with pytest.raises(ValueError, match="At least two distinct"):
+        analyze(artifacts)
+
+
+@pytest.mark.parametrize("damage", ["metadata_k", "metadata_source", "sidecar_recipe", "metrics_source", "loss"])
+def test_history_receipts_cannot_be_relabelled(artifacts, damage):
+    ktst_history_receipts(artifacts, [("sampled_chunk_prefix_v1", 2), ("sampled_complete_suffix_v1", 2)])
+    directory = artifacts[0][1].parent
+    name = "valid_predictions.csv.manifest.json" if damage == "sidecar_recipe" else (
+        "valid_metrics.json" if damage == "metrics_source" else "metadata.json")
+    path = directory / name
+    value = load_json(path)
+    target = value["result"] if damage == "sidecar_recipe" else value
+    key, replacement = {
+        "metadata_k": ("ktst_history_samples_per_chunk", 1),
+        "metadata_source": ("ktst_history_training_source_sha256", sha("other helper")),
+        "sidecar_recipe": ("ktst_history_training_recipe", "sampled_chunk_prefix_v1"),
+        "metrics_source": ("ktst_history_training_source_sha256", sha("other helper")),
+        "loss": ("loss", "upstream_BCEWithLogits_excluding_segment_first_event"),
+    }[damage]
+    target[key] = replacement
+    write_json(path, value)
+    with pytest.raises(ValueError, match="history|sampled"):
+        analyze(artifacts)

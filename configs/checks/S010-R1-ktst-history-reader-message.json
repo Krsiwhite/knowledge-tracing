@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "check_id": "S010-R1-ktst-history-reader-message",
+  "purpose": "Repair one backward-compatible duplicate-recipe error message; recheck only the four previously failed pure-file cases",
+  "implementation_sha256": "7066077ebd02a0bd0cecccf3d3a6b3c57df9b8162a1370f2e3cc576cb14fbfef",
+  "predecessor_manifest_sha256": "47913ac2b152e0fa2a1343b325ea713f39bf2d7541d173efbb7cdc4142ee8509",
+  "files": {
+    "configs/checks/S010-ktst-history-training-cpu.json": "0e365cc2c282d9d2e7147f1a962a852c47b0effdce658eb087fb035a4223ac40",
+    "reports/S010_KTST_HISTORY_CPU_INITIAL_2026-10-15.json": "90652f57cebb770e4b1d3ee01ae81044f8c80c6566be5a65bd723733602ed44d",
+    "scripts/analyze_shared_predictions.py": "e93351b1cd6d023a77ad09abc46f54ec5810e5f40dcb03c1f5a5f803206e4040",
+    "scripts/run_s010_r1_acceptance.py": "4734f668ab0b61112bd606947e540bded7c825a310331949a10d39e6f34da4c7",
+    "tests/test_saved_prediction_analysis.py": "b089d725f73da63eb4e88fc2785fafaefd6634b4d12f22979cef15bcbca140cf"
+  },
+  "message_only_change": {
+    "old": "At least two distinct models or explicitly identified training/interaction recipes are required",
+    "new": "At least two distinct models or UKT training recipes / KTST interaction recipes / KTST history recipe-K pairs are required"
+  },
+  "limits": {
+    "model_instances": 0,
+    "complete_forward_calls": 0,
+    "gradients": 0,
+    "optimizer_constructions": 0,
+    "optimizer_steps": 0,
+    "subprocess_wall_seconds": 60
+  },
+  "real_data_access": false,
+  "existing_weights_access": false,
+  "test_access": false,
+  "automatic_retry": false,
+  "paid_services": false,
+  "environment": {
+    "PYTHONPATH": "src",
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "CUDA_VISIBLE_DEVICES": "",
+    "HIP_VISIBLE_DEVICES": "",
+    "ROCR_VISIBLE_DEVICES": ""
+  },
+  "pytest_arguments": [
+    "-q",
+    "tests/test_saved_prediction_analysis.py::test_duplicate_ukt_recipe_not_bypassed_by_names_or_other_parameters",
+    "-ra"
+  ],
+  "expected_tests": 4,
+  "diagnosis": "All four cases correctly rejected duplicate UKT recipes but their established error-message regex no longer matched. Restore that prefix without changing logic or test expectations.",
+  "static_review": "Root and frontier_audit independently reviewed the failure logs and the minimal message-only repair; no model checks or other passed cases need repeating.",
+  "retained_evidence": "S010 remains 209 passed / 4 failed, with 6 models, 36 complete forwards, 8 autograd.grad calls and zero optimizer activity. This revision does not rewrite the first attempt."
+}

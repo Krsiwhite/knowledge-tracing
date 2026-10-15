@@ -111,6 +111,8 @@ def evaluate_shared(model, dataset, device, prediction_path=None, *, batch_size=
                   "model_training_and_checkpoint_selection_not_verified": True}
         if compute_metrics:
             result.update(binary_metrics(labels, probabilities))
+        if getattr(model, "ktlab_history_training_identity", None):
+            result.update(model.ktlab_history_training_identity)
         if path:
             stream.close()
             stream = None

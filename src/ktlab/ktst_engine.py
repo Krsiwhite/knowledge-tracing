@@ -33,6 +33,9 @@ def _components():
 
 def _loader(dataset, config, *, train=False):
     _, collate, _, _, _ = _components()
+    if train and config.get("ktst_history_training_recipe") is not None:
+        from .ktst_history_training import collate_history_chunks
+        collate = collate_history_chunks
     batch_size = config.get("batch_size", 128) if train else config.get("validation_batch_size", 64)
     return DataLoader(dataset, batch_size=int(batch_size),
                       shuffle=train, collate_fn=collate,
@@ -92,6 +95,9 @@ def _check_config(config):
     from .engine import SHARED_PROTOCOL, _shared_config
     from .ktst_interaction import validate_interaction_recipe
     validate_interaction_recipe(config.get("model"), config.get("ktst_interaction_recipe"))
+    if {"ktst_history_training_recipe", "ktst_history_samples_per_chunk", "ktst_history_training_source_sha256"} & config.keys():
+        from .ktst_history_training import validate_history_config
+        validate_history_config(config)
     if config.get("protocol") not in {PROTOCOL, SHARED_PROTOCOL}:
         raise ValueError(f"KTST requires explicit protocol={PROTOCOL}; scores cannot silently join ktlab v1")
     if config.get("protocol") == SHARED_PROTOCOL:
@@ -168,7 +174,16 @@ def train_ktst(config: dict, run_dir: Path) -> dict:
     recipe_args = ({"interaction_recipe": config["ktst_interaction_recipe"]}
                    if config.get("ktst_interaction_recipe") is not None else {})
     model = build_model(config["model"], manifest["data_config"], config.get("model_config"), device, **recipe_args)
-    training = dataset_type(manifest, int(config.get("fold", 0)), split="train")
+    history_training = config.get("ktst_history_training_recipe") is not None
+    if history_training:
+        from .ktst_history_training import (SampledKTSTHistoryDataset, bind_history_training_identity,
+                                            iter_weighted_target_losses)
+        config.update(bind_history_training_identity(model, config))
+        training = SampledKTSTHistoryDataset(
+            manifest, config.get("fold", 0), recipe=config["ktst_history_training_recipe"],
+            samples_per_chunk=config["ktst_history_samples_per_chunk"], seed=config.get("seed", 42))
+    else:
+        training = dataset_type(manifest, int(config.get("fold", 0)), split="train")
     validation = (_shared_dataset(manifest, config) if shared else
                   dataset_type(manifest, int(config.get("fold", 0)), split="valid"))
     config["model_config"] = model.ktlab_model_config
@@ -198,6 +213,11 @@ def train_ktst(config: dict, run_dir: Path) -> dict:
         metadata.update(identity, training_representation="original_ktst_set_dense",
                         partial_debug=config.get("max_validation_targets") is not None,
                         initial_validation=True, initial_checkpoint_untrained=True)
+    if history_training:
+        metadata.update(training_representation="sampled_complete_event_target_only",
+                        loss="weighted_sampled_target_BCEWithLogits_global_chunk_batch_denominator",
+                        training_batch_unit="eligible_original_chunks",
+                        final_test_compatibility="requires_frozen_evaluator_recipe_compatibility_review")
     _json(run_dir / "metadata.json", metadata)
     started, steps = time.monotonic(), 0
     deadline = started + float(config["max_wall_seconds"]) if config.get("max_wall_seconds") else None
@@ -207,6 +227,9 @@ def train_ktst(config: dict, run_dir: Path) -> dict:
         if shared:
             return _shared_evaluate(model, validation, device, config, identity, prediction_path, deadline=deadline)
         return evaluate_ktst_loader(model, valid_loader, device, prediction_path, max_batches=maximum, deadline=deadline)
+    history_consumption = {"completed_forward_rows": 0, "completed_microbatches": 0,
+                           "committed_chunks": 0, "committed_sampled_rows": 0}
+    history_training_seconds, history_training_started = 0.0, None
     try:
         if shared:
             initial_started = time.monotonic()
@@ -242,28 +265,67 @@ def train_ktst(config: dict, run_dir: Path) -> dict:
                 epoch_train_started = time.monotonic()
             model.train()
             total_loss, batches = 0., 0
+            if history_training:
+                import hashlib
+                history_training_started = time.monotonic()
+                training.set_epoch(epoch)
+                sampling_plan = training.epoch_sampling_audit()
+                consumed_sampling = hashlib.sha256(b"ktlab.ktst.history-consumed-batches.v1\0")
+                consumed_chunks = consumed_rows = consumed_unique = 0
             epoch_completed = True
             for batch_index, cpu_batch in enumerate(train_loader):
                 if deadline is not None and time.monotonic() >= deadline:
                     raise TimeoutError("KTST wall-clock budget exhausted")
-                if not bool(cpu_batch["score_mask"].any()):
-                    continue
-                batch = move_batch(cpu_batch, device)
-                _, loss = forward(model, batch)
-                if loss.ndim != 0 or not bool(torch.isfinite(loss)):
-                    raise FloatingPointError("Non-finite or nonscalar upstream KTST loss")
-                optimizer.zero_grad(set_to_none=True)
-                loss.backward()
+                if history_training:
+                    optimizer.zero_grad(set_to_none=True)
+                    batch_loss = 0.0
+                    completed_parts = 0
+                    for micro_index, contribution in enumerate(iter_weighted_target_losses(
+                            model, cpu_batch, device, config["max_rows_per_forward"], deadline=deadline)):
+                        completed_parts += 1
+                        history_consumption["completed_microbatches"] += 1
+                        history_consumption["completed_forward_rows"] += min(config["max_rows_per_forward"],
+                            len(cpu_batch["contexts"]) - micro_index * config["max_rows_per_forward"])
+                        if contribution.ndim != 0 or not bool(torch.isfinite(contribution)):
+                            raise FloatingPointError("Non-finite sampled target loss")
+                        contribution.backward()
+                        batch_loss += float(contribution.detach())
+                    expected_parts = (len(cpu_batch["contexts"]) + config["max_rows_per_forward"] - 1) // config["max_rows_per_forward"]
+                    if completed_parts != expected_parts:
+                        raise ValueError("Sampled target microbatches did not cover the complete chunk batch")
+                    if deadline is not None and time.monotonic() >= deadline:
+                        raise TimeoutError("KTST history budget exhausted before optimizer step")
+                else:
+                    if not bool(cpu_batch["score_mask"].any()):
+                        continue
+                    batch = move_batch(cpu_batch, device)
+                    _, loss = forward(model, batch)
+                    if loss.ndim != 0 or not bool(torch.isfinite(loss)):
+                        raise FloatingPointError("Non-finite or nonscalar upstream KTST loss")
+                    optimizer.zero_grad(set_to_none=True)
+                    loss.backward()
+                    batch_loss = float(loss.detach())
                 torch.nn.utils.clip_grad_norm_(model.parameters(), config["grad_clip"])
                 optimizer.step()
                 steps += 1
                 batches += 1
-                total_loss += float(loss.detach())
+                total_loss += batch_loss
+                if history_training:
+                    consumed_sampling.update(bytes.fromhex(cpu_batch["sampling_sha256"]))
+                    consumed_chunks += cpu_batch["chunk_count"]
+                    consumed_rows += len(cpu_batch["contexts"])
+                    consumed_unique += cpu_batch["sampled_unique_count"]
+                    history_consumption["committed_chunks"] += cpu_batch["chunk_count"]
+                    history_consumption["committed_sampled_rows"] += len(cpu_batch["contexts"])
                 if config.get("max_train_steps") is not None and steps >= int(config["max_train_steps"]):
                     epoch_completed = batch_index + 1 == len(train_loader)
                     break
             if batches == 0:
                 raise ValueError("No KTST training targets selected")
+            if history_training:
+                training.verify_source()
+                history_training_seconds += time.monotonic() - history_training_started
+                history_training_started = None
             if shared:
                 train_seconds = time.monotonic() - epoch_train_started
                 validation_started = time.monotonic()
@@ -289,6 +351,12 @@ def train_ktst(config: dict, run_dir: Path) -> dict:
             if shared:
                 event.update(epoch_completed=epoch_completed, train_seconds=train_seconds,
                              validation_seconds=validation_seconds)
+            if history_training:
+                event["training_sampling"] = {"planned": sampling_plan,
+                    "consumed_chunks": consumed_chunks, "consumed_rows": consumed_rows,
+                    "consumed_unique_targets": consumed_unique,
+                    "consumed_order_sha256": consumed_sampling.hexdigest(),
+                    "epoch_completed": epoch_completed}
             with (run_dir / "history.jsonl").open("a", encoding="utf-8") as stream:
                 stream.write(json.dumps(event, allow_nan=False) + "\n")
             print(json.dumps(event, allow_nan=False), flush=True)
@@ -305,6 +373,8 @@ def train_ktst(config: dict, run_dir: Path) -> dict:
                       if shared else torch.load(run_dir / "best.pt", map_location=device, weights_only=True))
         if checkpoint.get("ktst_interaction_recipe") != config.get("ktst_interaction_recipe"):
             raise ValueError("KTST checkpoint interaction recipe mismatch")
+        if history_training:
+            training.verify_source()
         model.load_state_dict(checkpoint["state_dict"])
         valid = validate(run_dir / "valid_predictions.csv")
         _json(run_dir / "valid_metrics.json", valid)
@@ -317,6 +387,11 @@ def train_ktst(config: dict, run_dir: Path) -> dict:
         metadata.update(status="failed", error=f"{type(exc).__name__}: {exc}")
         raise
     finally:
+        if history_training:
+            metadata["history_training_consumption"] = history_consumption
+            if history_training_started is not None:
+                history_training_seconds += time.monotonic() - history_training_started
+            metadata["history_training_seconds"] = history_training_seconds
         metadata.update(optimizer_steps=steps, elapsed_seconds=time.monotonic() - started,
                         finished_at=utc_now(), peak_gpu_allocated_bytes=torch.cuda.max_memory_allocated(device) if device.type == "cuda" else 0)
         _json(run_dir / "metadata.json", metadata)

@@ -1,0 +1,25 @@
+{
+  "check_id": "S010-R1-ktst-history-reader-message",
+  "manifest_sha256": "ccf7d7dba4bda0b22dba79cff796e4d0cd79affcd7ca064e5c4d1a379624cf41",
+  "manifest_file_sha256": "fc17e8157968515c7c8419d386340277ae6c3756a503b87a60213fb444345814",
+  "authority_file_sha256": "120b3ca540ed6a9296b73d02bcefe96c48dbc75c864f5321a39fdc4a0c08fda3",
+  "implementation_sha256": "7066077ebd02a0bd0cecccf3d3a6b3c57df9b8162a1370f2e3cc576cb14fbfef",
+  "status": "passed",
+  "exit_code": 0,
+  "timed_out": false,
+  "started_at": "2026-10-15T02:00:32.889822+00:00",
+  "finished_at": "2026-10-15T02:00:35.979089+00:00",
+  "elapsed_seconds": 2.188521519999995,
+  "source_and_bound_files_unchanged": true,
+  "message_only_change_verified": true,
+  "tests_passed": 4,
+  "models": 0,
+  "forwards": 0,
+  "gradients": 0,
+  "optimizer_steps": 0,
+  "count_basis": "Bound pure-file tests and runner statically contain no model or gradient calls",
+  "logs": {
+    "S010-R1.stdout.log": "124f2c6c7f1075c0c228f8d79206eccf9138ace7c5576699d4f7dd4f79f52952",
+    "S010-R1.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

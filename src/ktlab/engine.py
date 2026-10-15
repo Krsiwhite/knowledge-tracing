@@ -143,6 +143,9 @@ def _shared_config(config: dict) -> dict:
         raise ValueError("Shared validation requires its explicit protocol")
     if config.get("model") not in {"akt", "simplekt", "mockt", "ukt", "ktst_mean", "ktst_mhsa"}:
         raise ValueError("This model has no shared-context adapter")
+    if {"ktst_history_training_recipe", "ktst_history_samples_per_chunk", "ktst_history_training_source_sha256"} & config.keys():
+        from .ktst_history_training import validate_history_config
+        validate_history_config(config)
     if config.get("ktst_interaction_recipe") is not None:
         from .ktst_interaction import validate_interaction_recipe
         validate_interaction_recipe(config["model"], config["ktst_interaction_recipe"])
@@ -191,6 +194,14 @@ def _shared_identity(config: dict, model, dataset) -> dict:
         raise ValueError("Shared model/config KTST interaction recipe mismatch")
     if recipe is not None:
         identity["ktst_interaction_recipe"] = recipe
+    if config.get("ktst_history_training_recipe") is not None:
+        from .ktst_history_training import history_training_identity
+        training_identity = history_training_identity(config)
+        if getattr(model, "ktlab_history_training_identity", None) != training_identity:
+            raise ValueError("Shared model/config KTST history-training identity mismatch")
+        identity.update(training_identity)
+    elif getattr(model, "ktlab_history_training_identity", None):
+        raise ValueError("History-trained model cannot be relabeled as the default training path")
     return identity
 
 
@@ -254,12 +265,18 @@ def _evaluate_shared_run(run_dir: Path, config: dict, split: str) -> dict:
         raise ValueError("Shared checkpoint model configuration mismatch")
     if checkpoint.get("ktst_interaction_recipe") != config.get("ktst_interaction_recipe"):
         raise ValueError("Shared checkpoint interaction recipe mismatch")
+    for key in ("ktst_history_training_recipe", "ktst_history_samples_per_chunk"):
+        if checkpoint.get(key) != config.get(key):
+            raise ValueError("Shared checkpoint history-training recipe mismatch")
     device = resolve_device(config.get("device", "auto"))
     if config["model"].startswith("ktst_"):
         from .ktst_model import build_ktst_model
         recipe_args = ({"interaction_recipe": config["ktst_interaction_recipe"]}
                        if config.get("ktst_interaction_recipe") is not None else {})
         model = build_ktst_model(config["model"], manifest["data_config"], checkpoint["model_config"], device, **recipe_args)
+        if config.get("ktst_history_training_recipe") is not None:
+            from .ktst_history_training import bind_history_training_identity
+            bind_history_training_identity(model, config)
     else:
         model = build_model(config["model"], manifest["data_config"], checkpoint["model_config"], device)
     dataset = _shared_dataset(manifest, config)
@@ -290,6 +307,9 @@ def train(config: dict, run_dir: Path) -> dict:
     """
     if config.get("_batch_approved") is not True:
         raise PermissionError("Training requires explicit per-batch approval via the ktlab CLI")
+    if {"ktst_history_training_recipe", "ktst_history_samples_per_chunk", "ktst_history_training_source_sha256"} & config.keys():
+        from .ktst_history_training import validate_history_config
+        validate_history_config(config)
     if config.get("ktst_interaction_recipe") is not None:
         from .ktst_interaction import validate_interaction_recipe
         validate_interaction_recipe(config.get("model"), config["ktst_interaction_recipe"])

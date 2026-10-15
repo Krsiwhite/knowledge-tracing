@@ -1,0 +1,28 @@
+{
+  "check_id": "S010-ktst-history-training-cpu",
+  "manifest_sha256": "47913ac2b152e0fa2a1343b325ea713f39bf2d7541d173efbb7cdc4142ee8509",
+  "manifest_file_sha256": "0e365cc2c282d9d2e7147f1a962a852c47b0effdce658eb087fb035a4223ac40",
+  "authority_file_sha256": "f3689c5b6b3155a39375dda7726322fab502331280e368cf01e77aebde0ca050",
+  "implementation_sha256": "7066077ebd02a0bd0cecccf3d3a6b3c57df9b8162a1370f2e3cc576cb14fbfef",
+  "status": "failed",
+  "exit_code": 1,
+  "timed_out": false,
+  "error": null,
+  "started_at": "2026-10-15T01:58:06.020026+00:00",
+  "finished_at": "2026-10-15T01:58:20.761293+00:00",
+  "elapsed_seconds": 13.76041751799994,
+  "source_and_bound_files_unchanged": true,
+  "actual_counts": {
+    "forwards": 36,
+    "gradients": 8,
+    "models": 6,
+    "optimizers": 0
+  },
+  "expected_counts_match": true,
+  "tests_passed": 209,
+  "tests_skipped": false,
+  "logs": {
+    "S010.stdout.log": "a0e40ca4d49223e6e75cce8dc41bf865e7246ef6889b4ed88f0a4c05d2f06f38",
+    "S010.stderr.log": "c09755ac0393c19b0764abc53c1005367e3ee82df5d316a89f3e34c950c57553"
+  }
+}
