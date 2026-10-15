@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "preflight_id": "B008-HISTORY-DATA-PREFLIGHT-2026-10-15",
+  "helper_sha256": "2fc5bfbda8506a865b87190521db9c93cdc1845cfe2a4212334846b3f32be9ab",
+  "source_sha256": "7066077ebd02a0bd0cecccf3d3a6b3c57df9b8162a1370f2e3cc576cb14fbfef",
+  "dataset": "assist2009",
+  "held_out_fold": 0,
+  "seed": 42,
+  "samples_per_chunk": 8,
+  "recipes": [
+    "sampled_chunk_prefix_v1",
+    "sampled_complete_suffix_v1"
+  ],
+  "epochs": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50
+  ],
+  "expected": {
+    "eligible_unique_targets": 172169,
+    "eligible_chunks": 2915
+  },
+  "limits": {
+    "optimizer_steps": 0,
+    "dataset_instances": 2,
+    "forward_calls": 0,
+    "max_chunk_getitem_calls": 64,
+    "optimizer_constructions": 0,
+    "cpu_threads": 1,
+    "max_attempts": 1,
+    "max_target_contexts": 512,
+    "model_instances": 0,
+    "max_wall_seconds": 180,
+    "gradient_calls": 0
+  },
+  "automatic_retry": false,
+  "authorization_kind": "existing_direct_user_standing_authorization",
+  "user_confirmation": "启动B003，但每次最多50轮，3次未见则早停。之后的执行不需要我再批准",
+  "report_path": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing-history-training/reports/B008_HISTORY_DATA_PREFLIGHT_2026-10-15.json",
+  "attempt_path": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing-history-training/.runtime/B008-history-data-preflight-attempt.json",
+  "inputs": {
+    "dataset_manifest": {
+      "path": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/assist2009/manifest.json",
+      "sha256": "e2c939dfe4479327c223644bce6aee88c56bc362d1169164332ae9ca479fc703",
+      "bytes": 9057
+    },
+    "census": {
+      "path": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing-history-training/reports/KTST_TRAINING_CONTEXT_COVERAGE_2026-10-15.json",
+      "sha256": "8ea7dfeb704121f91a9a6733a7d28d00e7fc344e4a1a429171331aedbe814ff2",
+      "bytes": 74561
+    },
+    "train_valid.csv": {
+      "path": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/assist2009/train_valid.csv",
+      "sha256": "d590ba88d8d7ab630e635a89b56df55219f49a75b55caa0df571a1f3b460404e",
+      "bytes": 3305879
+    },
+    "train_valid_sequences.csv": {
+      "path": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/assist2009/train_valid_sequences.csv",
+      "sha256": "4b3b6ab7c97aaab6554cbbc869b70b63f1017f5b59bc0ac0c3ab4cbd7152c232",
+      "bytes": 11023714
+    }
+  }
+}

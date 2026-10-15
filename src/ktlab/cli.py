@@ -93,6 +93,11 @@ def main(argv: list[str] | None = None) -> int:
             # Validate the whole batch before importing models or opening any training loader.
             approved = p.validate_batch_approval(args.batch, args.approval)
             from .engine import train
+            # Validate every new recipe before the first run can construct a model.
+            for entry in approved["runs"]:
+                if {"ktst_history_training_recipe", "ktst_history_samples_per_chunk", "ktst_history_training_source_sha256"} & entry["config"].keys():
+                    from .ktst_history_training import validate_history_config
+                    validate_history_config(entry["config"])
             for entry in approved["runs"]:
                 p.validate_batch_approval(args.batch, args.approval)
                 config = dict(entry["config"], _batch_approved=True, batch_id=approved["batch_id"], approved_batch_sha256=p.canonical_hash(approved))

@@ -428,3 +428,46 @@ def test_csv_metric_recomputation_remains_strict_below_export_tolerance(artifact
     alter_csv(artifacts[2][0], lambda rows: rows[0].update(probability=str(float(rows[0]["probability"]) + 5e-7)))
     with pytest.raises(ValueError, match="saved CSV"):
         summary(artifacts)
+
+
+@pytest.mark.parametrize("mode", ["recipe", "sample_count", "duplicate"])
+def test_history_recipe_and_k_are_preserved_in_batch_summary(artifacts, mode):
+    _, batch_path, directories = artifacts
+    batch = read_json(batch_path)
+    pairs = [("sampled_chunk_prefix_v1", 1),
+             ("sampled_complete_suffix_v1" if mode == "recipe" else "sampled_chunk_prefix_v1",
+              2 if mode == "sample_count" else 1)]
+    for entry, (recipe, k) in zip(batch["runs"], pairs):
+        entry["config"].update(model="ktst_mean", batch_size=32,
+                               model_config={"d_model": 16, "aggregation": "q_mean_c"},
+                               ktst_history_training_recipe=recipe, ktst_history_samples_per_chunk=k,
+                               ktst_history_training_source_sha256=hashed("unread history implementation"))
+    write_json(batch_path, batch)
+    batch_sha = A.canonical_hash(batch)
+    for entry, directory in zip(batch["runs"], directories):
+        config = dict(entry["config"], batch_id=batch["batch_id"], approved_batch_sha256=batch_sha)
+        write_json(directory / "resolved_config.json", config)
+        identity = {key: config[key] for key in ("ktst_history_training_recipe", "ktst_history_samples_per_chunk",
+                                                "ktst_history_training_source_sha256")}
+        change_json(directory / "metadata.json", approved_batch_sha256=batch_sha,
+                    config_sha256=A.canonical_hash(config), **identity,
+                    training_representation="sampled_complete_event_target_only",
+                    loss="weighted_sampled_target_BCEWithLogits_global_chunk_batch_denominator",
+                    training_batch_unit="eligible_original_chunks")
+        for name in ("initial_valid_metrics.json", "valid_metrics.json"):
+            change_json(directory / name, model="ktst_mean", **identity)
+        sidecar_path = directory / "valid_predictions.csv.manifest.json"
+        sidecar = read_json(sidecar_path)
+        sidecar["result"].update(model="ktst_mean", **identity)
+        write_json(sidecar_path, sidecar)
+        history = read_history(directory)
+        for row in history:
+            row["valid"].update(model="ktst_mean", **identity)
+        write_history(directory, history)
+    if mode == "duplicate":
+        with pytest.raises(ValueError, match="Duplicate model/recipe"):
+            summary(artifacts)
+    else:
+        report = summary(artifacts)
+        assert [(run["ktst_history_training_recipe"], run["ktst_history_samples_per_chunk"])
+                for run in report["runs"]] == pairs

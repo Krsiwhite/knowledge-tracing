@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "check_id": "S010-ktst-history-training-cpu",
+  "purpose": "Synthetic paired target sampling, strict complete-event history, target-logit loss, gradients, microbatch update boundaries and saved-result identity acceptance",
+  "implementation_sha256": "7066077ebd02a0bd0cecccf3d3a6b3c57df9b8162a1370f2e3cc576cb14fbfef",
+  "files": {
+    "src/ktlab/ktst_history_training.py": "c930087ccf7872ba3db7d21229e13f282ea97ca718f2f171c1814356e6f51f50",
+    "src/ktlab/ktst_engine.py": "0886a95e1f202f412d58cf20e58b81b1a98683fb2aa68b248c63902dd0e287dd",
+    "src/ktlab/engine.py": "906225f1a62aabd905119ba175c2eb2fa07fcd80f134c4531ee02e666d6d1ff9",
+    "src/ktlab/cli.py": "349edf03c0f0b8c54da9492faeb6e154452ebbeeffd1684fc6fd960eb41c2c95",
+    "src/ktlab/shared_evaluation.py": "146d6642415ef28f62e724697c6b94ab716ea0bfc31048379f7447e2ec0db93b",
+    "src/ktlab/ktst_model.py": "29ccda899e095fd8078304ec059926d803f4e98599fd06a8c57a9939caa854ae",
+    "src/ktlab/ktst_interaction.py": "a3b0736df9bc4162f1ae3de29728b3103ac9f80402d1579d7c417a15a36cdde8",
+    "src/ktlab/ktst_data.py": "bbc097346d05def6b9912b9fa25742cdd050ff68dc6937676311f36129114d2d",
+    "src/ktlab/shared_events.py": "a2a5170ca039e140621278e1566ea5fefa133588cc925a206a35e277fd575f63",
+    "src/ktlab/shared_adapters.py": "838983f3ba0469ca4cf92b237a76ce87321fb3b7e9dafb021e730c639b14af27",
+    "src/ktlab/provenance.py": "7f732691614227eb84ead5c578f24c338153304d503c569fb55c59c7f6e12c2a",
+    "third_party/ktst/pkg/model/KTST.py": "5bcac1982b0d11ac625821298af148e45e9ec1b98d546cea9d2e76cc6c072b1b",
+    "scripts/analyze_shared_predictions.py": "8075c1378fa029b67ce1805d8f21133301e41c3f96eb7eec618f71f86b39f49f",
+    "scripts/summarize_shared_batch.py": "b70986fa7702a3f183dad670a13fe18dae472edc40b58e5371034a5d8c496a17",
+    "scripts/run_s010_acceptance.py": "8e780c9868763e3ea8b9406a42509c4b826ef91fccbca168b0d2f2f19ca207e5",
+    "tests/test_ktst_history_training.py": "be24b96bbb7745a9df4380027aebd2e9d6dc44e0a6e43a44fb3d2aa94cf9b584",
+    "tests/test_saved_prediction_analysis.py": "b089d725f73da63eb4e88fc2785fafaefd6634b4d12f22979cef15bcbca140cf",
+    "tests/test_shared_batch_summary.py": "83bc963427c069b25d4c5689b46c7478dfb53ef7e7b55cd12ae43d12f0790092"
+  },
+  "device": "cpu",
+  "cpu_threads": 1,
+  "seed": 4242,
+  "real_data_access": false,
+  "test_access": false,
+  "existing_weights_access": false,
+  "paid_services": false,
+  "automatic_retry": false,
+  "limits": {
+    "model_instances": 12,
+    "complete_forward_calls": 128,
+    "autograd_grad_calls": 12,
+    "backward_calls": 0,
+    "optimizer_constructions": 0,
+    "optimizer_steps": 0,
+    "subprocess_wall_seconds": 300
+  },
+  "expected_counts": {
+    "models": 6,
+    "forwards": 36,
+    "gradients": 8,
+    "optimizers": 0
+  },
+  "synthetic_model": {
+    "num_q": [
+      0,
+      8
+    ],
+    "num_c": 8,
+    "max_concepts": [
+      1,
+      3
+    ],
+    "d_model": 16,
+    "nhead_tf": 2,
+    "nhead_agg": 2,
+    "num_layers_tf_enc": 2,
+    "num_layers_tf_dec": 2,
+    "num_layers_agg": 1,
+    "dim_feedforward": 32,
+    "dim_classifier": 24,
+    "dropout": 0.0
+  },
+  "training_recipes": [
+    null,
+    "sampled_chunk_prefix_v1",
+    "sampled_complete_suffix_v1"
+  ],
+  "interaction_recipes": [
+    null,
+    "signed_response",
+    "response_independent"
+  ],
+  "checks": [
+    "Artificial CSV fold isolation, complete-query/history eligibility, boundary partials and discarded tails",
+    "Stateless paired sampling with replacement, repeated draws, weights and no global RNG consumption",
+    "KC200 complete suffix, same targets and external labels across paired histories",
+    "Actual classifier logits agree with original-forward observation, extreme-logit BCE stability",
+    "Current/future response isolation, permitted-history positive control, effective matching parameter gradients",
+    "Whole-batch weighted normalization with multiple microbatches and unchanged default engine branch",
+    "Inert engine objects verify one step per chunk batch and no step after incomplete/failed microbatches",
+    "Explicit config/checkpoint/metadata/saved-prediction training identity and existing pure-file reader regression"
+  ],
+  "tolerances": {
+    "logit_oracle_atol": 0.0,
+    "logit_oracle_rtol": 0.0,
+    "loss_atol": 1e-08,
+    "loss_rtol": 1e-07,
+    "gradient_atol": 2e-07,
+    "gradient_rtol": 2e-05,
+    "microbatch_gradient_atol": 3e-07,
+    "microbatch_gradient_rtol": 3e-05
+  },
+  "environment": {
+    "PYTHONPATH": "src",
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "CUDA_VISIBLE_DEVICES": "",
+    "HIP_VISIBLE_DEVICES": "",
+    "ROCR_VISIBLE_DEVICES": "",
+    "KTLAB_RUN_KTST_HISTORY_CPU_ACCEPTANCE": "1"
+  },
+  "pytest_arguments": [
+    "-q",
+    "-s",
+    "tests/test_ktst_history_training.py",
+    "tests/test_saved_prediction_analysis.py",
+    "tests/test_shared_batch_summary.py",
+    "-ra"
+  ],
+  "static_review": "Root and independent frontier_audit reviewed the final executable changes before freezing this check; no blocking finding remains.",
+  "limitations": [
+    "Synthetic CPU checks do not establish actual training speed, validation gains or scientific novelty.",
+    "Only explicit KTST mean shared-development fold0 recipes are supported in this first adaptation.",
+    "Sampling changes supervision coverage and variance; negative low-coverage results are not a full-supervision falsification.",
+    "No real training batch, backbone or K is selected by this acceptance record.",
+    "A future NIPS pilot also needs an original full-supervision anchor and comparisons against stronger completed baselines.",
+    "The frozen final-test evaluator does not automatically support this training identity."
+  ]
+}
