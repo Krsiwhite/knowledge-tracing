@@ -163,6 +163,71 @@ def ukt_config(recipe, use_cl, augmentation):
                              "use_uncertainty_aug": augmentation, "cl_weight": .02}}
 
 
+def ktst_interaction_receipts(artifacts, recipes):
+    updates = [{"model": "ktst_mean", "ktst_interaction_recipe": recipe,
+                "model_config": {"d_model": 128, "aggregation": "q_mean_c"}} for recipe in recipes]
+    update_model_receipts(artifacts, updates)
+    for path, recipe in zip(artifacts[0], recipes):
+        metadata_path = path.parent / "metadata.json"
+        metadata = load_json(metadata_path)
+        if recipe is not None:
+            source = {"schema_version": 1, "model": "ktst_mean", "vendor_source_sha256": sha("unread vendor"),
+                      "adaptation_sha256": sha("unread mathematical adaptation"), "ktst_interaction_recipe": recipe}
+            metadata.update(ktst_interaction_recipe=recipe, ktst_model_source=source, import_binding_only=False,
+                            model_source_sha256=ANALYSIS.canonical_hash(source))
+            write_json(metadata_path, metadata)
+            sidecar_path = path.with_suffix(".csv.manifest.json")
+            sidecar = load_json(sidecar_path)
+            sidecar["result"]["model_source_sha256"] = metadata["model_source_sha256"]
+            write_json(sidecar_path, sidecar)
+            metric_path = path.parent / "valid_metrics.json"
+            metrics = load_json(metric_path)
+            metrics["model_source_sha256"] = metadata["model_source_sha256"]
+            write_json(metric_path, metrics)
+
+
+@pytest.mark.parametrize("recipes", [(None, "signed_response"), (None, "response_independent"),
+                                     ("signed_response", "response_independent")])
+def test_ktst_interaction_recipes_have_distinct_saved_identity(artifacts, recipes):
+    ktst_interaction_receipts(artifacts, recipes)
+    report = analyze(artifacts)
+    assert [row.get("ktst_interaction_recipe") for row in report["runs"]] == list(recipes)
+    assert report["runs"][1]["comparison_label"] == "ktst_mean / " + recipes[1]
+
+
+def test_same_ktst_recipe_cannot_evade_duplicate_rule(artifacts):
+    ktst_interaction_receipts(artifacts, ["signed_response", "signed_response"])
+    with pytest.raises(ValueError, match="At least two distinct"):
+        analyze(artifacts)
+
+
+@pytest.mark.parametrize("damage", ["metadata_recipe", "source_recipe", "adaptation_hash", "import_only"])
+def test_ktst_recipe_source_receipts_cannot_be_relabelled(artifacts, damage):
+    ktst_interaction_receipts(artifacts, [None, "signed_response"])
+    path = artifacts[0][1].parent / "metadata.json"
+    value = load_json(path)
+    if damage == "metadata_recipe":
+        value["ktst_interaction_recipe"] = "response_independent"
+    elif damage == "source_recipe":
+        value["ktst_model_source"]["ktst_interaction_recipe"] = "response_independent"
+    elif damage == "adaptation_hash":
+        value["ktst_model_source"]["adaptation_sha256"] = sha("other source")
+    else:
+        value["import_binding_only"] = True
+    write_json(path, value)
+    with pytest.raises(ValueError, match="KTST"):
+        analyze(artifacts)
+
+
+@pytest.mark.parametrize("model,recipe,aggregation", [("akt", "signed_response", "q_mean_c"),
+    ("ktst_mhsa", "signed_response", "self_attn_all"), ("ktst_mean", "arbitrary-display-name", "q_mean_c"),
+    ("ktst_mean", "signed_response", "self_attn_all"), ("ktst_mean", True, "q_mean_c")])
+def test_invalid_ktst_recipe_cannot_create_comparison_identity(model, recipe, aggregation):
+    with pytest.raises(ValueError, match="KTST"):
+        ANALYSIS.comparison_identity({"model": model, "ktst_interaction_recipe": recipe,
+                                      "model_config": {"aggregation": aggregation}})
+
+
 @pytest.fixture
 def ukt_artifacts(artifacts):
     update_model_receipts(artifacts, [ukt_config("ukt-no-cl", False, True),

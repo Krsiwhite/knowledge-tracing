@@ -143,6 +143,9 @@ def _shared_config(config: dict) -> dict:
         raise ValueError("Shared validation requires its explicit protocol")
     if config.get("model") not in {"akt", "simplekt", "mockt", "ukt", "ktst_mean", "ktst_mhsa"}:
         raise ValueError("This model has no shared-context adapter")
+    if config.get("ktst_interaction_recipe") is not None:
+        from .ktst_interaction import validate_interaction_recipe
+        validate_interaction_recipe(config["model"], config["ktst_interaction_recipe"])
     if config.get("max_validation_batches") is not None:
         raise ValueError("Shared validation forbids max_validation_batches; limit constructed targets explicitly")
     if config.get("initial_validation", True) is not True:
@@ -177,12 +180,18 @@ def _shared_identity(config: dict, model, dataset) -> dict:
     if (dataset.audit.get("protocol") != SHARED_PROTOCOL or dataset.audit.get("split") != "valid"
             or dataset.audit.get("fold") != config.get("fold", 0)):
         raise ValueError("Checkpoint selection requires the configured shared validation fold")
-    return {"config_sha256": config_fingerprint(config), "implementation_sha256": source_fingerprint(),
+    identity = {"config_sha256": config_fingerprint(config), "implementation_sha256": source_fingerprint(),
             "model_source_sha256": model.ktlab_source_sha256,
             "validation_source_sha256": dataset.audit["source_sha256"],
             "validation_target_sha256": dataset.audit["target_sha256"],
             "validation_context_sha256": dataset.audit["context_sha256"],
             "checkpoint_selection_policy": SHARED_SELECTION}
+    recipe = config.get("ktst_interaction_recipe")
+    if recipe != getattr(model, "ktlab_interaction_recipe", None):
+        raise ValueError("Shared model/config KTST interaction recipe mismatch")
+    if recipe is not None:
+        identity["ktst_interaction_recipe"] = recipe
+    return identity
 
 
 def _shared_evaluate(model, dataset, device, config, identity, prediction_path=None, *, deadline=None):
@@ -243,10 +252,14 @@ def _evaluate_shared_run(run_dir: Path, config: dict, split: str) -> dict:
             raise ValueError(f"Shared checkpoint/metadata {key} mismatch; no silent protocol migration")
     if checkpoint.get("model_config") != config.get("model_config"):
         raise ValueError("Shared checkpoint model configuration mismatch")
+    if checkpoint.get("ktst_interaction_recipe") != config.get("ktst_interaction_recipe"):
+        raise ValueError("Shared checkpoint interaction recipe mismatch")
     device = resolve_device(config.get("device", "auto"))
     if config["model"].startswith("ktst_"):
         from .ktst_model import build_ktst_model
-        model = build_ktst_model(config["model"], manifest["data_config"], checkpoint["model_config"], device)
+        recipe_args = ({"interaction_recipe": config["ktst_interaction_recipe"]}
+                       if config.get("ktst_interaction_recipe") is not None else {})
+        model = build_ktst_model(config["model"], manifest["data_config"], checkpoint["model_config"], device, **recipe_args)
     else:
         model = build_model(config["model"], manifest["data_config"], checkpoint["model_config"], device)
     dataset = _shared_dataset(manifest, config)
@@ -277,6 +290,9 @@ def train(config: dict, run_dir: Path) -> dict:
     """
     if config.get("_batch_approved") is not True:
         raise PermissionError("Training requires explicit per-batch approval via the ktlab CLI")
+    if config.get("ktst_interaction_recipe") is not None:
+        from .ktst_interaction import validate_interaction_recipe
+        validate_interaction_recipe(config.get("model"), config["ktst_interaction_recipe"])
     if config.get("model") in {"ktst_mean", "ktst_mhsa"}:
         from .ktst_engine import train_ktst
         return train_ktst(config, run_dir)

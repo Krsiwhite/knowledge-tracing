@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "check_id": "S007-ktst-interaction-cpu",
+  "status": "passed",
+  "report_date_hong_kong": "2026-10-15",
+  "scope": "bounded_synthetic_cpu_acceptance_and_artificial_saved_receipt_tests",
+  "manifest_file": "configs/checks/S007-ktst-interaction-cpu.json",
+  "manifest_canonical_sha256": "aa038eb118a2e561afcdb0fc517b5474c5fe0067af6753014499565e57c3f19a",
+  "manifest_file_sha256": "28b75528866dd5726578f33fc89ce4b55f5ecde7d5bdb8839f056cbd51311148",
+  "implementation_sha256": "3e6e65f50027bfe6ed9d396117d755b3c22506832b5599b22d55d71fdbf31180",
+  "bound_files_sha256": {
+    "src/ktlab/ktst_interaction.py": "a3b0736df9bc4162f1ae3de29728b3103ac9f80402d1579d7c417a15a36cdde8",
+    "src/ktlab/ktst_model.py": "29ccda899e095fd8078304ec059926d803f4e98599fd06a8c57a9939caa854ae",
+    "src/ktlab/ktst_engine.py": "1116464241e27d95a5fd9a5cd17673362cdd99e76f048b631b42a75fc2915ab2",
+    "src/ktlab/engine.py": "62d991ff0256fd9fa062b31f4885ce0775d058bcf4133a46843f24964273951c",
+    "src/ktlab/shared_adapters.py": "838983f3ba0469ca4cf92b237a76ce87321fb3b7e9dafb021e730c639b14af27",
+    "src/ktlab/provenance.py": "7f732691614227eb84ead5c578f24c338153304d503c569fb55c59c7f6e12c2a",
+    "third_party/ktst/pkg/model/KTST.py": "5bcac1982b0d11ac625821298af148e45e9ec1b98d546cea9d2e76cc6c072b1b",
+    "scripts/analyze_shared_predictions.py": "a6f7290412280a9f26d2088c098175615bf92676e001ed8196c90325ddbed1bf",
+    "scripts/summarize_shared_batch.py": "52c5c010e8b9ab8c2bb6e17323a4745fa0d1d04ceaf5039ad3531437cb2df078",
+    "tests/test_ktst_interaction.py": "b495c2e08cdfe888e6ed5301c379718d94d7e39d7dedfa45c37379b7076c9648",
+    "tests/test_saved_prediction_analysis.py": "075382bca3b431c692e8723c07929a62951f90bd15278cce9cd308ac29d5a417",
+    "tests/test_shared_batch_summary.py": "c2272841b7309f11466b726a6d5331db5337c913df097c868f913f48832bda59",
+    ".cache/run_s007.py": "a65a37c98a4071c821088abf12f0b5adcfc1ef6a3f1c381afd6b93a7994f9d96"
+  },
+  "runner_result": {
+    "check_id": "S007-ktst-interaction-cpu",
+    "status": "passed",
+    "exit_code": 0,
+    "timed_out": false,
+    "started_at": "2026-10-14T20:12:25.612473+00:00",
+    "finished_at": "2026-10-14T20:13:03.617321+00:00",
+    "elapsed_seconds": 38.00275419399986,
+    "manifest_sha256": "aa038eb118a2e561afcdb0fc517b5474c5fe0067af6753014499565e57c3f19a",
+    "implementation_sha256": "3e6e65f50027bfe6ed9d396117d755b3c22506832b5599b22d55d71fdbf31180",
+    "source_and_bound_files_unchanged": true,
+    "logs": {
+      "S007.stdout.log": "f6934533be8f44f58c67aaa0f568a963e351c6c3b760b121905be056893f221d",
+      "S007.stderr.log": "77b7e3951a3308e23741e1b4fe9bcf40f87dd59e441ef4aaaa406caaf4bfd016"
+    }
+  },
+  "private_receipts_sha256": {
+    "S007-result.json": "95eb07f5f8e6bbcc6697d67aa70433b12fa1a2d758c228c2c05c76db1798beed",
+    "S007-attempt.json": "d7926a51be99e33395dd9b0a1246db6ba3ae102afbde2d5cee358040ac6746f1",
+    "S007.stdout.log": "f6934533be8f44f58c67aaa0f568a963e351c6c3b760b121905be056893f221d",
+    "S007.stderr.log": "77b7e3951a3308e23741e1b4fe9bcf40f87dd59e441ef4aaaa406caaf4bfd016"
+  },
+  "authorization_record_sha256": "0136ebfe820481bf392960ddcec6f6a6860fa2712f3926471c9691498a08ac4c",
+  "authorization_basis": "Existing direct human standing authorization, not a new user confirmation",
+  "pytest": {
+    "passed": 182,
+    "warnings": 0,
+    "elapsed_seconds": 35.92,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "arguments": [
+      "-q",
+      "-s",
+      "tests/test_ktst_interaction.py",
+      "tests/test_saved_prediction_analysis.py",
+      "tests/test_shared_batch_summary.py",
+      "-ra"
+    ]
+  },
+  "budget": {
+    "model_instances": 12,
+    "expected_model_instances": 10,
+    "complete_forward_calls": 96,
+    "expected_complete_forward_calls": 52,
+    "autograd_grad_calls": 8,
+    "backward_calls": 0,
+    "optimizer_constructions": 0,
+    "optimizer_steps": 0,
+    "subprocess_wall_seconds": 300
+  },
+  "actual": {
+    "model_instances": 10,
+    "complete_forward_calls": 52,
+    "autograd_grad_calls": 8,
+    "backward_calls": 0,
+    "optimizer_constructions": 0,
+    "optimizer_steps": 0
+  },
+  "synthetic_model": {
+    "num_q": [
+      0,
+      5
+    ],
+    "num_c": 7,
+    "max_concepts": [
+      1,
+      3
+    ],
+    "d_model": 16,
+    "nhead_tf": 2,
+    "nhead_agg": 2,
+    "num_layers_tf_dec": 1,
+    "num_layers_tf_enc": 1,
+    "num_layers_agg": 1,
+    "dim_feedforward": 32,
+    "dim_classifier": 24,
+    "dropout": 0.1
+  },
+  "recipes": [
+    null,
+    "signed_response",
+    "response_independent"
+  ],
+  "verified_checks": [
+    "common parameters and post-construction RNG identical with zero residual",
+    "zero-residual original probability and logits BCE equivalence with train/eval dropout modes",
+    "independent original-forward injection oracle: probability, BCE and all parameter gradients",
+    "valid KC means, raw all-padding zero residual, valid missing-KC rejection and KC permutation",
+    "current/future response isolation and permitted-history positive control",
+    "mixed right padding, singleton and actual shared-prediction routing",
+    "new parameter occurs exactly once in ordinary optimizer parameter groups without constructing an optimizer",
+    "explicit recipe across config/source/checkpoint/reload and saved prediction comparison identity",
+    "invalid recipe and sealed test rejection before model or optimizer construction"
+  ],
+  "tolerances": {
+    "zero_residual_atol": 0.0,
+    "zero_residual_rtol": 0.0,
+    "oracle_probability_loss_atol": 1e-07,
+    "oracle_probability_loss_rtol": 1e-06,
+    "gradient_atol": 2e-07,
+    "gradient_rtol": 2e-05,
+    "padding_permutation_atol": 1e-07,
+    "padding_permutation_rtol": 1e-06
+  },
+  "cpu_threads": 1,
+  "gpu_used": false,
+  "real_data_access": false,
+  "test_access": false,
+  "existing_weights_access": false,
+  "limitations": [
+    "Synthetic CPU checks are not actual training or validation performance evidence.",
+    "The KC-response parameterization adapts an existing mechanism; no originality claim.",
+    "Original training window and event-representation differences remain.",
+    "Real training backbone and batch await B005 validation-based selection and a new concrete freeze.",
+    "Current frozen final-test evaluator does not yet accept local KTST interaction source identities."
+  ],
+  "log_interpretation": "Expected negative CLI tests emit refusal messages to stderr. Synthetic saved-summary fixtures print historical optimizer_steps=8; no optimizer was constructed or stepped in S007."
+}

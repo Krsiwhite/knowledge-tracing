@@ -363,6 +363,44 @@ def shift_selected_history(directory, metric, delta):
     write_history(directory, history)
 
 
+@pytest.mark.parametrize("duplicate", [False, True])
+def test_ktst_interaction_recipes_remain_distinct_in_summary(artifacts, duplicate):
+    _, batch_path, directories = artifacts
+    batch = read_json(batch_path)
+    for index, entry in enumerate(batch["runs"]):
+        recipe = "signed_response" if duplicate or index == 0 else "response_independent"
+        entry["config"].update(model="ktst_mean", ktst_interaction_recipe=recipe,
+                                model_config={"d_model": 16, "aggregation": "q_mean_c"})
+    write_json(batch_path, batch)
+    batch_sha = A.canonical_hash(batch)
+    for entry, directory in zip(batch["runs"], directories):
+        config = dict(entry["config"], batch_id=batch["batch_id"], approved_batch_sha256=batch_sha)
+        source = {"schema_version": 1, "model": "ktst_mean", "vendor_source_sha256": hashed("unread vendor"),
+                  "adaptation_sha256": hashed("unread adaptation"), "ktst_interaction_recipe": config["ktst_interaction_recipe"]}
+        source_sha = A.canonical_hash(source)
+        write_json(directory / "resolved_config.json", config)
+        change_json(directory / "metadata.json", approved_batch_sha256=batch_sha, config_sha256=A.canonical_hash(config),
+                    model_source_sha256=source_sha, ktst_interaction_recipe=config["ktst_interaction_recipe"],
+                    ktst_model_source=source, import_binding_only=False)
+        for name in ("initial_valid_metrics.json", "valid_metrics.json"):
+            change_json(directory / name, model="ktst_mean", model_source_sha256=source_sha)
+        sidecar_path = directory / "valid_predictions.csv.manifest.json"
+        sidecar = read_json(sidecar_path)
+        sidecar["result"].update(model="ktst_mean", model_source_sha256=source_sha)
+        write_json(sidecar_path, sidecar)
+        history = read_history(directory)
+        for row in history:
+            row["valid"].update(model="ktst_mean", model_source_sha256=source_sha)
+        write_history(directory, history)
+    if duplicate:
+        with pytest.raises(ValueError, match="Duplicate model/recipe"):
+            summary(artifacts)
+    else:
+        report = summary(artifacts)
+        assert {run["ktst_interaction_recipe"] for run in report["runs"]} == {"signed_response", "response_independent"}
+        assert len({run["comparison_label"] for run in report["runs"]}) == 2
+
+
 @pytest.mark.parametrize("metric", SUMMARY.METRICS)
 @pytest.mark.parametrize("delta", [5e-7, 2e-6])
 def test_selected_export_predeclared_drift_tolerance_and_disclosure(artifacts, metric, delta):

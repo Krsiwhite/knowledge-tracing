@@ -53,6 +53,7 @@ B001、[B002](configs/batches/B002-one-epoch-calibration.json) 已在各自冻�
 
 ## 评测与研究记录
 
+- [KTST 历史 KC×回答残差与等参数对照](docs/KTST_INTERACTION_RESEARCH.md)：显式本地适配，S007 合成验收182项通过；按最新优先级已启动 [B007 ASSIST2009 首批实验](reports/B007_KTST_INTERACTION_PILOT_2026-10-15.md)，原版结果复用，尚无变体完成成绩。
 - [评测协议](docs/PROTOCOL.md)：主指标、五折与随机种子、因果边界、与官方协议的差别。
 - [前沿研究证据表](docs/RESEARCH_LEDGER.md)：论文状态、作者报告、可复现代码、输入与协议限制。
 - [完整证据卡](docs/evidence/README.md)：KTST逐折强配置、MoC全文缺口、UKT/KeenKT主表、KeenKT无梯度因果反例，以及频次收缩原创性判断。

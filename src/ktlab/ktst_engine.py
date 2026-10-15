@@ -90,6 +90,8 @@ def evaluate_ktst_loader(model, loader, device, prediction_path=None, *, max_bat
 
 def _check_config(config):
     from .engine import SHARED_PROTOCOL, _shared_config
+    from .ktst_interaction import validate_interaction_recipe
+    validate_interaction_recipe(config.get("model"), config.get("ktst_interaction_recipe"))
     if config.get("protocol") not in {PROTOCOL, SHARED_PROTOCOL}:
         raise ValueError(f"KTST requires explicit protocol={PROTOCOL}; scores cannot silently join ktlab v1")
     if config.get("protocol") == SHARED_PROTOCOL:
@@ -130,12 +132,14 @@ def _save_checkpoint(model, path, auc, epoch, manifest_sha256, config=None, *, p
                              protocol=protocol, identity=identity, epoch_completed=epoch_completed)
         return
     temporary = path.with_suffix(".tmp")
+    recipe_fields = ({"ktst_interaction_recipe": model.ktlab_interaction_recipe}
+                     if hasattr(model, "ktlab_interaction_recipe") else {})
     torch.save({"state_dict": model.state_dict(), "model_config": model.ktlab_model_config,
                 "epoch": epoch, "valid_auc": auc, "protocol": PROTOCOL,
                 "dataset_manifest_sha256": manifest_sha256,
                 "config_sha256": config_fingerprint(config) if config is not None else None,
                 "implementation_sha256": source_fingerprint(),
-                "model_source_sha256": model.ktlab_source_sha256}, temporary)
+                "model_source_sha256": model.ktlab_source_sha256, **recipe_fields}, temporary)
     temporary.replace(path)
 
 
@@ -161,7 +165,9 @@ def train_ktst(config: dict, run_dir: Path) -> dict:
     _seed(int(config.get("seed", 42)))
     if device.type == "cuda":
         torch.cuda.reset_peak_memory_stats(device)
-    model = build_model(config["model"], manifest["data_config"], config.get("model_config"), device)
+    recipe_args = ({"interaction_recipe": config["ktst_interaction_recipe"]}
+                   if config.get("ktst_interaction_recipe") is not None else {})
+    model = build_model(config["model"], manifest["data_config"], config.get("model_config"), device, **recipe_args)
     training = dataset_type(manifest, int(config.get("fold", 0)), split="train")
     validation = (_shared_dataset(manifest, config) if shared else
                   dataset_type(manifest, int(config.get("fold", 0)), split="valid"))
@@ -183,6 +189,10 @@ def train_ktst(config: dict, run_dir: Path) -> dict:
                 "model_parameters": sum(p.numel() for p in model.parameters()),
                 "seed": int(config.get("seed", 42)), "partial_debug": config.get("max_validation_batches") is not None,
                 "not_comparable_with_protocol": "ktlab-v1-causal-valid-full-precision-repeat-kc-train"}
+    if config.get("ktst_interaction_recipe") is not None:
+        metadata.update(ktst_interaction_recipe=model.ktlab_interaction_recipe,
+                        ktst_model_source=model.ktlab_model_source_identity,
+                        final_test_compatibility="not_implemented_for_local_interaction_variants")
     identity = _shared_identity(config, model, validation) if shared else None
     if shared:
         metadata.update(identity, training_representation="original_ktst_set_dense",
@@ -293,6 +303,8 @@ def train_ktst(config: dict, run_dir: Path) -> dict:
         checkpoint = (_selected_shared_checkpoint(run_dir / "best.pt", metadata, identity,
                                                   manifest["_manifest_sha256"], config["model_config"], device=device)
                       if shared else torch.load(run_dir / "best.pt", map_location=device, weights_only=True))
+        if checkpoint.get("ktst_interaction_recipe") != config.get("ktst_interaction_recipe"):
+            raise ValueError("KTST checkpoint interaction recipe mismatch")
         model.load_state_dict(checkpoint["state_dict"])
         valid = validate(run_dir / "valid_predictions.csv")
         _json(run_dir / "valid_metrics.json", valid)
@@ -332,7 +344,11 @@ def evaluate_ktst_run(run_dir, *, split="valid"):
         raise ValueError("KTST checkpoint configuration mismatch")
     if checkpoint.get("implementation_sha256") != source_fingerprint():
         raise ValueError("KTST checkpoint implementation mismatch; use a declared migration instead of silent re-evaluation")
-    model = build_model(config["model"], manifest["data_config"], checkpoint["model_config"], device)
+    if checkpoint.get("ktst_interaction_recipe") != config.get("ktst_interaction_recipe"):
+        raise ValueError("KTST checkpoint interaction recipe mismatch")
+    recipe_args = ({"interaction_recipe": config["ktst_interaction_recipe"]}
+                   if config.get("ktst_interaction_recipe") is not None else {})
+    model = build_model(config["model"], manifest["data_config"], checkpoint["model_config"], device, **recipe_args)
     if checkpoint.get("model_source_sha256") != model.ktlab_source_sha256:
         raise ValueError("KTST checkpoint model source mismatch")
     model.load_state_dict(checkpoint["state_dict"])
