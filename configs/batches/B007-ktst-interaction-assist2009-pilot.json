@@ -1,0 +1,250 @@
+{
+  "schema_version": 1,
+  "batch_id": "B007-ktst-interaction-assist2009-pilot",
+  "status": "prepared",
+  "purpose": "Prioritize the user-requested local model experiment: signed historical KC-response residual versus an equal-parameter response-independent control, reusing the completed KTST mean baseline",
+  "source_sha256": "3e6e65f50027bfe6ed9d396117d755b3c22506832b5599b22d55d71fdbf31180",
+  "git_commit_at_preparation": "da200bc2edf96bb0b33421d945861192f3c100aa",
+  "test_access": false,
+  "stop_on_noncompleted_run": true,
+  "execution_order": [
+    "B007-ktst_mean-signed_response-assist2009-f0-s42",
+    "B007-ktst_mean-response_independent-assist2009-f0-s42"
+  ],
+  "priority_basis": {
+    "instruction": "The latest direct user request prioritizes experiments on the project model.",
+    "superseded_condition": "The earlier requirement to wait for B005 before choosing the backbone is superseded for this AS09 pilot.",
+    "backbone_choice": "Reuse the exact completed B003-R1 KTST mean AS09 resolved configuration; do not retrain the original baseline.",
+    "approval_record_created_by_this_preparation": false
+  },
+  "limits": {
+    "total_optimizer_steps_upper_bound": 9500,
+    "epochs_per_run": 50,
+    "per_run_optimizer_steps_upper_bound": 4750,
+    "per_run_wall_seconds": 14400,
+    "sum_run_wall_seconds": 28800,
+    "wall_limit_scope": "soft checks between batches after model/data setup; setup is additional",
+    "paid_services": false,
+    "automatic_retries": false
+  },
+  "selection": {
+    "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+    "fold": 0,
+    "seed": 42,
+    "initial_validation": true,
+    "every_epoch_full_validation": true,
+    "strict_best_auc": true,
+    "early_stop_min_delta": 0.0,
+    "patience": 3,
+    "ties_keep_earlier_checkpoint": true,
+    "final_best_checkpoint_reload_and_export": true,
+    "hyperparameter_search_trials_per_recipe_dataset": 1
+  },
+  "baseline_reference": {
+    "run_id": "B003-R1-ktst_mean-assist2009-f0-s42",
+    "run_directory": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/runs/B003-R1-ktst_mean-assist2009-f0-s42",
+    "status_at_preparation": "completed",
+    "batch_id": "B003-R1-shared-convergence-baselines",
+    "batch_manifest": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/configs/batches/B003-R1-shared-convergence-baselines.json",
+    "batch_canonical_sha256": "c2c4dbc0ffcfee1bb591948e6dffac26366b723bd13d7c8e484ebff886c15bd3",
+    "batch_file_sha256": "92e211976e8d33d89d75021e9489210d991f05260e6acfebc0a752509bab2310",
+    "implementation_sha256": "bf5fcd0f23645b31f76c9486f4a98b3a5f9667886f5f80d62efc596b9a610a1d",
+    "run_git_commit": "1fdb4620e57d9c68206e56c0ccf2e655f022f2bb",
+    "resolved_config_file_sha256": "36ba9522d59115ab293c1edab2eb7fcb58396fa6fc3bdd8a3cdb2bbdeda3deaa",
+    "config_sha256": "d8cb4b68968452dee4a80f25cbfa8d7d03fb57db467728fb797dbfb2c69e8d46",
+    "metadata_file_sha256": "4389d45971e53a5844d07ab59abf3ded026e9267a8c3fafebacbdf11a07bde96",
+    "model_source_sha256": "5b5dc24948a7d227003b5cd285227a20989811cc170809480c0ae80e611345b9",
+    "dataset_manifest_sha256": "e2c939dfe4479327c223644bce6aee88c56bc362d1169164332ae9ca479fc703",
+    "checkpoint_sha256_recorded_in_metadata": "068b31b24d699b37609108b615ab2f450c55b8bb748652aae3ae0f0f39e2e58a",
+    "checkpoint_bytes_read_during_preparation": false,
+    "best_epoch_recorded": 23,
+    "baseline_retraining": false
+  },
+  "configuration_mapping": {
+    "source": "completed baseline resolved_config.json",
+    "research_config_addition_only": "ktst_interaction_recipe",
+    "removed_runtime_binding_fields": [
+      "batch_id",
+      "approved_batch_sha256"
+    ],
+    "runtime_binding_policy": "The existing CLI injects the new B007 batch ID and canonical hash at execution; no old authorization is copied.",
+    "all_remaining_fields_identical_to_baseline": true,
+    "new_trainable_parameters_each": 15744,
+    "validation_execution": "unchanged original per-target shared evaluation; no prefix-group execution recipe"
+  },
+  "acceptance_evidence": {
+    "check_id": "S007-ktst-interaction-cpu",
+    "manifest_file": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing-ktst-interaction/configs/checks/S007-ktst-interaction-cpu.json",
+    "manifest_canonical_sha256": "aa038eb118a2e561afcdb0fc517b5474c5fe0067af6753014499565e57c3f19a",
+    "manifest_file_sha256": "28b75528866dd5726578f33fc89ce4b55f5ecde7d5bdb8839f056cbd51311148",
+    "report_file": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing-ktst-interaction/reports/S007_KTST_INTERACTION_CPU_ACCEPTANCE_2026-10-15.json",
+    "report_file_sha256": "22fe1041e9e20996aaf29c9e598e07bb5cac5ec30c53d6a8adfcd49491798780",
+    "implementation_sha256": "3e6e65f50027bfe6ed9d396117d755b3c22506832b5599b22d55d71fdbf31180",
+    "status": "passed",
+    "pytest": {
+      "passed": 182,
+      "warnings": 0,
+      "elapsed_seconds": 35.92,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "arguments": [
+        "-q",
+        "-s",
+        "tests/test_ktst_interaction.py",
+        "tests/test_saved_prediction_analysis.py",
+        "tests/test_shared_batch_summary.py",
+        "-ra"
+      ]
+    },
+    "actual": {
+      "model_instances": 10,
+      "complete_forward_calls": 52,
+      "autograd_grad_calls": 8,
+      "backward_calls": 0,
+      "optimizer_constructions": 0,
+      "optimizer_steps": 0
+    },
+    "supported_claim": "S007 synthetic CPU checks verified unchanged vendor bytes, original default behavior, common-parameter and RNG equality after zero residual construction, zero-residual probability/BCE equality, causal historical injection, and parameter/gradient oracle agreement.",
+    "boundary": "These bounded synthetic checks do not establish identical GPU training trajectories or real-data performance for either new recipe."
+  },
+  "execution_dependencies": [
+    "Confirm the GPU is idle and no interrupted or other batch process remains active.",
+    "Recheck this exact source and prepared-file integrity before launch and bind this exact manifest to the standing authorization and latest user priority request.",
+    "Run signed_response then response_independent; stop on any noncompleted run and do not retry automatically."
+  ],
+  "comparison_boundary": "One dataset, one heldout validation fold and one seed with a fixed inherited configuration. The signed and response-independent recipes have equal added parameter counts. This is a controlled performance adaptation of an existing interaction mechanism, not an originality, paper reproduction, SOTA, or final-test claim. Original KTST window/loss/aggregation, complete-event shared validation and checkpoint selection remain unchanged. Training implementations differ across the reused baseline and B007; S007 supplies scoped synthetic compatibility evidence, not proof of identical training identity.",
+  "final_test_boundary": "Test remains sealed. The current frozen final-test evaluator does not accept local KTST interaction identities; compatibility must be addressed if this candidate is later selected.",
+  "runs": [
+    {
+      "run_id": "B007-ktst_mean-signed_response-assist2009-f0-s42",
+      "dataset_manifest_sha256": "e2c939dfe4479327c223644bce6aee88c56bc362d1169164332ae9ca479fc703",
+      "train_sequence_rows": 3016,
+      "training_batches_per_epoch": 95,
+      "config": {
+        "dataset_manifest": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/assist2009/manifest.json",
+        "model": "ktst_mean",
+        "dataset": "assist2009",
+        "fold": 0,
+        "seed": 42,
+        "device": "cuda",
+        "batch_size": 32,
+        "epochs": 50,
+        "learning_rate": 0.0001,
+        "weight_decay": 5e-05,
+        "shuffle": true,
+        "grad_clip": 1.0,
+        "patience": 3,
+        "early_stop_min_delta": 0.0,
+        "max_train_steps": 4750,
+        "max_wall_seconds": 14400,
+        "debug_smoke": false,
+        "purpose": "fixed_configuration_convergence_anchor_shared_validation_not_sota",
+        "model_config": {
+          "d_model": 128,
+          "nhead_tf": 8,
+          "nhead_agg": 4,
+          "num_layers_tf_dec": 2,
+          "num_layers_tf_enc": 1,
+          "num_layers_agg": 1,
+          "dim_feedforward": 256,
+          "dropout": 0.1,
+          "dim_classifier": 256,
+          "use_bias_emb": true,
+          "use_zero_init": true,
+          "use_decoder_only": false,
+          "attn_variant": "learnable_alibi_monotonic_q_k",
+          "bias_before_agg": false,
+          "num_questions": 17737,
+          "num_concepts": 123,
+          "max_concepts": 4,
+          "max_len": 200,
+          "aggregation": "q_mean_c"
+        },
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "validation_batch_size": 32,
+        "theta_learning_rate": 0.0005,
+        "initial_validation": true,
+        "max_rows_per_forward": 32,
+        "ktst_interaction_recipe": "signed_response"
+      },
+      "shared_validation": {
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "selected_targets": 43295,
+        "source_sha256": "d590ba88d8d7ab630e635a89b56df55219f49a75b55caa0df571a1f3b460404e",
+        "target_sha256": "c4c432fca4c3a3308dd6e9dc9b852a7d9b3f6852caa2ee8074379b209f8b2190",
+        "context_sha256": "491600d611a2726d3ffb85b55c0b9e2e44fabde6e365e7faf89844a243a6da54",
+        "canonical_events": 43912,
+        "exclusion_counts": {
+          "target_over_budget": 0,
+          "no_history": 617
+        }
+      }
+    },
+    {
+      "run_id": "B007-ktst_mean-response_independent-assist2009-f0-s42",
+      "dataset_manifest_sha256": "e2c939dfe4479327c223644bce6aee88c56bc362d1169164332ae9ca479fc703",
+      "train_sequence_rows": 3016,
+      "training_batches_per_epoch": 95,
+      "config": {
+        "dataset_manifest": "/mnt/d/doc/knowledge_trace_graduation_project/knowledge-tracing/data/prepared/assist2009/manifest.json",
+        "model": "ktst_mean",
+        "dataset": "assist2009",
+        "fold": 0,
+        "seed": 42,
+        "device": "cuda",
+        "batch_size": 32,
+        "epochs": 50,
+        "learning_rate": 0.0001,
+        "weight_decay": 5e-05,
+        "shuffle": true,
+        "grad_clip": 1.0,
+        "patience": 3,
+        "early_stop_min_delta": 0.0,
+        "max_train_steps": 4750,
+        "max_wall_seconds": 14400,
+        "debug_smoke": false,
+        "purpose": "fixed_configuration_convergence_anchor_shared_validation_not_sota",
+        "model_config": {
+          "d_model": 128,
+          "nhead_tf": 8,
+          "nhead_agg": 4,
+          "num_layers_tf_dec": 2,
+          "num_layers_tf_enc": 1,
+          "num_layers_agg": 1,
+          "dim_feedforward": 256,
+          "dropout": 0.1,
+          "dim_classifier": 256,
+          "use_bias_emb": true,
+          "use_zero_init": true,
+          "use_decoder_only": false,
+          "attn_variant": "learnable_alibi_monotonic_q_k",
+          "bias_before_agg": false,
+          "num_questions": 17737,
+          "num_concepts": 123,
+          "max_concepts": 4,
+          "max_len": 200,
+          "aggregation": "q_mean_c"
+        },
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "validation_batch_size": 32,
+        "theta_learning_rate": 0.0005,
+        "initial_validation": true,
+        "max_rows_per_forward": 32,
+        "ktst_interaction_recipe": "response_independent"
+      },
+      "shared_validation": {
+        "protocol": "ktlab-v2-shared-event-context-kc200-dev",
+        "selected_targets": 43295,
+        "source_sha256": "d590ba88d8d7ab630e635a89b56df55219f49a75b55caa0df571a1f3b460404e",
+        "target_sha256": "c4c432fca4c3a3308dd6e9dc9b852a7d9b3f6852caa2ee8074379b209f8b2190",
+        "context_sha256": "491600d611a2726d3ffb85b55c0b9e2e44fabde6e365e7faf89844a243a6da54",
+        "canonical_events": 43912,
+        "exclusion_counts": {
+          "target_over_budget": 0,
+          "no_history": 617
+        }
+      }
+    }
+  ]
+}

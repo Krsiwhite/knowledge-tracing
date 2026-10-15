@@ -54,4 +54,4 @@ Neubauer、Rudolph、Brefeld 的 *Principled Transformers for Predictive Perform
 
 本轮保持原200-KC分块后合并事件的训练 loader。块边界的部分 KC、首事件不监督，与 v2 完整事件后缀验证之间的差异**仍然存在**。新增残差没有完成“共同完整事件重训”，也不是原论文完整复现。后续三组必须使用相同训练输入、mask、预算、epoch0 候选和验证选择规则，不将额外训练、窗口变化或更大骨干的收益归因残差。[共同验证协议](SHARED_EVENT_PROTOCOL.md) · [作者配置与项目差异](evidence/KTST_2026-10-14.md)
 
-待 B005 结束后冻结骨干与具体批次，再做三组开发验证对照；每次最多50轮、连续3轮验证 AUC 无严格改善早停。若 `signed_response` 不能优于等参数控制，不支持回答条件交互的解释；若仅单折偶然提高，保留探索性结论。最终候选仍须按已登记跨数据集、多fold/seed及封存测试方案确认，不能由本说明预先承诺提升。
+2026-10-15，用户明确要求优先开展自有模型实验，原“等待 B005”顺序由此调整。[B007 首批实验](../reports/B007_KTST_INTERACTION_PILOT_2026-10-15.md) 直接沿用已完成的 ASSIST2009 KTST mean 骨干，顺序训练 `signed_response` 与 `response_independent`，复用原版完成结果；不重训或复测原版。每次最多50轮、连续3轮验证 AUC 无严格改善早停。若 `signed_response` 不能优于等参数控制，不支持回答条件交互的解释；若仅单折偶然提高，保留探索性结论。最终候选仍须按已登记跨数据集、多fold/seed及封存测试方案确认，不能由本说明预先承诺提升。
