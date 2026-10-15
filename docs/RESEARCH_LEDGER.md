@@ -42,7 +42,7 @@
 | ACE-KT | [AISTATS 2026/PMLR](https://proceedings.mlr.press/v300/guo26b.html)、[作者代码](https://github.com/AWord992/ACEKT)。AS09、AL05、BD06、NIPS34、EdNet；会议日期05-02至05-05。 | 正文报告在5个数据集中4个最好，EdNet低于最高方法0.014；不能从摘要推导“全部数据集最好”。 |
 | Jev / JevKT | [arXiv:2610.11135v1](https://arxiv.org/abs/2610.11135v1)，2026-10-08首发预印本，题名 *Can a System-One LLM Perform Knowledge Tracing When Few or No Learners Are Logged?*；作者给出匿名代码与结果仓库链接。本轮只核官方摘要、版本记录及该链接的存在，未审实现。 | 研究零/少量平台学习者日志与预训练LLM单次概率推理；监督KT在更多日志条件下会追上，是作者摘要已披露的边界。训练样本量、预训练信息和API成本与本项目完整训练集不同，不能用其少样本均值替代三集共同条件SOTA；不调用付费API。 |
 
-补充待核查：KDD2026的[Structured Inductive Bias for Multi-timescale Knowledge Tracing](https://kdd2026.kdd.org/papers/)已在官方名单，但本阶段未核定全文/代码；[RegKT](https://arxiv.org/abs/2609.21791)首发2026-09-18，目前只确认预印本状态。二者进入近邻检索，不作为已复现SOTA。
+补充待核查：KDD2026的[Structured Inductive Bias for Multi-timescale Knowledge Tracing](https://kdd2026.kdd.org/papers/)已在官方名单，但本阶段未核定全文/代码。[RegKT范围核对](evidence/REGKT_SCOPE_2026-10-15.md)现已补齐正文与HEXED 2025官方接收记录：2026-09-18是arXiv上传日期；其ASSIST2009实验筛选最常见500题，不能纳入本项目共同条件排名。保留为IRT辅助监督近邻，不插入当前自有模型实验队列，也不作为已复现SOTA。
 
 ## 4. 每篇论文必须补齐的证据卡
 
